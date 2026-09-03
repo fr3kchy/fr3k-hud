@@ -1,0 +1,1 @@
+# core library consumer rules — none currently needed

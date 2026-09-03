@@ -1,0 +1,24 @@
+{
+  "device_id": "fr3k-pixel-01",
+  "name": "Pixel 8 Pro (Freek's daily)",
+  "platform": "android",
+  "version": "0.1.0",
+  "capabilities": [
+    {"id": "agent.ask", "displayName": "Agent ask", "tier": "TIER_0", "version": 1},
+    {"id": "share.text", "displayName": "Share text", "tier": "TIER_0", "version": 1},
+    {"id": "share.url", "displayName": "Share URL", "tier": "TIER_0", "version": 1},
+    {"id": "browser.clean_url", "displayName": "Clean URL", "tier": "TIER_0", "version": 1},
+    {"id": "device.list", "displayName": "Device list", "tier": "TIER_0", "version": 1},
+    {"id": "device.open", "displayName": "Device open", "tier": "TIER_0", "version": 1}
+  ],
+  "transports": ["https", "websocket", "lan"],
+  "status": "ONLINE",
+  "last_seen": 1735862345123,
+  "public_key": null,
+  "signature": null,
+  "metadata": {
+    "manufacturer": "Google",
+    "model": "Pixel 8 Pro",
+    "android_sdk": "35"
+  }
+}

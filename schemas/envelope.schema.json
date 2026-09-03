@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fr3kEnvelope",
+  "type": "object",
+  "required": ["protocol", "id", "source", "type", "timestamp", "payload"],
+  "properties": {
+    "protocol": {"type": "string", "const": "fr3k/1"},
+    "id": {"type": "string"},
+    "source": {"type": "string"},
+    "destination": {"type": ["string", "null"]},
+    "type": {"type": "string"},
+    "timestamp": {"type": "integer", "minimum": 0},
+    "ttlMs": {"type": ["integer", "null"]},
+    "replyTo": {"type": ["string", "null"]},
+    "correlationId": {"type": ["string", "null"]},
+    "auth": {"$ref": "#/$defs/AuthHeader"},
+    "payload": {"type": "object"}
+  },
+  "$defs": {
+    "AuthHeader": {
+      "type": "object",
+      "required": ["deviceId", "scheme", "signature", "nonce", "issuedAt"],
+      "properties": {
+        "deviceId": {"type": "string"},
+        "scheme": {"type": "string"},
+        "signature": {"type": "string"},
+        "publicKey": {"type": ["string", "null"]},
+        "nonce": {"type": "string"},
+        "issuedAt": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

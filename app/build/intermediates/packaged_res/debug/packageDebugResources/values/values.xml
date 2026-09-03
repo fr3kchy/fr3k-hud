@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fr3k_accent">#FFB829FF</color>
+    <color name="fr3k_accent_dim">#FF5A1F8C</color>
+    <color name="fr3k_bg">#FF05060A</color>
+    <color name="fr3k_border">#FF1F2A3D</color>
+    <color name="fr3k_err">#FFFF5577</color>
+    <color name="fr3k_ok">#FF28E0B0</color>
+    <color name="fr3k_surface">#FF0E1018</color>
+    <color name="fr3k_text">#FFE6ECF5</color>
+    <color name="fr3k_text_dim">#FF8A93A6</color>
+    <color name="fr3k_warn">#FFFFAA33</color>
+    <string name="app_name">FR3K HUD</string>
+    <string name="ask_about_this">Ask About This</string>
+    <string name="hud_status_busy">● Working</string>
+    <string name="hud_status_idle">● Idle</string>
+    <string name="hud_status_offline">● Offline</string>
+    <string name="no_capability">Unavailable</string>
+    <string name="open_on">Open on…</string>
+    <string name="palette_hint">Type a command…</string>
+    <string name="palette_title">FR3K COMMAND</string>
+    <string name="permission_location_rationale">FR3K HUD uses your location only when you explicitly request a GPS fix or waypoint. The location is never transmitted silently.</string>
+    <string name="permission_notifications_rationale">Allow notifications so FR3K HUD can show progress, completion and Quick Settings tile feedback.</string>
+    <string name="permission_overlay_rationale">FR3K HUD needs overlay permission to draw the floating orb. You can revoke it at any time; the core app continues to work.</string>
+    <string name="quick_settings_tile">FR3K HUD</string>
+    <string name="send_to_hermes">Send to Hermes</string>
+    <string name="service_notification_text">Tap to open palette · swipe for status</string>
+    <string name="service_notification_title">FR3K HUD</string>
+    <string name="share_target_label">FR3K HUD</string>
+    <style name="Theme.Fr3kHud" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/fr3k_bg</item>
+        <item name="android:statusBarColor">@color/fr3k_bg</item>
+        <item name="android:navigationBarColor">@color/fr3k_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textColor">@color/fr3k_text</item>
+    </style>
+    <style name="Theme.Fr3kHud.Transparent" parent="Theme.Fr3kHud">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    </style>
+</resources>

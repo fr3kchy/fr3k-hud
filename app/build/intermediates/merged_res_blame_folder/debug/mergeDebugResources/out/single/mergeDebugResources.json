@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/xml_data_extraction_rules.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/xml_file_paths.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/drawable_fr3k_orb.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/drawable/fr3k_orb.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.mcpintelligence.fr3k.hud.app-debug-58:/drawable_ic_fr3k_notification.xml.flat",
+        "source": "com.mcpintelligence.fr3k.hud.app-main-60:/drawable/ic_fr3k_notification.xml"
+    }
+]

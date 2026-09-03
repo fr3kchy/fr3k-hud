@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentAskRequest",
+  "type": "object",
+  "required": ["prompt", "profile"],
+  "properties": {
+    "prompt": {"type": "string"},
+    "model": {"type": ["string", "null"]},
+    "profile": {
+      "type": "string",
+      "enum": ["NORMAL", "FAST", "PRIVATE", "OFFLINE", "RESEARCH", "CODE", "CHEAP"]
+    },
+    "maxTokens": {"type": ["integer", "null"]},
+    "temperature": {"type": ["number", "null"]},
+    "context": {"$ref": "#/$defs/AgentContext"},
+    "attachments": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/AgentAttachment"}
+    }
+  },
+  "$defs": {
+    "AgentContext": {
+      "type": "object",
+      "properties": {
+        "sourcePackage": {"type": ["string", "null"]},
+        "sourceActivity": {"type": ["string", "null"]},
+        "url": {"type": ["string", "null"]},
+        "selectedText": {"type": ["string", "null"]},
+        "fullText": {"type": ["string", "null"]},
+        "location": {"$ref": "#/$defs/Fr3kLocation"},
+        "screenshotUri": {"type": ["string", "null"]},
+        "extras": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    },
+    "AgentAttachment": {
+      "type": "object",
+      "required": ["name", "mimeType", "uri"],
+      "properties": {
+        "name": {"type": "string"},
+        "mimeType": {"type": "string"},
+        "uri": {"type": "string"},
+        "sizeBytes": {"type": ["integer", "null"]}
+      }
+    },
+    "Fr3kLocation": {
+      "type": "object",
+      "required": ["latitudeDeg", "longitudeDeg", "provider", "timestampMs"],
+      "properties": {
+        "latitudeDeg": {"type": "number"},
+        "longitudeDeg": {"type": "number"},
+        "accuracyM": {"type": ["number", "null"]},
+        "altitudeM": {"type": ["number", "null"]},
+        "bearingDeg": {"type": ["number", "null"]},
+        "speedMps": {"type": ["number", "null"]},
+        "provider": {"type": "string"},
+        "timestampMs": {"type": "integer"}
+      }
+    }
+  }
+}

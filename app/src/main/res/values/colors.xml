@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fr3k_bg">#FF05060A</color>
+    <color name="fr3k_surface">#FF0E1018</color>
+    <color name="fr3k_border">#FF1F2A3D</color>
+    <color name="fr3k_text">#FFE6ECF5</color>
+    <color name="fr3k_text_dim">#FF8A93A6</color>
+    <color name="fr3k_accent">#FFB829FF</color>
+    <color name="fr3k_accent_dim">#FF5A1F8C</color>
+    <color name="fr3k_ok">#FF28E0B0</color>
+    <color name="fr3k_warn">#FFFFAA33</color>
+    <color name="fr3k_err">#FFFF5577</color>
+</resources>

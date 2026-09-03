@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Fr3kHud" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/fr3k_bg</item>
+        <item name="android:statusBarColor">@color/fr3k_bg</item>
+        <item name="android:navigationBarColor">@color/fr3k_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textColor">@color/fr3k_text</item>
+    </style>
+    <style name="Theme.Fr3kHud.Transparent" parent="Theme.Fr3kHud">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    </style>
+</resources>

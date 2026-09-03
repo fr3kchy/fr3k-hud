@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DeviceManifest",
+  "type": "object",
+  "required": ["deviceId", "name", "platform", "version"],
+  "properties": {
+    "deviceId": {"type": "string"},
+    "name": {"type": "string"},
+    "platform": {"type": "string", "enum": ["android", "linux", "darwin", "windows"]},
+    "version": {"type": "string"},
+    "capabilities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/Capability"}
+    },
+    "transports": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["https", "websocket", "bluetooth", "lan", "mesh", "mqtt"]}
+    },
+    "status": {"type": "string", "enum": ["ONLINE", "DEGRADED", "OFFLINE", "UNKNOWN"]},
+    "lastSeen": {"type": "integer", "minimum": 0},
+    "publicKey": {"type": ["string", "null"]},
+    "signature": {"type": ["string", "null"]},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "Capability": {
+      "type": "object",
+      "required": ["id", "displayName"],
+      "properties": {
+        "id": {"type": "string"},
+        "displayName": {"type": "string"},
+        "description": {"type": "string"},
+        "tier": {"type": "string", "enum": ["TIER_0", "TIER_1", "TIER_2", "TIER_3", "TIER_4"]},
+        "requiredPermissions": {"type": "array", "items": {"type": "string"}},
+        "experimental": {"type": "boolean"},
+        "version": {"type": "integer"}
+      }
+    }
+  }
+}

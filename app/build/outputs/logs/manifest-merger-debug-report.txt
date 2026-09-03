@@ -1,0 +1,820 @@
+-- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:300:9-308:20
+	android:grantUriPermissions
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:304:13-47
+	android:authorities
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:302:13-64
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:303:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:301:13-62
+manifest
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:2:1-310:12
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:2:1-310:12
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:2:1-310:12
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:2:1-310:12
+MERGED from [:core] /home/parrot/repos/fr3k-hud/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+MERGED from [:transport] /home/parrot/repos/fr3k-hud/transport/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+MERGED from [:ui] /home/parrot/repos/fr3k-hud/ui/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+MERGED from [:protocol] /home/parrot/repos/fr3k-hud/protocol/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-common:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/f1bbc11a857590bf9a2d29b058616879/transformed/navigation-common-2.8.3/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-runtime:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/ad280414b657bc395f9a9274dd8efb32/transformed/navigation-runtime-2.8.3/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/0f542737dea884a529b0d2d76d7144ee/transformed/navigation-common-ktx-2.8.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/5245650d6c90b5fede098b41a0197f80/transformed/navigation-runtime-ktx-2.8.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-compose:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/a76158bc75d3f088875a4b49d1d536dd/transformed/navigation-compose-2.8.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/4750d8d192dd227cee2a9642f04746ba/transformed/activity-1.9.3/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/354509d23462e09e853a1b59b6daeee9/transformed/activity-ktx-1.9.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/7f5532479d118f232c56cd34d706bd3a/transformed/material3-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.material:material-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/fdb335ae475767e58ab1e3c5f8067eed/transformed/material-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-ripple-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/75775ba19ab859c8b9979d1d06c39e01/transformed/material-ripple-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/359adcd10e15726a9a6b3a47c6231f54/transformed/foundation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/a5db98d3b7eed3d082bb2a033a18f25d/transformed/foundation-layout-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/4d981f6790c9b451440b5ea2499c1d3b/transformed/animation-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/176fb70e19ca04f407a0280f73d14257/transformed/animation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/41a4fab5a05c80d3f227781127a54ac7/transformed/ui-tooling-data-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/f4adbee49cea4e4f2987526a7834b447/transformed/ui-unit-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/c9a5d8669a982a4b864ef0bc1f385faa/transformed/ui-graphics-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/967c2f2e42fcc2dd2339a038de613624/transformed/ui-geometry-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-util-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/cc37a14dd13e712750ecf6473c6b79ad/transformed/ui-util-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-text-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/930647908260ad8e4b8abcabb8c88108/transformed/ui-text-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/94d4013d797166e75f271127f34b5a4a/transformed/ui-tooling-preview-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:17:1-28:12
+MERGED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:17:1-28:12
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/e526f872b1b71822f1c52dbbefc49404/transformed/activity-compose-1.9.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/e2b30ee6685858e8be7086e13809694f/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/0023db73c2ea55155e4629d646c4578f/transformed/savedstate-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/fdd7c695723badd2bc6d99bfebf0af80/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/46e7d5ddeb18dba343af4cb52a9e3d1e/transformed/lifecycle-livedata-core-2.8.6/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0ccaa12eea1ac77fed054b4dd194848e/transformed/lifecycle-runtime-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0d480adb20ef41f8de3c2d60b6c660be/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/709635758147d3a019e888da91d81b7b/transformed/lifecycle-viewmodel-savedstate-2.8.6/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/f0b7778204f4535fabbeb48b7fba7923/transformed/lifecycle-viewmodel-ktx-2.8.6/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/1fde386eaaaeef7c471bbeaa5dfac4a4/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/9f09ffa6a5202066bf924f83b4b5d9d6/transformed/lifecycle-service-2.8.6/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/602fdaf5154463d503021583c13b33db/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/72f650628d2cf7fcfe637fd73df98c6b/transformed/material-icons-extended-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/468ccd9b1e146740c1a4025907275436/transformed/material-icons-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/8d8b5f1310e5410cc35fa842f3a60e06/transformed/ui-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.autofill:autofill:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/20d699ac8aeb5e01cf0f19bc0a61ed9a/transformed/autofill-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/parrot/.gradle/caches/8.11.1/transforms/0de02786ee5c476a1d1df153f7750a2c/transformed/graphics-path-1.0.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/f016180ea636e3338179284201b50180/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.core:core-ktx:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/7e99794195d58f2d0b1a613be6192ab5/transformed/core-ktx-1.13.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/048b1bcbb45a3bf685c9a992fb4ee51e/transformed/datastore-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d9be92665d5178863e62db36ac2ca78a/transformed/datastore-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d8f55c83396b546703fee9b20efedb2f/transformed/datastore-preferences-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/9261e8d1f587db50f125ed0abbad61e4/transformed/runtime-saveable-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.runtime:runtime-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/2bb182642bcbb329c772856f35cf5ecd/transformed/runtime-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/parrot/.gradle/caches/8.11.1/transforms/9f0f30e90ba48eb7a1ff49d8fdf44abb/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /home/parrot/.gradle/caches/8.11.1/transforms/d5160c052bb309cea7fcc63024af5921/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/83d7d1ee5f081a28a248f86d2a3e8d6e/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/c17caffc6b5cebdc036509da28e20cf2/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.tracing:tracing:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/e5e8cdbba94436cc9e8007506e1c0401/transformed/tracing-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/parrot/.gradle/caches/8.11.1/transforms/4ed8823c63117fccf6f9c8d68fd5ad3d/transformed/core-runtime-2.2.0/AndroidManifest.xml:17:1-22:12
+	package
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:8:5-67
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:8:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:9:5-79
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:9:22-76
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:10:5-76
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:10:22-73
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:11:5-77
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:11:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_SPECIAL_USE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:12:5-89
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:12:22-86
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:13:5-77
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:13:22-74
+uses-permission#android.permission.WAKE_LOCK
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:14:5-68
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:14:22-65
+uses-permission#android.permission.SYSTEM_ALERT_WINDOW
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:17:5-78
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:17:22-75
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:18:5-71
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:18:22-68
+uses-permission#android.permission.CAMERA
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:19:5-65
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:19:22-62
+uses-permission#android.permission.QUERY_ALL_PACKAGES
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:20:5-21:53
+	tools:ignore
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:21:9-50
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:20:22-74
+uses-permission#android.permission.PACKAGE_USAGE_STATS
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:22:5-23:47
+	tools:ignore
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:23:9-44
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:22:22-75
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:26:5-79
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:26:22-76
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:27:5-81
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:27:22-78
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:30:5-81
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:30:22-78
+uses-permission#android.permission.BLUETOOTH
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:33:5-68
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:33:22-65
+uses-permission#android.permission.BLUETOOTH_CONNECT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:34:5-76
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:34:22-73
+uses-feature#android.hardware.location.gps
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:36:5-91
+	android:required
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:36:64-88
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:36:19-63
+uses-feature#android.hardware.bluetooth
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:37:5-88
+	android:required
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:37:61-85
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:37:19-60
+uses-feature#android.hardware.bluetooth_le
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:38:5-91
+	android:required
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:38:64-88
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:38:19-63
+queries
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:40:5-60:15
+package#com.termux
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:41:9-46
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:41:18-43
+package#com.termux.api
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:42:9-50
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:42:18-47
+package#com.termux.tasker
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:43:9-53
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:43:18-50
+intent#action:name:android.intent.action.SEND+data:mimeType:text/plain
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:44:9-47:18
+action#android.intent.action.SEND
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:45:13-65
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:45:21-62
+data
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:46:13-51
+	android:mimeType
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:46:19-48
+intent#action:name:android.intent.action.SEND+data:mimeType:text/uri-list
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:48:9-51:18
+intent#action:name:android.intent.action.SEND+data:mimeType:image/*
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:52:9-55:18
+intent#action:name:android.intent.action.SEND+data:mimeType:application/*
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:56:9-59:18
+application
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:62:5-309:19
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:62:5-309:19
+MERGED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:28:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/83d7d1ee5f081a28a248f86d2a3e8d6e/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/83d7d1ee5f081a28a248f86d2a3e8d6e/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+	android:extractNativeLibs
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+	android:supportsRtl
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:70:9-35
+	android:label
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:64:9-41
+	android:fullBackupContent
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:68:9-42
+	android:roundIcon
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:66:9-54
+	tools:targetApi
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:72:9-29
+	android:icon
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:65:9-43
+	android:allowBackup
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:67:9-36
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:71:9-45
+	android:dataExtractionRules
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:69:9-65
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:63:9-64
+activity#com.mcpintelligence.fr3k.ui.MainActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:74:9-85:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:78:13-47
+	android:launchMode
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:77:13-44
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:76:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:79:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:80:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:75:13-68
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:81:13-84:29
+action#android.intent.action.MAIN
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:82:17-69
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:82:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:83:17-77
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:83:27-74
+activity#com.mcpintelligence.fr3k.ui.palette.CommandPaletteActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:87:9-97:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:90:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:89:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:92:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:91:13-61
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:88:13-86
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.OPEN_PALETTE+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:93:13-96:29
+action#com.mcpintelligence.fr3k.hud.OPEN_PALETTE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:94:17-84
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:94:25-81
+category#android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:95:17-76
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:95:27-73
+activity#com.mcpintelligence.fr3k.ui.ask.AskAboutThisActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:99:9-109:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:102:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:101:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:104:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:103:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:100:13-80
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.ASK_ABOUT+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:105:13-108:29
+action#com.mcpintelligence.fr3k.hud.ASK_ABOUT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:106:17-81
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:106:25-78
+activity#com.mcpintelligence.fr3k.share.ShareReceiverActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:111:9-134:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:115:13-46
+	android:noHistory
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:114:13-37
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:113:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:117:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:116:13-61
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:112:13-80
+intent-filter#action:name:android.intent.action.SEND+category:name:android.intent.category.DEFAULT+data:mimeType:text/plain+data:mimeType:text/uri-list
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:118:13-123:29
+	android:label
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:118:28-70
+intent-filter#action:name:android.intent.action.SEND+category:name:android.intent.category.DEFAULT+data:mimeType:image/*
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:124:13-128:29
+	android:label
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:124:28-70
+intent-filter#action:name:android.intent.action.SEND+category:name:android.intent.category.DEFAULT+data:mimeType:application/*
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:129:13-133:29
+	android:label
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:129:28-70
+activity#com.mcpintelligence.fr3k.hud.quickhud.QuickHudActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:137:9-147:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:140:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:139:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:142:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:141:13-61
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:138:13-82
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.OPEN_QUICK_HUD+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:143:13-146:29
+action#com.mcpintelligence.fr3k.hud.OPEN_QUICK_HUD
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:144:17-86
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:144:25-83
+activity#com.mcpintelligence.fr3k.ui.screenshot.ScreenshotActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:150:9-160:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:153:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:152:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:155:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:154:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:151:13-85
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.SCREENSHOT+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:156:13-159:29
+action#com.mcpintelligence.fr3k.hud.SCREENSHOT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:157:17-82
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:157:25-79
+activity#com.mcpintelligence.fr3k.ui.clipboard.SmartClipboardActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:163:9-173:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:166:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:165:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:168:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:167:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:164:13-88
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.OPEN_CLIPBOARD+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:169:13-172:29
+action#com.mcpintelligence.fr3k.hud.OPEN_CLIPBOARD
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:170:17-86
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:170:25-83
+activity#com.mcpintelligence.fr3k.ui.automation.AutomationActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:176:9-186:20
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:179:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:178:13-36
+	android:configChanges
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:181:13-113
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:180:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:177:13-85
+intent-filter#action:name:com.mcpintelligence.fr3k.hud.OPEN_AUTOMATION+category:name:android.intent.category.DEFAULT
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:182:13-185:29
+action#com.mcpintelligence.fr3k.hud.OPEN_AUTOMATION
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:183:17-87
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:183:25-84
+activity#com.mcpintelligence.fr3k.ui.diagnostics.DiagnosticsActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:189:9-193:52
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:192:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:191:13-36
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:193:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:190:13-87
+activity#com.mcpintelligence.fr3k.ui.devoverlay.DeveloperOverlayActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:194:9-198:52
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:197:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:196:13-36
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:198:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:195:13-91
+activity#com.mcpintelligence.fr3k.ui.settings.SettingsActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:199:9-203:52
+	android:excludeFromRecents
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:202:13-46
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:201:13-36
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:203:13-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:200:13-81
+activity#com.mcpintelligence.fr3k.ui.handoff.DeviceHandoffActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:204:9-206:40
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:206:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:205:13-85
+activity#com.mcpintelligence.fr3k.hud.LongPressRadialActivity
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:208:9-211:64
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:210:13-37
+	android:theme
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:211:13-61
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:209:13-80
+service#com.mcpintelligence.fr3k.hud.HudOverlayService
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:214:9-221:19
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:216:13-37
+	android:foregroundServiceType
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:217:13-55
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:215:13-74
+property#android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:218:13-220:52
+	android:value
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:220:17-49
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:219:17-76
+service#com.mcpintelligence.fr3k.core.Fr3kCoreService
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:223:9-230:19
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:225:13-37
+	android:foregroundServiceType
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:226:13-55
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:224:13-73
+service#com.mcpintelligence.fr3k.mesh.MeshService
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:232:9-239:19
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:234:13-37
+	android:foregroundServiceType
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:235:13-55
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:233:13-69
+service#com.mcpintelligence.fr3k.location.LocationService
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:241:9-248:19
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:243:13-37
+	android:foregroundServiceType
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:244:13-53
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:242:13-77
+service#com.mcpintelligence.fr3k.hud.quickhud.Fr3kHudTileService
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:251:9-260:19
+	android:label
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:253:13-56
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:256:13-36
+	android:permission
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:255:13-77
+	android:icon
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:254:13-46
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:252:13-84
+intent-filter#action:name:android.service.quicksettings.action.QS_TILE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:257:13-259:29
+action#android.service.quicksettings.action.QS_TILE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:258:17-87
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:258:25-84
+receiver#com.mcpintelligence.fr3k.hud.receivers.ForegroundAppReceiver
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:263:9-265:40
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:265:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:264:13-88
+receiver#com.mcpintelligence.fr3k.hud.receivers.BootReceiver
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:266:9-273:20
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:268:13-36
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:267:13-79
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED+action:name:android.intent.action.QUICKBOOT_POWERON
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:269:13-272:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:270:17-79
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:270:25-76
+action#android.intent.action.QUICKBOOT_POWERON
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:271:17-82
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:271:25-79
+receiver#com.mcpintelligence.fr3k.hud.receivers.NetworkReceiver
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:274:9-282:20
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:276:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:275:13-82
+intent-filter#action:name:android.net.conn.CONNECTIVITY_CHANGE+action:name:android.net.wifi.STATE_CHANGE+action:name:android.net.wifi.WIFI_STATE_CHANGED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:277:13-281:29
+action#android.net.wifi.WIFI_STATE_CHANGED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:278:17-78
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:278:25-75
+action#android.net.wifi.STATE_CHANGE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:279:17-72
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:279:25-69
+action#android.net.conn.CONNECTIVITY_CHANGE
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:280:17-79
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:280:25-76
+receiver#com.mcpintelligence.fr3k.hud.receivers.BluetoothReceiver
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:283:9-290:20
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:285:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:284:13-84
+intent-filter#action:name:android.bluetooth.adapter.action.STATE_CHANGED+action:name:android.bluetooth.device.action.ACL_CONNECTED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:286:13-289:29
+action#android.bluetooth.adapter.action.STATE_CHANGED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:287:17-89
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:287:25-86
+action#android.bluetooth.device.action.ACL_CONNECTED
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:288:17-88
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:288:25-85
+receiver#com.mcpintelligence.fr3k.hud.receivers.ShareReceiverTrigger
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:291:9-298:20
+	android:exported
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:293:13-37
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:292:13-87
+intent-filter#action:name:android.intent.action.SEND+data:mimeType:text/plain
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:294:13-297:29
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:305:13-307:54
+	android:resource
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:307:17-51
+	android:name
+		ADDED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml:306:17-67
+uses-sdk
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+MERGED from [:core] /home/parrot/repos/fr3k-hud/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:core] /home/parrot/repos/fr3k-hud/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:transport] /home/parrot/repos/fr3k-hud/transport/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:transport] /home/parrot/repos/fr3k-hud/transport/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:ui] /home/parrot/repos/fr3k-hud/ui/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:ui] /home/parrot/repos/fr3k-hud/ui/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:protocol] /home/parrot/repos/fr3k-hud/protocol/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:protocol] /home/parrot/repos/fr3k-hud/protocol/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-common:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/f1bbc11a857590bf9a2d29b058616879/transformed/navigation-common-2.8.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/f1bbc11a857590bf9a2d29b058616879/transformed/navigation-common-2.8.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/ad280414b657bc395f9a9274dd8efb32/transformed/navigation-runtime-2.8.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/ad280414b657bc395f9a9274dd8efb32/transformed/navigation-runtime-2.8.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/0f542737dea884a529b0d2d76d7144ee/transformed/navigation-common-ktx-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/0f542737dea884a529b0d2d76d7144ee/transformed/navigation-common-ktx-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/5245650d6c90b5fede098b41a0197f80/transformed/navigation-runtime-ktx-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/5245650d6c90b5fede098b41a0197f80/transformed/navigation-runtime-ktx-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/a76158bc75d3f088875a4b49d1d536dd/transformed/navigation-compose-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.8.3] /home/parrot/.gradle/caches/8.11.1/transforms/a76158bc75d3f088875a4b49d1d536dd/transformed/navigation-compose-2.8.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/4750d8d192dd227cee2a9642f04746ba/transformed/activity-1.9.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/4750d8d192dd227cee2a9642f04746ba/transformed/activity-1.9.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/354509d23462e09e853a1b59b6daeee9/transformed/activity-ktx-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/354509d23462e09e853a1b59b6daeee9/transformed/activity-ktx-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/7f5532479d118f232c56cd34d706bd3a/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/7f5532479d118f232c56cd34d706bd3a/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material:material-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/fdb335ae475767e58ab1e3c5f8067eed/transformed/material-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/fdb335ae475767e58ab1e3c5f8067eed/transformed/material-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/75775ba19ab859c8b9979d1d06c39e01/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/75775ba19ab859c8b9979d1d06c39e01/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/359adcd10e15726a9a6b3a47c6231f54/transformed/foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/359adcd10e15726a9a6b3a47c6231f54/transformed/foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/a5db98d3b7eed3d082bb2a033a18f25d/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/a5db98d3b7eed3d082bb2a033a18f25d/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/4d981f6790c9b451440b5ea2499c1d3b/transformed/animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/4d981f6790c9b451440b5ea2499c1d3b/transformed/animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/176fb70e19ca04f407a0280f73d14257/transformed/animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/176fb70e19ca04f407a0280f73d14257/transformed/animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/41a4fab5a05c80d3f227781127a54ac7/transformed/ui-tooling-data-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/41a4fab5a05c80d3f227781127a54ac7/transformed/ui-tooling-data-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/f4adbee49cea4e4f2987526a7834b447/transformed/ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/f4adbee49cea4e4f2987526a7834b447/transformed/ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/c9a5d8669a982a4b864ef0bc1f385faa/transformed/ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/c9a5d8669a982a4b864ef0bc1f385faa/transformed/ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/967c2f2e42fcc2dd2339a038de613624/transformed/ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/967c2f2e42fcc2dd2339a038de613624/transformed/ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/cc37a14dd13e712750ecf6473c6b79ad/transformed/ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/cc37a14dd13e712750ecf6473c6b79ad/transformed/ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/930647908260ad8e4b8abcabb8c88108/transformed/ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/930647908260ad8e4b8abcabb8c88108/transformed/ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/94d4013d797166e75f271127f34b5a4a/transformed/ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/94d4013d797166e75f271127f34b5a4a/transformed/ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/e526f872b1b71822f1c52dbbefc49404/transformed/activity-compose-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/parrot/.gradle/caches/8.11.1/transforms/e526f872b1b71822f1c52dbbefc49404/transformed/activity-compose-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/e2b30ee6685858e8be7086e13809694f/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/e2b30ee6685858e8be7086e13809694f/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/0023db73c2ea55155e4629d646c4578f/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/parrot/.gradle/caches/8.11.1/transforms/0023db73c2ea55155e4629d646c4578f/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/fdd7c695723badd2bc6d99bfebf0af80/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/fdd7c695723badd2bc6d99bfebf0af80/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/46e7d5ddeb18dba343af4cb52a9e3d1e/transformed/lifecycle-livedata-core-2.8.6/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/46e7d5ddeb18dba343af4cb52a9e3d1e/transformed/lifecycle-livedata-core-2.8.6/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0ccaa12eea1ac77fed054b4dd194848e/transformed/lifecycle-runtime-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0ccaa12eea1ac77fed054b4dd194848e/transformed/lifecycle-runtime-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0d480adb20ef41f8de3c2d60b6c660be/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/0d480adb20ef41f8de3c2d60b6c660be/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/709635758147d3a019e888da91d81b7b/transformed/lifecycle-viewmodel-savedstate-2.8.6/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/709635758147d3a019e888da91d81b7b/transformed/lifecycle-viewmodel-savedstate-2.8.6/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/f0b7778204f4535fabbeb48b7fba7923/transformed/lifecycle-viewmodel-ktx-2.8.6/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/f0b7778204f4535fabbeb48b7fba7923/transformed/lifecycle-viewmodel-ktx-2.8.6/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/1fde386eaaaeef7c471bbeaa5dfac4a4/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/1fde386eaaaeef7c471bbeaa5dfac4a4/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/9f09ffa6a5202066bf924f83b4b5d9d6/transformed/lifecycle-service-2.8.6/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/9f09ffa6a5202066bf924f83b4b5d9d6/transformed/lifecycle-service-2.8.6/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/602fdaf5154463d503021583c13b33db/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/602fdaf5154463d503021583c13b33db/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/72f650628d2cf7fcfe637fd73df98c6b/transformed/material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/72f650628d2cf7fcfe637fd73df98c6b/transformed/material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/468ccd9b1e146740c1a4025907275436/transformed/material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/468ccd9b1e146740c1a4025907275436/transformed/material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/8d8b5f1310e5410cc35fa842f3a60e06/transformed/ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/8d8b5f1310e5410cc35fa842f3a60e06/transformed/ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.autofill:autofill:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/20d699ac8aeb5e01cf0f19bc0a61ed9a/transformed/autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.autofill:autofill:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/20d699ac8aeb5e01cf0f19bc0a61ed9a/transformed/autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/parrot/.gradle/caches/8.11.1/transforms/0de02786ee5c476a1d1df153f7750a2c/transformed/graphics-path-1.0.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/parrot/.gradle/caches/8.11.1/transforms/0de02786ee5c476a1d1df153f7750a2c/transformed/graphics-path-1.0.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/f016180ea636e3338179284201b50180/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/f016180ea636e3338179284201b50180/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.core:core-ktx:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/7e99794195d58f2d0b1a613be6192ab5/transformed/core-ktx-1.13.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/7e99794195d58f2d0b1a613be6192ab5/transformed/core-ktx-1.13.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/048b1bcbb45a3bf685c9a992fb4ee51e/transformed/datastore-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/048b1bcbb45a3bf685c9a992fb4ee51e/transformed/datastore-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d9be92665d5178863e62db36ac2ca78a/transformed/datastore-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d9be92665d5178863e62db36ac2ca78a/transformed/datastore-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d8f55c83396b546703fee9b20efedb2f/transformed/datastore-preferences-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/d8f55c83396b546703fee9b20efedb2f/transformed/datastore-preferences-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/9261e8d1f587db50f125ed0abbad61e4/transformed/runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/9261e8d1f587db50f125ed0abbad61e4/transformed/runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/2bb182642bcbb329c772856f35cf5ecd/transformed/runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/2bb182642bcbb329c772856f35cf5ecd/transformed/runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/parrot/.gradle/caches/8.11.1/transforms/9f0f30e90ba48eb7a1ff49d8fdf44abb/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/parrot/.gradle/caches/8.11.1/transforms/9f0f30e90ba48eb7a1ff49d8fdf44abb/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /home/parrot/.gradle/caches/8.11.1/transforms/d5160c052bb309cea7fcc63024af5921/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /home/parrot/.gradle/caches/8.11.1/transforms/d5160c052bb309cea7fcc63024af5921/transformed/security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/83d7d1ee5f081a28a248f86d2a3e8d6e/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/83d7d1ee5f081a28a248f86d2a3e8d6e/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/c17caffc6b5cebdc036509da28e20cf2/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/c17caffc6b5cebdc036509da28e20cf2/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.tracing:tracing:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/e5e8cdbba94436cc9e8007506e1c0401/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.tracing:tracing:1.0.0] /home/parrot/.gradle/caches/8.11.1/transforms/e5e8cdbba94436cc9e8007506e1c0401/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/parrot/.gradle/caches/8.11.1/transforms/4ed8823c63117fccf6f9c8d68fd5ad3d/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/parrot/.gradle/caches/8.11.1/transforms/4ed8823c63117fccf6f9c8d68fd5ad3d/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+	android:targetSdkVersion
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/parrot/repos/fr3k-hud/app/src/main/AndroidManifest.xml
+activity#androidx.activity.ComponentActivity
+ADDED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:23:9-25:39
+	android:exported
+		ADDED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:25:13-36
+	android:name
+		ADDED from [androidx.compose.ui:ui-test-manifest:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/af700c6e2c04fc769ed212cfa3761a15/transformed/ui-test-manifest-1.7.5/AndroidManifest.xml:24:13-63
+activity#androidx.compose.ui.tooling.PreviewActivity
+ADDED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:23:9-25:39
+	android:exported
+		ADDED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:25:13-36
+	android:name
+		ADDED from [androidx.compose.ui:ui-tooling-android:1.7.5] /home/parrot/.gradle/caches/8.11.1/transforms/d550316b92e0629862a483c179fad80d/transformed/ui-tooling-release/AndroidManifest.xml:24:13-71
+provider#androidx.startup.InitializationProvider
+ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/parrot/.gradle/caches/8.11.1/transforms/9639d3a9b1e0387a9e68ed591cb61484/transformed/startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:28:13-31
+	android:authorities
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:26:13-68
+	android:exported
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:25:13-67
+meta-data#androidx.emoji2.text.EmojiCompatInitializer
+ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/parrot/.gradle/caches/8.11.1/transforms/1a17acba36817f533dcd33d5ee8aa4ee/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+meta-data#androidx.lifecycle.ProcessLifecycleInitializer
+ADDED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.lifecycle:lifecycle-process:2.8.6] /home/parrot/.gradle/caches/8.11.1/transforms/2010e4e6f56c0a5f632b6f0fab78ac19/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:30:17-78
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+permission#com.mcpintelligence.fr3k.hud.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+uses-permission#com.mcpintelligence.fr3k.hud.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/parrot/.gradle/caches/8.11.1/transforms/775f228d4366ea1b0fced6de4a5ec38a/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+meta-data#androidx.profileinstaller.ProfileInstallerInitializer
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+receiver#androidx.profileinstaller.ProfileInstallReceiver
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+	android:enabled
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+	android:permission
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+	android:directBootAware
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+intent-filter#action:name:androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+action#androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+intent-filter#action:name:androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+action#androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+intent-filter#action:name:androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+action#androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+intent-filter#action:name:androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+action#androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/parrot/.gradle/caches/8.11.1/transforms/4b915fd5a3805d16a3cef9753f7f175e/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92

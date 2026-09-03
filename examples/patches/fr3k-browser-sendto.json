@@ -1,0 +1,13 @@
+{
+  "id": "fr3k-browser-sendto",
+  "name": "FR3K Send-to-HUD",
+  "description": "Adds a 'Send to FR3K' menu item and an 'Ask FR3K' long-press to the system browser share sheet.",
+  "target_package": "com.android.chrome",
+  "supported_versions": ["128.0.6613.88", "129.0.6668.42"],
+  "fingerprint": "sha256:a1b2c3d4e5f60718293a4b5c6d7e8f9001a2b3c4d5e6f70819203a4b5c6d7e8f",
+  "menu_items": [
+    "share.send_to_fr3k",
+    "share.ask_fr3k",
+    "share.clean_url"
+  ]
+}
