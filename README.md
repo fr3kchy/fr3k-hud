@@ -85,3 +85,24 @@ Read order:
 ## License
 
 Internal — mcpintelligence.com.au.
+## Floating HUD — Hitomi-style overlay family
+
+FR3K HUD uses the same architectural pattern as `Decentricity/hitomi-android` — a single foreground service that owns multiple `WindowManager` overlay windows instead of a single Activity surface.
+
+- **Orb** — 36 dp circular launcher at the top-left edge. Tap → quick HUD panel. Long-press → radial menu. Double-tap → command palette. Swipe up → fleet. Swipe down → screenshot. Drag → move. Drop on X → close. Drop off-screen → hide to edge-arc (tap arc to restore).
+- **Chat bubble** — Clippy-style tail, drift input, send button. Routed to Hermes.
+- **Mini-browser** — `WebView` overlay for URL-centric ask/share flows.
+- **Terminal** — green-on-black `stdout` / `stderr` view, fed by the Termux bridge.
+- **Edge arc + X-target** — visible only while the orb is being dragged; magnet on release.
+- **Particle link** — visualises the connection between orb and the most recently activated overlay during drag.
+
+### Driving overlays
+
+The HUD service exposes a `BroadcastReceiver` so adb, automation, or extension packages can drive overlay state without owning the foreground service:
+
+```bash
+adb shell am broadcast -a com.mcpintelligence.fr3k.hud.OPEN_CHAT
+adb shell am broadcast -a com.mcpintelligence.fr3k.hud.OPEN_TERMINAL
+adb shell am broadcast -a com.mcpintelligence.fr3k.hud.OPEN_BROWSER --es url https://example.com
+adb shell am broadcast -a com.mcpintelligence.fr3k.hud.STOP
+```
