@@ -68,6 +68,12 @@ class Fr3kHudOrb(
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
             isClickable = true
             isFocusable = true
+            minimumWidth = (36 * context.resources.displayMetrics.density).toInt()
+            minimumHeight = (36 * context.resources.displayMetrics.density).toInt()
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                (36 * context.resources.displayMetrics.density).toInt(),
+                (36 * context.resources.displayMetrics.density).toInt(),
+            )
         }
         val label = TextView(context).apply {
             text = "F3K"
@@ -86,7 +92,12 @@ class Fr3kHudOrb(
             (36 * context.resources.displayMetrics.density).toInt(),
             (36 * context.resources.displayMetrics.density).toInt(),
             type,
-            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+            // NOT_FOCUSABLE    — never steal focus from the activity below.
+            // LAYOUT_NO_LIMITS — can extend past screen edges.
+            // No WATCH_OUTSIDE_TOUCH — touches outside the orb's 36dp
+            // bounds go to the underlying window automatically, so the
+            // radial menu and any other UI stay interactive.
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT,
         ).apply {
@@ -94,7 +105,7 @@ class Fr3kHudOrb(
             x = 80
             y = 200
         }
-        android.util.Log.i("FR3K_HUD", "orb constructed, view=$orbView, params=${params.width}x${params.height}")
+        android.util.Log.i("FR3K", "orb constructed, view=$orbView, params=${params.width}x${params.height}")
     }
 
     fun setGestureListener(l: GestureListener) {
@@ -112,7 +123,7 @@ class Fr3kHudOrb(
             )
             orbView.layout(0, 0, params.width, params.height)
             windowManager.addView(orbView, params)
-            android.util.Log.i("FR3K_HUD", "orb attached at ${params.x},${params.y}, view=${orbView.width}x${orbView.height}")
+            android.util.Log.i("FR3K", "orb attached at ${params.x},${params.y}, view=${orbView.width}x${orbView.height}")
         } catch (e: WindowManager.BadTokenException) {
             Log.e(TAG, "could not add overlay", e)
         }
@@ -143,15 +154,17 @@ class Fr3kHudOrb(
     }
 
     fun installTouchHandler() {
-        android.util.Log.i("FR3K_HUD", "installTouchHandler called, view=${orbView.width}x${orbView.height}, hasListener=${orbView.hasOnClickListeners()}")
-        // Set click listener too — some Android versions route taps via the
-        // click listener when the view is focusable+clickable.
-        orbView.setOnClickListener {
-            android.util.Log.i("FR3K_HUD", "click at listener")
-            listener?.onTap()
-        }
+        android.util.Log.i("FR3K", "installTouchHandler called, view=${orbView.width}x${orbView.height}, hasListener=${orbView.hasOnClickListeners()}")
+        // The orb gesture is handled entirely by setOnTouchListener so we
+        // don't add a setOnClickListener — that would double-fire and steal
+        // the radial's clicks when the touch ends on the orb.
+        //
+        // The window has FLAG_NOT_TOUCH_MODAL so touches outside the orb
+        // pass through to the underlying activity. We only need to handle
+        // touches that actually start *inside* the orb's bounds; outside
+        // touches never reach this listener.
         orbView.setOnTouchListener { _, event ->
-            android.util.Log.i("FR3K_HUD", "touch ${event.action} at ${event.rawX.toInt()},${event.rawY.toInt()}")
+            android.util.Log.i("FR3K", "touch ${event.action} at ${event.rawX.toInt()},${event.rawY.toInt()}")
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params.x

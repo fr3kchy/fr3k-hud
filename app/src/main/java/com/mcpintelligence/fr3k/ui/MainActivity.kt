@@ -53,6 +53,7 @@ import com.mcpintelligence.fr3k.ui.clipboard.SmartClipboardActivity
 import com.mcpintelligence.fr3k.ui.devoverlay.DeveloperOverlayActivity
 import com.mcpintelligence.fr3k.ui.diagnostics.DiagnosticsActivity
 import com.mcpintelligence.fr3k.ui.handoff.DeviceHandoffActivity
+import com.mcpintelligence.fr3k.ui.integrations.IntegrationsActivity
 import com.mcpintelligence.fr3k.ui.palette.CommandPaletteActivity
 import com.mcpintelligence.fr3k.ui.screenshot.ScreenshotActivity
 import com.mcpintelligence.fr3k.ui.settings.SettingsActivity
@@ -375,6 +376,9 @@ private fun SecondaryActions(activity: ComponentActivity) {
     Fr3kPanel(title = "more surfaces") {
         Column {
             SecondaryRow("QUICK HUD PANEL") { activity.startActivity(Intent(activity, QuickHudActivity::class.java)) }
+            SecondaryRow("INTEGRATIONS · TERMUX/SHIZUKU/LSPATCH/MORPHE/ROOT") {
+                activity.startActivity(Intent(activity, IntegrationsActivity::class.java))
+            }
             SecondaryRow("AUTOMATION") { activity.startActivity(Intent(activity, AutomationActivity::class.java)) }
             SecondaryRow("OPEN ON…") { activity.startActivity(Intent(activity, DeviceHandoffActivity::class.java)) }
             SecondaryRow("DEVELOPER OVERLAY") { activity.startActivity(Intent(activity, DeveloperOverlayActivity::class.java)) }

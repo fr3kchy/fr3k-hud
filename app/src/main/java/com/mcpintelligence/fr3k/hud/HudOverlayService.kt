@@ -71,9 +71,16 @@ class HudOverlayService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_OPEN_CHAT -> overlays.openChat()
-            ACTION_OPEN_BROWSER -> overlays.openBrowser(intent.getStringExtra(EXTRA_URL))
-            ACTION_OPEN_TERMINAL -> overlays.openTerminal()
+            ACTION_OPEN_CHAT,
+            "com.mcpintelligence.fr3k.hud.OPEN_CHAT_OVERLAY" -> overlays.openChat()
+            ACTION_OPEN_BROWSER,
+            "com.mcpintelligence.fr3k.hud.OPEN_BROWSER_OVERLAY" -> overlays.openBrowser(intent.getStringExtra(EXTRA_URL))
+            ACTION_OPEN_TERMINAL,
+            "com.mcpintelligence.fr3k.hud.OPEN_TERMINAL_OVERLAY" -> overlays.openTerminal()
+            ACTION_HIDE_CHAT -> overlays.chatBubble.hide()
+            ACTION_HIDE_BROWSER -> overlays.miniBrowser.hide()
+            ACTION_HIDE_TERMINAL -> overlays.terminal.hide()
+            ACTION_HIDE_ALL -> overlays.hideAll()
             ACTION_STOP -> stopSelf()
         }
         return START_STICKY
@@ -121,6 +128,10 @@ class HudOverlayService : Service() {
             addAction(ACTION_OPEN_CHAT)
             addAction(ACTION_OPEN_BROWSER)
             addAction(ACTION_OPEN_TERMINAL)
+            addAction(ACTION_HIDE_CHAT)
+            addAction(ACTION_HIDE_BROWSER)
+            addAction(ACTION_HIDE_TERMINAL)
+            addAction(ACTION_HIDE_ALL)
             addAction(ACTION_STOP)
         }
         if (Build.VERSION.SDK_INT >= 33) {
@@ -136,6 +147,10 @@ class HudOverlayService : Service() {
                 ACTION_OPEN_CHAT -> overlays.openChat()
                 ACTION_OPEN_BROWSER -> overlays.openBrowser(intent.getStringExtra(EXTRA_URL))
                 ACTION_OPEN_TERMINAL -> overlays.openTerminal()
+                ACTION_HIDE_CHAT -> overlays.chatBubble.hide()
+                ACTION_HIDE_BROWSER -> overlays.miniBrowser.hide()
+                ACTION_HIDE_TERMINAL -> overlays.terminal.hide()
+                ACTION_HIDE_ALL -> overlays.hideAll()
                 ACTION_STOP -> stopSelf()
             }
         }
@@ -143,20 +158,20 @@ class HudOverlayService : Service() {
 
     private val gestureListener = object : Fr3kHudOrb.GestureListener {
         override fun onTap() {
-            Log.i("FR3K_HUD", "orb tap")
+            Log.i("FR3K", "orb tap")
             val i = Intent(this@HudOverlayService, QuickHudActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(i)
         }
         override fun onDoubleTap() {
-            Log.i("FR3K_HUD", "orb double tap")
+            Log.i("FR3K", "orb double tap")
             startActivity(
                 Intent(this@HudOverlayService, CommandPaletteActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         }
         override fun onLongPress() {
-            Log.i("FR3K_HUD", "orb long press")
+            Log.i("FR3K", "orb long press")
             scope.launch(Dispatchers.Main) { showRadialMenu() }
         }
         override fun onSwipeUp() {
@@ -240,6 +255,10 @@ class HudOverlayService : Service() {
         const val ACTION_OPEN_CHAT = "com.mcpintelligence.fr3k.hud.OPEN_CHAT"
         const val ACTION_OPEN_BROWSER = "com.mcpintelligence.fr3k.hud.OPEN_BROWSER"
         const val ACTION_OPEN_TERMINAL = "com.mcpintelligence.fr3k.hud.OPEN_TERMINAL"
+        const val ACTION_HIDE_CHAT = "com.mcpintelligence.fr3k.hud.HIDE_CHAT"
+        const val ACTION_HIDE_BROWSER = "com.mcpintelligence.fr3k.hud.HIDE_BROWSER"
+        const val ACTION_HIDE_TERMINAL = "com.mcpintelligence.fr3k.hud.HIDE_TERMINAL"
+        const val ACTION_HIDE_ALL = "com.mcpintelligence.fr3k.hud.HIDE_ALL"
         const val ACTION_STOP = "com.mcpintelligence.fr3k.hud.STOP"
         const val EXTRA_URL = "url"
         private const val NID = 101

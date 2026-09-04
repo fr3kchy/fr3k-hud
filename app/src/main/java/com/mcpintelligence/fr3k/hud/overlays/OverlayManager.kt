@@ -18,6 +18,7 @@ class OverlayManager(context: Context) {
     val chatBubble by lazy { Fr3kChatBubble(host) }
     val browser by lazy { Fr3kMiniBrowserOverlay(host) }
     val terminal by lazy { Fr3kTerminalOverlay(host) }
+    val miniBrowser get() = browser
     val exitTarget by lazy { Fr3kExitTarget(host) { closeAll() } }
     val edgeArc by lazy { Fr3kEdgeArc(host) { restoreOrb() } }
     val particle by lazy { Fr3kParticleLink(host) }
@@ -30,6 +31,9 @@ class OverlayManager(context: Context) {
         lightParticleTo(browser.rootView())
     }
     fun openTerminal() { terminal.show(); lightParticleTo(terminal.rootView()) }
+    fun hideAll() {
+        registry.all().forEach { it.hide() }
+    }
     fun closeAll() {
         registry.all().forEach { it.hide() }
     }

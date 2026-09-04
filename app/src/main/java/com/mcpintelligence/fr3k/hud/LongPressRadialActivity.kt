@@ -15,14 +15,16 @@ import android.widget.TextView
 import com.mcpintelligence.fr3k.ui.ask.AskAboutThisActivity
 import com.mcpintelligence.fr3k.ui.devoverlay.DeveloperOverlayActivity
 import com.mcpintelligence.fr3k.ui.diagnostics.DiagnosticsActivity
+import com.mcpintelligence.fr3k.ui.integrations.IntegrationsActivity
 import com.mcpintelligence.fr3k.ui.settings.SettingsActivity
 
 /**
  * Hitomi-style long-press radial menu. Renders as a translucent floating
- * panel that the orb summons when the user holds the orb. Six quick actions:
+ * panel that the orb summons when the user holds the orb.
  *
- *   [open chat]  [open browser]  [open terminal]
- *   [ask]        [diagnostics]   [settings]
+ *   [open chat]   [open browser]   [open terminal]
+ *   [ask]         [integrations]   [diagnostics]
+ *   [dev overlay] [settings]
  *
  * The dialog uses a `dialog`-style theme so it floats, dismisses on outside
  * tap, and does not block the orb.
@@ -34,6 +36,15 @@ class LongPressRadialActivity : Activity() {
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         window.setBackgroundDrawable(GradientDrawable().apply { setColor(0x88000000.toInt()) })
         setContentView(buildContent())
+    }
+
+    private fun openOverlay(action: String, extraUrl: String? = null) {
+        val i = Intent(action).setPackage(packageName)
+        if (extraUrl != null) i.putExtra("url", extraUrl)
+        // Use startService so the HUD service wakes even if the radial was
+        // launched from outside the service process context.
+        startService(i)
+        finish()
     }
 
     private fun buildContent(): View {
@@ -57,6 +68,8 @@ class LongPressRadialActivity : Activity() {
                     (14 * density).toInt(),
                 )
                 background = rowBg
+                isClickable = true
+                isFocusable = true
                 setOnClickListener { action() }
             }
             return tv
@@ -78,50 +91,42 @@ class LongPressRadialActivity : Activity() {
             gap.layoutParams = LinearLayout.LayoutParams(1, (8 * density).toInt())
             addView(gap)
             addView(makeRow("OPEN CHAT BUBBLE") {
-                sendBroadcast(Intent("com.mcpintelligence.fr3k.hud.OPEN_CHAT_OVERLAY")
-                    .setPackage(packageName))
-                finish()
+                openOverlay(HudOverlayService.ACTION_OPEN_CHAT)
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
-            })
+            addView(spacer(density))
             addView(makeRow("OPEN MINI BROWSER") {
-                sendBroadcast(Intent("com.mcpintelligence.fr3k.hud.OPEN_BROWSER_OVERLAY")
-                    .setPackage(packageName))
-                finish()
+                openOverlay(HudOverlayService.ACTION_OPEN_BROWSER, "https://example.com")
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
-            })
+            addView(spacer(density))
             addView(makeRow("OPEN TERMINAL") {
-                sendBroadcast(Intent("com.mcpintelligence.fr3k.hud.OPEN_TERMINAL_OVERLAY")
-                    .setPackage(packageName))
-                finish()
+                openOverlay(HudOverlayService.ACTION_OPEN_TERMINAL)
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
-            })
+            addView(spacer(density))
             addView(makeRow("ASK ABOUT THIS") {
                 startActivity(Intent(this@LongPressRadialActivity, AskAboutThisActivity::class.java))
                 finish()
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
+            addView(spacer(density))
+            addView(makeRow("INTEGRATIONS · TERMUX/LSPATCH/MORPHE") {
+                startActivity(Intent(this@LongPressRadialActivity, IntegrationsActivity::class.java))
+                finish()
             })
+            addView(spacer(density))
             addView(makeRow("DIAGNOSTICS") {
                 startActivity(Intent(this@LongPressRadialActivity, DiagnosticsActivity::class.java))
                 finish()
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
+            addView(spacer(density))
+            addView(makeRow("DEV OVERLAY") {
+                startActivity(Intent(this@LongPressRadialActivity, DeveloperOverlayActivity::class.java))
+                finish()
             })
+            addView(spacer(density))
             addView(makeRow("SETTINGS") {
                 startActivity(Intent(this@LongPressRadialActivity, SettingsActivity::class.java))
                 finish()
             })
-            addView(View(this@LongPressRadialActivity).apply {
-                layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
-            })
+            addView(spacer(density))
             addView(makeRow("CANCEL") { finish() })
         }
 
@@ -130,11 +135,17 @@ class LongPressRadialActivity : Activity() {
             gravity = Gravity.CENTER
             setPadding((24 * density).toInt(), (0 * density).toInt(), (24 * density).toInt(), (0 * density).toInt())
             val params = LinearLayout.LayoutParams(
-                (300 * density).toInt(),
+                (340 * density).toInt(),
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             )
             addView(rows, params)
+            // Background tap dismisses the radial, but the inner rows must
+            // consume the click first — they already do via isClickable=true.
             setOnClickListener { finish() }
         }
+    }
+
+    private fun spacer(density: Float): View = View(this).apply {
+        layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
     }
 }

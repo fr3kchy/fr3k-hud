@@ -39,13 +39,18 @@ class TermuxBridge(private val context: Context) {
         val pkg = "com.termux"
         return try {
             context.packageManager.getPackageInfo(pkg, 0)
-            // We also need the RUN_COMMAND permission explicitly by Termux,
-            // but Termux:API grants it dynamically on first accept.
-            hasRunCommandPermission() || true
+            true
         } catch (_: PackageManager.NameNotFoundException) {
             false
         }
     }
+
+    /**
+     * True when Termux is installed AND the user has explicitly granted our
+     * package `com.termux.permission.RUN_COMMAND`. Until both are satisfied
+     * `runRaw` will refuse to fire.
+     */
+    fun isUsable(): Boolean = isAvailable() && hasRunCommandPermission()
 
     /** True only when Termux has explicitly granted our package RUN_COMMAND. */
     fun hasRunCommandPermission(): Boolean {
@@ -77,45 +82,47 @@ class TermuxBridge(private val context: Context) {
     }
 
     /**
-     * Run a raw command via Termux:API. The command is shipped via an
-     * Intent broadcast — Termux:API executes it and posts results back. For
-     * V1 we send + wait synchronously on the IO dispatcher.
+     * Run a raw command via Termux:API. Sends an `am broadcast` with the
+     * `com.termux.RUN_COMMAND` intent — the modern Termux:API path — and
+     * captures the result broadcast on a counting latch.
      */
     fun runRaw(command: String, timeoutMs: Long = 8000): Result {
-        if (!isAvailable()) {
-            return Result("", "termux not available — see grant instructions", 127)
+        if (!isUsable()) {
+            val why = if (!isAvailable()) "termux not installed"
+            else "RUN_COMMAND permission not granted — see grantInstructions()"
+            return Result("", why, 127)
         }
         return try {
-            val api = Intent()
-            api.component = ComponentName("com.termux", "com.termux.api.RunCommandService")
-            api.putExtra("com.termux.api.RunCommandService.command", "sh")
-            api.putExtra("com.termux.api.RunCommandService.args", arrayOf("-c", command))
-            api.putExtra("com.termux.api.RunCommandService.background", false)
-            // Wait synchronously using a counting latch is the simplest reliable
-            // shape — Termux:API broadcasts the result and we capture it.
+            val api = Intent("com.termux.RUN_COMMAND")
+            api.setPackage("com.termux")
+            api.putExtra("com.termux.RUN_COMMAND.workingDirectory", "/data/data/com.termux/files/home")
+            api.putExtra("com.termux.RUN_COMMAND.path", "/system/bin/sh")
+            api.putExtra("com.termux.RUN_COMMAND.command", "sh")
+            api.putExtra("com.termux.RUN_COMMAND.args", arrayOf("-c", command))
+            api.putExtra("com.termux.RUN_COMMAND.background", false)
             val latch = java.util.concurrent.CountDownLatch(1)
             val results = arrayOfNulls<String>(1)
             val receiver = object : android.content.BroadcastReceiver() {
                 override fun onReceive(ctx: Context?, intent: Intent?) {
-                    if (intent?.action == "com.termux.api.RUN_COMMAND_RESULT") {
-                        val out = intent.getStringExtra("com.termux.api.RUN_COMMAND_RESULT.stdout") ?: ""
-                        val err = intent.getStringExtra("com.termux.api.RUN_COMMAND_RESULT.stderr") ?: ""
-                        val code = intent.getIntExtra("com.termux.api.RUN_COMMAND_RESULT.exitCode", -1)
+                    if (intent?.action == "com.termux.RUN_COMMAND_RESULT") {
+                        val out = intent.getStringExtra("com.termux.RUN_COMMAND_RESULT.stdout") ?: ""
+                        val err = intent.getStringExtra("com.termux.RUN_COMMAND_RESULT.stderr") ?: ""
+                        val code = intent.getIntExtra("com.termux.RUN_COMMAND_RESULT.exitCode", -1)
                         results[0] = "STDOUT:$out\nSTDERR:$err\nEXIT:$code"
                         latch.countDown()
                     }
                 }
             }
-            val filter = android.content.IntentFilter("com.termux.api.RUN_COMMAND_RESULT")
+            val filter = android.content.IntentFilter("com.termux.RUN_COMMAND_RESULT")
             if (Build.VERSION.SDK_INT >= 33) {
                 context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
             } else {
                 @Suppress("UnspecifiedRegisterReceiverFlag")
                 context.registerReceiver(receiver, filter)
             }
-            context.startService(api)
+            context.sendBroadcast(api)
             val ok = latch.await(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
-            context.unregisterReceiver(receiver)
+            runCatching { context.unregisterReceiver(receiver) }
             if (!ok || results[0] == null) {
                 return Result("", "timeout after ${timeoutMs}ms", 124)
             }

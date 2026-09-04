@@ -32,6 +32,33 @@
     <!-- Bluetooth + network state for automation triggers -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <!-- Foreground service types required by API 34+ when the service
+         actually does the work that needs the perm (location, mic, media
+         projection, device-attached). We only declare the ones we use. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <!-- Storage / media read -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- Notification listener (for broadcast trigger routing) -->
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- Termux:API RUN_COMMAND — the permission Termux:API grants at runtime
+         via its in-Termux dialog. We declare the <uses-permission> so the
+         app can call checkSelfPermission. -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
+
+    <!-- Shizuku Tier-2 — optional, only used if installed. We don't depend
+         on the Shizuku AAR (keeps the APK slim); we talk to the running
+         Shizuku service via reflection-style Intent when present. -->
 
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
@@ -41,6 +68,11 @@
         <package android:name="com.termux" />
         <package android:name="com.termux.api" />
         <package android:name="com.termux.tasker" />
+        <package android:name="moe.shizuku.api.permission" />
+        <package android:name="com.itsaky.lspatch" />
+        <package android:name="org.lsposed.lspatch" />
+        <package android:name="io.github.jingmatrix.lspatch" />
+        <package android:name="org.lsposed.manager" />
         <intent>
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="text/plain" />
@@ -209,6 +241,12 @@
             android:name="com.mcpintelligence.fr3k.hud.LongPressRadialActivity"
             android:exported="false"
             android:theme="@style/Theme.Fr3kHud.Transparent" />
+
+        <activity
+            android:name="com.mcpintelligence.fr3k.ui.integrations.IntegrationsActivity"
+            android:exported="false"
+            android:label="FR3K · Integrations"
+            android:theme="@style/Theme.Fr3kHud" />
 
         <!-- HUD overlay service (Tier 1 — overlay permission)   -->
         <service
