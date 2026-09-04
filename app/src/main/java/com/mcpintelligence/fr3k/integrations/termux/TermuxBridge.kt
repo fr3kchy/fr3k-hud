@@ -8,6 +8,11 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import java.io.File
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Termux bridge (§17). Talks to Termux:API over `com.termux.RUN_COMMAND`
@@ -50,8 +55,7 @@ class TermuxBridge(private val context: Context) {
      * package `com.termux.permission.RUN_COMMAND`. Until both are satisfied
      * `runRaw` will refuse to fire.
      */
-    fun isUsable(): Boolean = isAvailable() &&
-        (hasRunCommandPermission() || probeAuthorisation())
+    fun isUsable(): Boolean = isAvailable() && hasRunCommandPermission()
 
     /**
      * Authoritative "can we run a command" check. Sends a
@@ -158,62 +162,57 @@ class TermuxBridge(private val context: Context) {
         return runRaw(cmd, timeoutMs = 15000)
     }
 
-    /**
-     * Run a raw command via Termux:API. Sends an `am broadcast` with the
-     * `com.termux.RUN_COMMAND` intent — the modern Termux:API path — and
-     * captures the result broadcast on a counting latch.
-     */
+    /** Run a command through Termux's documented RunCommandService contract. */
     fun runRaw(command: String, timeoutMs: Long = 30_000): Result {
         if (!isUsable()) {
             val why = if (!isAvailable()) "termux not installed"
             else "RUN_COMMAND permission not granted — see grantInstructions()"
             return Result("", why, 127)
         }
+        val id = NEXT_EXECUTION_ID.incrementAndGet()
+        val future = CompletableFuture<Result>()
+        pending[id] = future
         return try {
-            val api = Intent("com.termux.RUN_COMMAND")
-            api.setPackage("com.termux")
-            api.putExtra("com.termux.RUN_COMMAND.workingDirectory", "/data/data/com.termux/files/home")
-            api.putExtra("com.termux.RUN_COMMAND.path", "/system/bin/sh")
-            api.putExtra("com.termux.RUN_COMMAND.command", "sh")
-            api.putExtra("com.termux.RUN_COMMAND.args", arrayOf("-c", command))
-            api.putExtra("com.termux.RUN_COMMAND.background", false)
-            val latch = java.util.concurrent.CountDownLatch(1)
-            val results = arrayOfNulls<String>(1)
-            val receiver = object : android.content.BroadcastReceiver() {
-                override fun onReceive(ctx: Context?, intent: Intent?) {
-                    if (intent?.action == "com.termux.RUN_COMMAND_RESULT") {
-                        val out = intent.getStringExtra("com.termux.RUN_COMMAND_RESULT.stdout") ?: ""
-                        val err = intent.getStringExtra("com.termux.RUN_COMMAND_RESULT.stderr") ?: ""
-                        val code = intent.getIntExtra("com.termux.RUN_COMMAND_RESULT.exitCode", -1)
-                        results[0] = "STDOUT:$out\nSTDERR:$err\nEXIT:$code"
-                        latch.countDown()
-                    }
-                }
+            val callback = Intent(context, TermuxResultReceiver::class.java)
+                .putExtra(TermuxResultReceiver.EXTRA_EXECUTION_ID, id)
+            val callbackIntent = android.app.PendingIntent.getBroadcast(
+                context,
+                id,
+                callback,
+                android.app.PendingIntent.FLAG_ONE_SHOT or
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        android.app.PendingIntent.FLAG_MUTABLE else 0
+            )
+            val run = Intent("com.termux.RUN_COMMAND").apply {
+                setClassName("com.termux", "com.termux.app.RunCommandService")
+                putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/sh")
+                putExtra("com.termux.RUN_COMMAND_ARGUMENTS", arrayOf("-c", command))
+                putExtra("com.termux.RUN_COMMAND_WORKDIR", "/data/data/com.termux/files/home")
+                putExtra("com.termux.RUN_COMMAND_BACKGROUND", true)
+                putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0")
+                putExtra("com.termux.RUN_COMMAND_PENDING_INTENT", callbackIntent)
             }
-            val filter = android.content.IntentFilter("com.termux.RUN_COMMAND_RESULT")
-            if (Build.VERSION.SDK_INT >= 33) {
-                context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
-            } else {
-                @Suppress("UnspecifiedRegisterReceiverFlag")
-                context.registerReceiver(receiver, filter)
-            }
-            context.sendBroadcast(api)
-            val ok = latch.await(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
-            runCatching { context.unregisterReceiver(receiver) }
-            if (!ok || results[0] == null) {
-                return Result("", "timeout after ${timeoutMs}ms", 124)
-            }
-            val parts = results[0]!!.split("\n")
-            val stdout = parts.find { it.startsWith("STDOUT:") }?.removePrefix("STDOUT:") ?: ""
-            val stderr = parts.find { it.startsWith("STDERR:") }?.removePrefix("STDERR:") ?: ""
-            val exit = parts.find { it.startsWith("EXIT:") }?.removePrefix("EXIT:")?.toIntOrNull() ?: -1
-            Result(stdout, stderr, exit)
+            context.startService(run)
+            future.get(timeoutMs, TimeUnit.MILLISECONDS)
+        } catch (_: TimeoutException) {
+            Result("", "timeout after ${timeoutMs}ms", 124)
         } catch (t: Throwable) {
             Log.e(TAG, "runRaw failed", t)
             Result("", t.message ?: t.javaClass.simpleName, 1)
+        } finally {
+            pending.remove(id)
         }
     }
 
+    companion object {
+        private const val TAG = "FR3K.termux"
+        private val NEXT_EXECUTION_ID = AtomicInteger(1000)
+        private val pending = ConcurrentHashMap<Int, CompletableFuture<Result>>()
+
+        internal fun complete(id: Int, result: Result) {
+            pending.remove(id)?.complete(result)
+        }
+    }
     private fun registerDefaultJobs() {
         // Job: git.clone — safe argv construction.
         jobRegistry["git.clone"] = { args ->
@@ -245,5 +244,4 @@ class TermuxBridge(private val context: Context) {
         }
     }
 
-    companion object { private const val TAG = "FR3K.termux" }
 }

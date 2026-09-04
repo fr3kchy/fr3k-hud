@@ -304,6 +304,9 @@
 
         <!-- Broadcast receivers -->
         <receiver
+            android:name="com.mcpintelligence.fr3k.integrations.termux.TermuxResultReceiver"
+            android:exported="false" />
+        <receiver
             android:name="com.mcpintelligence.fr3k.hud.receivers.ForegroundAppReceiver"
             android:exported="false" />
         <receiver

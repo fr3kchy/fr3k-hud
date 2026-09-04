@@ -258,7 +258,12 @@ class Fr3kChatBubble(
             // Header row: title + model picker + TTS toggle + dismiss.
             addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // Transcript body.
-            val transcriptLp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (96+96).dp())
+            // Let the transcript absorb resize deltas. The input row and grip
+            // stay measured at the bottom instead of being clipped by an exact
+            // window height.
+            val transcriptLp = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+            )
             addView(transcript, transcriptLp)
             val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
             addView(sp)
@@ -382,7 +387,7 @@ class Fr3kChatBubble(
     private fun installResizeTouch() {
         val minW = (180 * density).toInt()
         val maxW = (560 * density).toInt()
-        val minH = (200 * density).toInt()
+        val minH = (320 * density).toInt()
         val maxH = (720 * density).toInt()
         var startW = 0
         var startH = 0
@@ -393,7 +398,7 @@ class Fr3kChatBubble(
                 MotionEvent.ACTION_DOWN -> {
                     startW = params.width
                     startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        root.height.takeIf { it > 0 } ?: startH
+                        root.height.takeIf { it > 0 } ?: minH
                     } else params.height
                     startX = event.rawX.toInt()
                     startY = event.rawY.toInt()
@@ -406,14 +411,11 @@ class Fr3kChatBubble(
                     val newH = (startH + dy).coerceIn(minH, maxH)
                     params.width = newW
                     params.height = newH
-                    (root as LinearLayout).let { rl ->
-                        for (i in 0 until rl.childCount) {
-                            val child = rl.getChildAt(i)
-                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
-                                width = newW
-                            }
-                        }
-                    }
+                    // The children already use MATCH_PARENT/weight. Rewriting
+                    // their widths here used to collapse the weighted EditText
+                    // and could hide the entire input row after a resize.
+                    root.layoutParams = root.layoutParams.apply { width = newW }
+                    root.requestLayout()
                     host.update(root, params)
                     true
                 }
