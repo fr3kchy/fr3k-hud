@@ -327,6 +327,41 @@ class Fr3kTerminalOverlay(
                 else -> false
             }
         }
+        // Pinch-to-zoom on the drag handle.
+        val scaleListener = object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                val factor = detector.scaleFactor
+                val newW = (params.width * factor).toInt().coerceIn(minW, maxW)
+                val newH = (params.height * factor).toInt().coerceIn(minH, maxH)
+                if (newW == params.width && newH == params.height) return true
+                params.width = newW
+                params.height = newH
+                host.update(root, params)
+                return true
+            }
+        }
+        val scaleDetector = android.view.ScaleGestureDetector(ctx, scaleListener)
+        dragHandle.setOnTouchListener { _, event ->
+            scaleDetector.onTouchEvent(event)
+            if (event.pointerCount >= 2) return@setOnTouchListener true
+            // 1-finger drag (existing behaviour)
+            var sx = 0; var sy = 0; var dragging = false
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { sx = event.rawX.toInt(); sy = event.rawY.toInt(); dragging = false; true }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - sx
+                    val dy = event.rawY.toInt() - sy
+                    if (!dragging && (dx*dx + dy*dy) > 64) dragging = true
+                    if (dragging) onDragMove(dx, dy)
+                    dragging
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    onDragEnd()
+                    !dragging
+                }
+                else -> false
+            }
+        }
     }
 
     private fun Float.dp(): Float = this * density

@@ -86,20 +86,21 @@ object OverlayParams {
 class OverlayHost(val context: Context, val windowManager: WindowManager) {
     fun remove(view: View) = runCatching { windowManager.removeView(view) }
     fun add(view: View, params: WindowManager.LayoutParams) {
-        // Pre-measure if the view is wrap_content — WindowManager won't
-        // measure for us and we'd otherwise render at 0x0.
-        if (params.width == WindowManager.LayoutParams.WRAP_CONTENT ||
-            params.height == WindowManager.LayoutParams.WRAP_CONTENT) {
-            view.measure(
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-            )
-            if (params.width == WindowManager.LayoutParams.WRAP_CONTENT) {
-                params.width = view.measuredWidth.coerceAtLeast(1)
-            }
-            if (params.height == WindowManager.LayoutParams.WRAP_CONTENT) {
-                params.height = view.measuredHeight.coerceAtLeast(1)
-            }
+        // Pre-measure so the layout has correct dimensions before the window
+        // manager takes over. We pass the params' width/height as EXACTLY so
+        // MATCH_PARENT children inside the view fill the requested size.
+        val widthSpec = if (params.width > 0) {
+            View.MeasureSpec.makeMeasureSpec(params.width, View.MeasureSpec.EXACTLY)
+        } else View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        val heightSpec = if (params.height > 0) {
+            View.MeasureSpec.makeMeasureSpec(params.height, View.MeasureSpec.EXACTLY)
+        } else View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        view.measure(widthSpec, heightSpec)
+        if (params.width == WindowManager.LayoutParams.WRAP_CONTENT) {
+            params.width = view.measuredWidth.coerceAtLeast(1)
+        }
+        if (params.height == WindowManager.LayoutParams.WRAP_CONTENT) {
+            params.height = view.measuredHeight.coerceAtLeast(1)
         }
         runCatching { windowManager.addView(view, params) }
     }

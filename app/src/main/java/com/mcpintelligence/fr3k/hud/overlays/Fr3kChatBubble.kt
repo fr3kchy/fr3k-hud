@@ -111,12 +111,20 @@ class Fr3kChatBubble(
 
         dismiss = Button(ctx).apply {
             text = "×"
-            setTextColor(0xFF8e8a99.toInt())
-            setBackgroundColor(Color.TRANSPARENT)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTextColor(0xFF7d3cff.toInt())
+            setBackgroundColor(0xFF1a1a26.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
             contentDescription = "Dismiss bubble"
-            setPadding(0, 0, (8+14).dp(), 0)
-            setOnClickListener { hide() }
+            // Big square close button — 36dp x 36dp — so it's a real target
+            // and not the tiny ✕ that gets lost in the header.
+            setPadding(0, 0, 0, 0)
+            val closeSize = (36 * density).toInt()
+            layoutParams = android.widget.LinearLayout.LayoutParams(closeSize, closeSize)
+            setOnClickListener {
+                hide()
+                TtsPreference.shutdown()
+            }
         }
 
         // Small "M" button to open the model picker (long-press cycles models).
@@ -247,6 +255,11 @@ class Fr3kChatBubble(
 
         root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
+            // Explicit width on the root so the layout never collapses to
+            // 0px even if the inner children report weird measured sizes.
+            layoutParams = ViewGroup.LayoutParams(
+                320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             addView(bubble.apply {
                 layoutParams = LinearLayout.LayoutParams(
                     320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
@@ -298,7 +311,12 @@ class Fr3kChatBubble(
         var startX = 0
         var startY = 0
         var dragging = false
-        val moveListener = View.OnTouchListener { _, event ->
+        val moveListener = View.OnTouchListener { v, event ->
+            // If a pinch (2+ pointers) is in progress, let the scale
+            // detector take over and skip the drag.
+            if (event.pointerCount >= 2) {
+                return@OnTouchListener false
+            }
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.rawX.toInt()
@@ -374,6 +392,38 @@ class Fr3kChatBubble(
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
                 else -> false
             }
+        }
+
+        // Pinch-to-zoom: two-finger pinch scales both width and height.
+        val scaleListener = object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                val factor = detector.scaleFactor
+                val newW = (params.width * factor).toInt().coerceIn(minW, maxW)
+                val newH = (params.height * factor).toInt().coerceIn(minH, maxH)
+                if (newW == params.width && newH == params.height) return true
+                params.width = newW
+                params.height = newH
+                (root as LinearLayout).let { rl ->
+                    for (i in 0 until rl.childCount) {
+                        val child = rl.getChildAt(i)
+                        if (child.layoutParams is LinearLayout.LayoutParams) {
+                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
+                                width = newW
+                            }
+                        }
+                    }
+                }
+                host.update(root, params)
+                return true
+            }
+        }
+        val scaleDetector = android.view.ScaleGestureDetector(host.context, scaleListener)
+        // Wire the pinch detector on the root view. Multi-touch flows
+        // through the same listener, but drag is the dominant gesture
+        // so they coexist.
+        root.setOnTouchListener { _, event ->
+            scaleDetector.onTouchEvent(event)
+            false
         }
     }
 
