@@ -10,7 +10,10 @@ import com.mcpintelligence.fr3k.hud.overlays.FrappeOverlayRegistry
  * `HedgehogOverlayService` keeps references to hedgehog / bubble / browser /
  * solana / terminal / exitTargetView / edgeTabView / particleLinkView.
  */
-class OverlayManager(context: Context) {
+class OverlayManager(
+    context: Context,
+    private val onEdgeRestoreRequested: () -> Unit,
+) {
 
     private val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val host = OverlayHost(context, wm)
@@ -20,7 +23,7 @@ class OverlayManager(context: Context) {
     val terminal by lazy { Fr3kTerminalOverlay(host) }
     val miniBrowser get() = browser
     val exitTarget by lazy { Fr3kExitTarget(host) { closeAll() } }
-    val edgeArc by lazy { Fr3kEdgeArc(host) { restoreOrb() } }
+    val edgeArc by lazy { Fr3kEdgeArc(host) { onEdgeRestoreRequested() } }
     val particle by lazy { Fr3kParticleLink(host) }
     val radial by lazy { RadialMenuOverlay(host) }
 
@@ -78,9 +81,6 @@ class OverlayManager(context: Context) {
         particle.setAnchors(orbX, orbY, loc[0] + targetView.width / 2, loc[1] + targetView.height / 2)
     }
 
-    private fun restoreOrb() {
-        // The orb service listens for "edge-arc tap" via the manager.
-    }
 
     fun shutdown() {
         registry.all().forEach {

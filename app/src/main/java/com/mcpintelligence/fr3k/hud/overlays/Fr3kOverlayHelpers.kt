@@ -136,6 +136,14 @@ class Fr3kEdgeArc(
             setOnClickListener { onRestoreRequested() }
         }
         root = FrameLayout(ctx).apply {
+            // Some OEM window managers deliver taps to the overlay root but
+            // not to a centred child when the window is flush with an edge.
+            // Make the full arc window the hit target as well as the visual
+            // child so restore works reliably on physical devices.
+            isClickable = true
+            isFocusable = true
+            contentDescription = "Restore FR3K orb"
+            setOnClickListener { onRestoreRequested() }
             addView(arc, FrameLayout.LayoutParams((8+14).dp(), (64+14).dp(), Gravity.CENTER))
         }
         params = WindowManager.LayoutParams(

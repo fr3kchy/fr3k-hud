@@ -60,7 +60,7 @@ class HudOverlayService : Service() {
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        overlays = OverlayManager(this)
+        overlays = OverlayManager(this) { restoreOrbFromEdge() }
         orb = Fr3kHudOrb(this, windowManager)
         // CRITICAL: on API 34+ (Android 14), TYPE_APPLICATION_OVERLAY windows
         // from a service are KILLED if startForeground() has not been called
