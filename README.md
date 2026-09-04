@@ -77,6 +77,9 @@ Read order:
 | 13 | Continue basic operation without internet | ✅ | Hermes fallback + local-only paths |
 | 14 | Continue core operation without Shizuku | ✅ | Shizuku not required for V1 |
 | 15 | Continue core operation without root | ✅ | Zero root assumptions in code |
+| 16 | Live integration panel (Termux / Shizuku / LSPatch / Morphe / Vector-root) | ✅ | `IntegrationsActivity` — every tier shows install/grant/state with one-tap smoke test |
+| 17 | One-tap "GRANT ALL" runtime permissions | ✅ | `PermissionRegistry.runtimeNotGranted` + `IntegrationsActivity` top row |
+| 18 | Per-feature permission registry (HUD/STT/GPS/BT/Storage/MicProjection/Notification/…) | ✅ | `PermissionRegistry.permissionsFor(Feature)` |
 
 🟡 = wired architecturally, full implementation in V2 / V3.
 
@@ -106,3 +109,29 @@ adb shell am broadcast -a com.mcpintelligence.fr3k.hud.OPEN_TERMINAL
 adb shell am broadcast -a com.mcpintelligence.fr3k.hud.OPEN_BROWSER --es url https://example.com
 adb shell am broadcast -a com.mcpintelligence.fr3k.hud.STOP
 ```
+
+## Integrations — five tiers, one panel
+
+`IntegrationsActivity` (long-press the orb → radial → **INTEGRATIONS**) is the single surface that shows the live state of every partner FR3K HUD can talk to, with one-tap actions for each tier.
+
+| Tier | Adapter | Install detection | Grant detection | Smoke test |
+|------|---------|-------------------|------------------|------------|
+| 1 | **Termux** (`TermuxBridge`) | `PackageManager` lookup on `com.termux` + `com.termux.api` | `RUN_COMMAND` permission + Termux:API presence | `echo hi-from-fr3k-<n>` via `am broadcast com.termux.RUN_COMMAND` |
+| 2 | **Shizuku** (`ShizukuAdapter`) | `moe.shizuku.api` package | `Binder.pingBinder()` to the live Shizuku service | `pingBinder` |
+| 3 | **LSPatch** (`LspatchAdapter`) | LSPosed manager package | `getInstalledApplications` for the FR3K announce filter | `announceToModules()` |
+| 3 | **Morphe** (`MorphePatchRepository`) | JSON patch repo under `assets/morphe/` | SHA-256 verified on load | `loadAllAvailable()` |
+| 4 | **Vector / root** (`VectorAdapter`) | `probeRoot()` over `/system/bin/su`, `/system/xbin/su`, `/sbin/su` | exec test `su -c id` | `runRootedShell("id")` |
+
+### Auto-permission flow
+
+The **GRANT ALL RUNTIME PERMISSIONS** row at the top of the panel walks the user through every Android runtime permission the app declares, in one tap. It uses the standard `ActivityCompat.requestPermissions` flow so the OS dialog appears for each pending permission; granting any one advances to the next.
+
+`PermissionRegistry` keeps the canonical `Feature → List<String>` matrix in one place. To add a new permission later:
+
+1. Add it to the feature's `permissionsFor(...)` case.
+2. Add the string to `AndroidManifest.xml`.
+3. The "GRANT ALL" path picks it up automatically — no UI change.
+
+### Per-feature grant buttons
+
+Each tier section has a per-tier button that targets just that tier's runtime permission (e.g. **GRANT STORAGE PERMISSION** under LSPatch, **GRANT MEDIA PERMISSIONS** under Morphe). Special non-runtime permissions (overlay, notification-listener, write-settings) open the matching `Settings.ACTION_*` screen via `SpecialPermissionLauncher`.
