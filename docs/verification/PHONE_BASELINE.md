@@ -19,11 +19,14 @@
 | SDK | 31 (Android 12) |
 | ABI | arm64-v8a |
 | SELinux (live state) | **Disabled** |
-| `/data` free | 122,743 MB (~120 GB) |
-| `/data` total | 228,022 MB (~223 GB) |
+| `/data` free | 122,747 MB (~120 GB) |
+| `/data` total | 228,120 MB (~223 GB) |
 | Total packages | 396 (85 user / 311 system) |
-| Listening TCP ports | 6 |
+| Listening TCP ports | 5 |
+| Battery level | 27% |
+| Low-power mode | `LOW_POWER_OFF` |
 | Redactions applied | 0 (no secret-shaped keys present in the captured fields) |
+| Live `re`-capture timestamp | `2026-09-04T10:25:30Z` (UTC) |
 
 > **⚠ Security regression to track.** The plan assumes SELinux is
 > `Enforcing` on the live device. The collector reports `Disabled`. This is
