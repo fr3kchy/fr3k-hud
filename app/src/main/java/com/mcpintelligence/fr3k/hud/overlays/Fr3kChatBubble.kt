@@ -57,7 +57,6 @@ class Fr3kChatBubble(
     private val bubble: View
     private val modelButton: Button
     private val ttsButton: Button
-    private val resizeGrip: View
 
     private var bubbleX = 0
     private var bubbleY = (120 * density).toInt()
@@ -230,13 +229,9 @@ class Fr3kChatBubble(
             addView(send, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
-        resizeGrip = View(ctx).apply {
-            background = GradientDrawable().apply {
-                setColor(0xFF7d3cff.toInt())
-            }
-            contentDescription = "Drag to resize"
-            alpha = 0.65f
-        }
+        // Resize grip removed — the user wanted a small fixed-size popup,
+        // not a drag-to-resize surface. Size is now set at construction
+        // time and stays put.
 
         // The root view is now the chat bubble itself: tailDrawable
         // is its background, headerRow / transcript / inputRow / grip
@@ -263,11 +258,6 @@ class Fr3kChatBubble(
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
             addView(sp2)
-            // Resize grip — bottom-right so the user can drag to grow/shrink.
-            val gripParams = LinearLayout.LayoutParams(
-                (20 * density).toInt(), (20 * density).toInt()
-            ).apply { gravity = android.view.Gravity.END }
-            addView(resizeGrip, gripParams)
         }
 
         // Resizable params: keep the width dynamic so the user can grow the
@@ -280,7 +270,6 @@ class Fr3kChatBubble(
         params.y = bubbleY
 
         installTouch()
-        installResizeTouch()
     }
 
     override fun show() {
@@ -322,49 +311,15 @@ class Fr3kChatBubble(
     }
 
     private fun installTouch() {
-        // Drag from either the bubble shape or the header row.
-        // Pinch-zoom is handled by the same listener via a shared
-        // ScaleGestureDetector — two-finger gesture scales the window,
-        // single-finger drags. The two are mutually exclusive (drag is
-        // suppressed when the scale detector is in-progress).
-        val scaleListener = object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
-                // Hitomi-style small popup: keep the bubble compact even
-                // when the user pinches. Larger sizes belong in a real
-                // chat surface, not the HUD overlay.
-                val minW = (180 * density).toInt()
-                val maxW = (360 * density).toInt()
-                val minH = (200 * density).toInt()
-                val maxH = (520 * density).toInt()
-                val factor = detector.scaleFactor
-                val newW = (params.width * factor).toInt().coerceIn(minW, maxW)
-                val newH = (params.height * factor).toInt().coerceIn(minH, maxH)
-                if (newW == params.width && newH == params.height) return true
-                params.width = newW
-                params.height = newH
-                (root as LinearLayout).let { rl ->
-                    for (i in 0 until rl.childCount) {
-                        val child = rl.getChildAt(i)
-                        if (child.layoutParams is LinearLayout.LayoutParams) {
-                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
-                                width = newW
-                            }
-                        }
-                    }
-                }
-                host.update(root, params)
-                return true
-            }
-        }
-        val scaleDetector = android.view.ScaleGestureDetector(host.context, scaleListener)
-
+        // Drag-from-header only. The chat bubble is a fixed-size popup —
+        // the user explicitly asked for "not resizable", so the
+        // ScaleGestureDetector / resize grip / pinch-zoom code path is
+        // gone. Drag still works: header drag = move the window.
         fun listener(): View.OnTouchListener {
             var startX = 0
             var startY = 0
             var dragging = false
             return View.OnTouchListener { _, event ->
-                scaleDetector.onTouchEvent(event)
-                // Skip drag when the user is mid-pinch.
                 if (event.pointerCount >= 2) return@OnTouchListener false
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
@@ -401,61 +356,6 @@ class Fr3kChatBubble(
         // children like EditText / buttons) and on the header text.
         root.setOnTouchListener(listener())
         header.setOnTouchListener(listener())
-    }
-
-    /**
-     * Resize grip touch handler. The grip is a 20dp square in the bottom-
-     * right corner; dragging it changes the chat bubble's [params.width]
-     * and [params.height], clamped to reasonable limits. Updates the root
-     * container's layout params so the LinearLayout reflows.
-     */
-    private fun installResizeTouch() {
-        // The grip is a dedicated 20dp square in the bottom-right corner.
-        // Drag it to grow / shrink the chat bubble. Pinch-zoom is wired on
-        // the bubble/header in [installTouch] — the grip is single-finger only.
-        val minW = (180 * density).toInt()
-        val maxW = (360 * density).toInt()
-        val minH = (200 * density).toInt()
-        val maxH = (520 * density).toInt()
-        var startW = 0
-        var startH = 0
-        var startX = 0
-        var startY = 0
-        resizeGrip.setOnTouchListener { _, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startW = params.width
-                    startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        // First resize: lock to current measured height.
-                        root.height.takeIf { it > 0 } ?: startH
-                    } else params.height
-                    startX = event.rawX.toInt()
-                    startY = event.rawY.toInt()
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX.toInt() - startX
-                    val dy = event.rawY.toInt() - startY
-                    val newW = (startW + dx).coerceIn(minW, maxW)
-                    val newH = (startH + dy).coerceIn(minH, maxH)
-                    params.width = newW
-                    params.height = newH
-                    // Update the root LinearLayout's children to match.
-                    (root as LinearLayout).let { rl ->
-                        for (i in 0 until rl.childCount) {
-                            val child = rl.getChildAt(i)
-                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
-                                width = newW
-                            }
-                        }
-                    }
-                    host.update(root, params)
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
-                else -> false
-            }
-        }
     }
 
     /**
@@ -543,27 +443,37 @@ class Fr3kChatBubble(
             )
             else -> {
                 appendLine("fr3k: no AI provider registered")
+                android.util.Log.e("FR3K_HUD", "onSend: no AI provider registered")
                 return
             }
         }
+        val modelId = if (opencode != null) opencode.selectedModel() else "hermes"
+        android.util.Log.i("FR3K_HUD", "onSend: provider=$providerId model=$modelId promptLen=${prompt.length}")
+        appendLine("fr3k: $providerId → $modelId …")
         scope.launch {
-            val cmd = askCmd()
-            val ctx = Fr3kContext(
-                deviceId = app.identity.deviceId,
-                consentLevel = ConsentLevel.NORMAL,
-                foregroundPackage = app.packageName,
-                enabledCapabilities = app.fr3kCore.currentCapabilities(),
-            )
-            val result = cmd.execute(ctx, mapOf("prompt" to prompt))
-            val text = when (result) {
-                is CommandResult.Ok -> result.message
-                is CommandResult.Failed -> "failed: ${result.reason}"
-                is CommandResult.Cancelled -> "cancelled: ${result.reason}"
-                is CommandResult.NeedsConfirmation -> "needs: ${result.summary}"
+            try {
+                val cmd = askCmd()
+                val ctx = Fr3kContext(
+                    deviceId = app.identity.deviceId,
+                    consentLevel = ConsentLevel.NORMAL,
+                    foregroundPackage = app.packageName,
+                    enabledCapabilities = app.fr3kCore.currentCapabilities(),
+                )
+                val result = cmd.execute(ctx, mapOf("prompt" to prompt))
+                android.util.Log.i("FR3K_HUD", "onSend: result=$result")
+                val text = when (result) {
+                    is CommandResult.Ok -> result.message
+                    is CommandResult.Failed -> "failed: ${result.reason}"
+                    is CommandResult.Cancelled -> "cancelled: ${result.reason}"
+                    is CommandResult.NeedsConfirmation -> "needs: ${result.summary}"
+                }
+                appendLine("$providerId: $text")
+                // Speak the response if TTS is enabled.
+                TtsPreference.speakIfEnabled(host.context, text)
+            } catch (t: Throwable) {
+                android.util.Log.e("FR3K_HUD", "onSend crashed", t)
+                appendLine("fr3k: ${t.javaClass.simpleName}: ${t.message}")
             }
-            appendLine("$providerId: $text")
-            // Speak the response if TTS is enabled.
-            TtsPreference.speakIfEnabled(host.context, text)
         }
     }
 

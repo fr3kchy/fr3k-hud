@@ -59,6 +59,7 @@
     <!-- Shizuku Tier-2 — optional, only used if installed. We don't depend
          on the Shizuku AAR (keeps the APK slim); we talk to the running
          Shizuku service via reflection-style Intent when present. -->
+    <uses-permission android:name="moe.shizuku.api.permission.PERMISSION" />
 
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />

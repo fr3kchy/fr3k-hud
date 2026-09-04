@@ -73,9 +73,11 @@ class Fr3kMiniBrowserOverlay(
             text = "×"
             setTextColor(0xFF8e8a99.toInt())
             setBackgroundColor(Color.TRANSPARENT)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             contentDescription = "Close browser"
-            setPadding(0, 0, (8+14).dp(), 0)
+            setPadding(0, 0, (6 * density).toInt(), 0)
+            // Compact icon button — fixed 32dp so the title row stays slim.
+            layoutParams = LinearLayout.LayoutParams((32 * density).toInt(), (28 * density).toInt())
             setOnClickListener { hide() }
         }
         val titleRow = LinearLayout(ctx).apply {
@@ -90,40 +92,36 @@ class Fr3kMiniBrowserOverlay(
             setHintTextColor(0xFF6a6878.toInt())
             setTextColor(0xFFe8eaf2.toInt())
             setBackgroundColor(0xFF0d0d18.toInt())
-            setPadding((8+14).dp(), (6+14).dp(), (8+14).dp(), (6+14).dp())
+            setPadding((6 * density).toInt(), (4 * density).toInt(), (6 * density).toInt(), (4 * density).toInt())
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
             typeface = android.graphics.Typeface.MONOSPACE
             isSingleLine = true
             imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO
             setOnEditorActionListener { _, _, _ -> onGo(); true }
+            // Tapping the address bar should always focus the field and pop
+            // the soft keyboard, even if the address row's touch listener
+            // already returned true. requestFocus() is enough because the
+            // window has FLAG_NOT_FOCUSABLE off + SOFT_INPUT_STATE_VISIBLE
+            // on it now.
+            setOnClickListener { requestFocus() }
         }
-        back = Button(ctx).apply {
-            text = "←"
+        // 32dp square icon buttons — the same width as the close button
+        // so the address row stays a tidy strip.
+        fun iconBtn(text: String, desc: String, onClick: () -> Unit): Button = Button(ctx).apply {
+            this.text = text
             setTextColor(0xFFcdd1e0.toInt())
             setBackgroundColor(0xFF1a1a26.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            contentDescription = "Back"
-            setPadding((10+14).dp(), (2+14).dp(), (10+14).dp(), (2+14).dp())
-            setOnClickListener { webView.goBack() }
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            contentDescription = desc
+            setPadding(0, 0, 0, 0)
+            layoutParams = LinearLayout.LayoutParams((32 * density).toInt(), (28 * density).toInt())
+            setOnClickListener { onClick() }
         }
-        reload = Button(ctx).apply {
-            text = "↻"
-            setTextColor(0xFFcdd1e0.toInt())
-            setBackgroundColor(0xFF1a1a26.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            contentDescription = "Reload"
-            setPadding((10+14).dp(), (2+14).dp(), (10+14).dp(), (2+14).dp())
-            setOnClickListener { webView.reload() }
-        }
-        val go = Button(ctx).apply {
-            text = "GO"
-            setTextColor(0xFF11111c.toInt())
-            setBackgroundColor(0xFF7d3cff.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
-            setTypeface(typeface, android.graphics.Typeface.BOLD)
-            setPadding((10+14).dp(), (2+14).dp(), (10+14).dp(), (2+14).dp())
-            setOnClickListener { onGo() }
-        }
+        back = iconBtn("←", "Back") { if (webView.canGoBack()) webView.goBack() }
+        reload = iconBtn("↻", "Reload") { webView.reload() }
+        val go = iconBtn("GO", "Go to address") { onGo() }
+        // The GO button is a little wider to fit the text comfortably.
+        (go.layoutParams as LinearLayout.LayoutParams).width = (44 * density).toInt()
 
         val addressRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL

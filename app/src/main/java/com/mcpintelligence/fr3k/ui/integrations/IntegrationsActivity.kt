@@ -61,6 +61,10 @@ class IntegrationsActivity : Activity() {
             showToast("Granted $granted of $total runtime permissions — re-opening integrations to refresh")
             // Rebuild the content so the status text updates
             setContentView(buildContent())
+        } else if (requestCode == ShizukuAdapter.REQ_SHIZUKU_PERMISSION) {
+            shizuku.onRequestPermissionsResult(requestCode, grantResults)
+            showToast(if (shizuku.isAuthorized()) "Shizuku permission granted" else "Shizuku permission still denied")
+            setContentView(buildContent())
         }
     }
 
@@ -197,7 +201,11 @@ class IntegrationsActivity : Activity() {
                         openPlayStore("com.termux")
                     })
                 } else if (!termuxGranted) {
-                    addView(makeButton("SHOW GRANT INSTRUCTIONS") {
+                    addView(makeButton("OPEN FR3K APP PERMISSIONS → RUN COMMANDS") {
+                        openAppInfoPermissions()
+                    })
+                    addView(this@IntegrationsActivity.spacer(density, 4))
+                    addView(makeButton("OR: SHOW GRANT INSTRUCTIONS") {
                         showInstructionsDialog(
                             title = "Termux — grant RUN_COMMAND",
                             body = termux.grantInstructions(),
@@ -240,8 +248,8 @@ class IntegrationsActivity : Activity() {
                         openPlayStore("moe.shizuku.api")
                     })
                 } else if (!shAuth) {
-                    addView(makeButton("OPEN SHIZUKU GRANT SCREEN") {
-                        shizuku.openGrantScreen()
+                    addView(makeButton("GRANT SHIZUKU PERMISSION") {
+                        shizuku.openGrantScreen(this@IntegrationsActivity)
                     })
                 } else {
                     addView(makeButton("PING SHIZUKU BINDER") {
@@ -392,6 +400,42 @@ class IntegrationsActivity : Activity() {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }
+    }
+
+    /**
+     * Launch the system App Info screen for our own package, scrolled to
+     * the Permissions section. The user can then tap "Run commands in
+     * Termux environment" (or any other Termux grant) under "Additional
+     * permissions" without having to remember the path. On API 26+ the
+     * standard "package details" Settings activity exists; on older APIs
+     * the fallback opens the legacy Application Info.
+     */
+    private fun openAppInfoPermissions() {
+        val ctx: android.content.Context = this
+        val intents = listOf(
+            // Modern (API 26+): Settings → App Info → Permissions
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(android.net.Uri.parse("package:${ctx.packageName}"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            // Legacy Application Info activity
+            Intent("android.intent.action.VIEW")
+                .setClassName(
+                    "com.android.settings",
+                    "com.android.settings.applications.InstalledAppDetailsTop",
+                )
+                .putExtra("package", ctx.packageName)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+        for (i in intents) {
+            val ok = runCatching { startActivity(i) }.isSuccess
+            if (ok) return
+        }
+        // Last-resort: just show a toast telling the user the path.
+        android.widget.Toast.makeText(
+            ctx,
+            "Settings → Apps → FR3K HUD → Permissions → Run commands in Termux environment",
+            android.widget.Toast.LENGTH_LONG,
+        ).show()
     }
 
     private fun showToast(text: String) {

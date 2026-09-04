@@ -78,7 +78,14 @@ object OverlayParams {
     }
 
     fun forChat(width: Int, height: Int) = forInput(width, height)
-    fun forBrowser(width: Int, height: Int) = make(width, height)
+    /**
+     * Browser overlay params: input-aware (so the address bar EditText
+     * can take focus and pop the soft keyboard) plus an ACTION bar with
+     * back / forward / go / dismiss buttons, the WebView, and a status
+     * row. Resize is intentionally not wired — the user wanted a small
+     * fixed-size popup.
+     */
+    fun forBrowser(width: Int, height: Int) = forInput(width, height)
     fun forTerminal(width: Int, height: Int) = forInput(width, height)
 }
 

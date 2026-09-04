@@ -165,13 +165,69 @@ class ShizukuAdapter(private val context: Context) {
         }
     }
 
-    /** Open the Shizuku app so the user can grant the permission. */
-    fun openGrantScreen() {
-        val i = context.packageManager.getLaunchIntentForPackage(grantPkg)
-        if (i != null) {
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(i)
+    /**
+     * Open the Shizuku app so the user can grant the permission. Also
+     * requests the Shizuku AIDL permission via reflection so the app
+     * shows up in the SUI "apps that can use this" list immediately,
+     * without the user having to dig into the SUI settings.
+     */
+    fun openGrantScreen(activity: android.app.Activity? = null) {
+        // 1) Standard Android runtime permission: SUI 13.5+ grants via this.
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 33 &&
+                context.checkSelfPermission("moe.shizuku.api.permission.PERMISSION") !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                if (activity != null) {
+                    activity.requestPermissions(
+                        arrayOf("moe.shizuku.api.permission.PERMISSION"),
+                        REQ_SHIZUKU_PERMISSION,
+                    )
+                    return  // wait for onRequestPermissionsResult, then fall through to launch
+                }
+            }
+        } catch (_: Throwable) { /* not declared in our manifest — fall through */ }
+
+        // 2) Reflection: call Shizuku.requestPermission(...) so the SUI
+        //    dialog pops and our package gets listed in its admin panel.
+        val launched = try {
+            val shizukuClass = Class.forName("moe.shizuku.api.Shizuku")
+            val requestPermission = shizukuClass.getMethod(
+                "requestPermission", Int::class.javaPrimitiveType
+            )
+            requestPermission.invoke(null, REQ_SHIZUKU_PERMISSION)
+            true
+        } catch (_: Throwable) {
+            false
         }
+
+        // 3) If the reflection path didn't work (older SUI / no AAR) just
+        //    launch the Shizuku app as a last resort.
+        if (!launched) {
+            val i = context.packageManager.getLaunchIntentForPackage(grantPkg)
+            if (i != null) {
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(i)
+            }
+        }
+    }
+
+    fun onRequestPermissionsResult(requestCode: Int, grantResults: IntArray): Boolean {
+        if (requestCode != REQ_SHIZUKU_PERMISSION) return false
+        val granted = grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        Log.i(TAG, "Shizuku runtime permission result granted=$granted")
+        // Re-fire the AIDL path so SUI registers the grant in its admin list.
+        if (granted) {
+            runCatching {
+                val shizukuClass = Class.forName("moe.shizuku.api.Shizuku")
+                val requestPermission = shizukuClass.getMethod(
+                    "requestPermission", Int::class.javaPrimitiveType
+                )
+                requestPermission.invoke(null, REQ_SHIZUKU_PERMISSION)
+            }
+        }
+        return true
     }
 
     private class ShizukuConn : android.content.ServiceConnection {
@@ -184,5 +240,8 @@ class ShizukuAdapter(private val context: Context) {
         }
     }
 
-    companion object { private const val TAG = "FR3K.shizuku" }
+    companion object {
+        private const val TAG = "FR3K.shizuku"
+        const val REQ_SHIZUKU_PERMISSION = 0x5F31
+    }
 }
