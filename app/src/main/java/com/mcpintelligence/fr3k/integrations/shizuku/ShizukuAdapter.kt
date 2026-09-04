@@ -7,16 +7,19 @@ import android.os.IBinder
 import android.os.Parcel
 import android.os.RemoteException
 import android.util.Log
+import rikka.shizuku.Shizuku
 
 /**
  * Tier-2 Shizuku integration. Talks to the running Shizuku service via the
- * stable AIDL `IShizukuService` interface that every Shizuku build exposes.
+ * official `dev.rikka.shizuku:api` AAR. Permission grants go through
+ * `Shizuku.requestPermission(...)` which is what populates the SUI admin
+ * list with our package.
  *
- * We deliberately do **not** depend on the Shizuku AAR:
- *   - keeps the APK slim and the build hermetic
- *   - the IShizukuService interface is binary-stable across Shizuku builds
- *   - if Shizuku isn't installed this class is a no-op and the rest of
- *     the app continues to work at Tier 1
+ * We used to do this via reflection so we didn't need the AAR, but the
+ * reflective call silently fell back to "launch the Shizuku app" because
+ * `moe.shizuku.api.Shizuku` wasn't on the classpath — meaning SUI never
+ * saw us in its "apps that can use this" list. The AAR is ~50 KB and
+ * solves the problem for real.
  *
  * Operations exposed:
  *   - [isInstalled]      — package present on the device
@@ -62,17 +65,25 @@ class ShizukuAdapter(private val context: Context) {
 
     /**
      * True if the user has accepted our package in Shizuku's permission
-     * dialog. The SUI >= 13.5.0 path is `checkSelfPermission` on a custom
-     * permission; older SUI versions automatically grant on first bind.
+     * dialog. SUI 13.5+ uses the runtime permission
+     * `moe.shizuku.api.permission.PERMISSION` which is also surfaced by
+     * the AAR's `Shizuku.checkSelfPermission`. We try both: the AAR
+     * call first (canonical for SUI 13.5+), then the raw Android check
+     * (fallback for older SUI versions that exposed the same perm
+     * through a different code path).
      */
     fun isAuthorized(): Boolean {
         if (!isInstalled()) return false
+        val aarCheck = try {
+            if (Shizuku.getBinder() != null) {
+                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            } else false
+        } catch (_: Throwable) { false }
+        if (aarCheck) return true
         return try {
             context.checkSelfPermission("moe.shizuku.api.permission.PERMISSION") ==
                 PackageManager.PERMISSION_GRANTED
         } catch (_: Throwable) {
-            // Older SUI — we can't statically check, so assume false and
-            // let pingBinder() do the dynamic check.
             false
         }
     }
@@ -81,23 +92,29 @@ class ShizukuAdapter(private val context: Context) {
     fun bind(): IBinder? {
         if (!isInstalled()) return null
         return try {
-            val intent = Intent("moe.shizuku.api.intent.action.REQUEST_BIND")
-                .setPackage(grantPkg)
-            val conn = ShizukuConn()
-            // Reflection: we don't want a hard dep on the Shizuku AAR's
-            // Shizuku.bind() helper.
-            val shizukuClass = Class.forName("moe.shizuku.api.Shizuku")
-            val bindMethod = shizukuClass.getMethod(
-                "bind", android.content.ServiceConnection::class.java
-            )
-            bindMethod.invoke(null, conn)
-            // Wait briefly for the bind to complete — Shizuku service
-            // responds within a few hundred ms on a healthy device.
-            val deadline = System.currentTimeMillis() + 1500
-            while (System.currentTimeMillis() < deadline && conn.binder == null) {
-                Thread.sleep(50)
+            // Shizuku keeps a cached binder across the process — if we
+            // already have one, return it directly.
+            Shizuku.getBinder()?.let { return it }
+            // Otherwise wait for the binder to arrive via the listener
+            // path. The AAR has no `bind(ServiceConnection)` static —
+            // service binding goes through the AIDL intent and the
+            // listener fires when SUI hands us the binder.
+            val holder = arrayOfNulls<IBinder>(1)
+            val latch = java.util.concurrent.CountDownLatch(1)
+            val listener = object : Shizuku.OnBinderReceivedListener {
+                override fun onBinderReceived() {
+                    holder[0] = Shizuku.getBinder()
+                    latch.countDown()
+                }
             }
-            conn.binder
+            Shizuku.addBinderReceivedListener(listener)
+            // Trigger the bind if it hasn't already happened. The AAR
+            // does this internally on construction, but a poke doesn't
+            // hurt and is idempotent.
+            Shizuku.pingBinder()
+            latch.await(2000, java.util.concurrent.TimeUnit.MILLISECONDS)
+            Shizuku.removeBinderReceivedListener(listener)
+            holder[0]
         } catch (t: Throwable) {
             Log.w(TAG, "Shizuku bind failed: ${t.message}")
             null
@@ -166,13 +183,21 @@ class ShizukuAdapter(private val context: Context) {
     }
 
     /**
-     * Open the Shizuku app so the user can grant the permission. Also
-     * requests the Shizuku AIDL permission via reflection so the app
-     * shows up in the SUI "apps that can use this" list immediately,
-     * without the user having to dig into the SUI settings.
+     * Request the Shizuku permission. SUI shows a system dialog, and on
+     * accept our package appears in the SUI admin list ("apps that can
+     * use this"). Calls the real `Shizuku.requestPermission()` from the
+     * AAR — reflection was tried first and silently failed because the
+     * AAR class wasn't on the classpath at runtime.
+     *
+     * If the AAR call fails (e.g. Shizuku not installed), falls back to
+     * launching the Shizuku app so the user can grant manually.
      */
     fun openGrantScreen(activity: android.app.Activity? = null) {
-        // 1) Standard Android runtime permission: SUI 13.5+ grants via this.
+        // 1) If we're on API 33+ and our manifest declared the
+        //    `moe.shizuku.api.permission.PERMISSION` runtime permission,
+        //    fire the standard Android grant dialog first. SUI 13.5+
+        //    accepts grants through this path and registers us in its
+        //    admin list automatically.
         try {
             if (android.os.Build.VERSION.SDK_INT >= 33 &&
                 context.checkSelfPermission("moe.shizuku.api.permission.PERMISSION") !=
@@ -183,26 +208,33 @@ class ShizukuAdapter(private val context: Context) {
                         arrayOf("moe.shizuku.api.permission.PERMISSION"),
                         REQ_SHIZUKU_PERMISSION,
                     )
-                    return  // wait for onRequestPermissionsResult, then fall through to launch
+                    return
                 }
             }
-        } catch (_: Throwable) { /* not declared in our manifest — fall through */ }
+        } catch (_: Throwable) { /* not declared — fall through */ }
 
-        // 2) Reflection: call Shizuku.requestPermission(...) so the SUI
-        //    dialog pops and our package gets listed in its admin panel.
+        // 2) Direct AAR call: this is the path that actually puts us in
+        //    the SUI admin list. Shizuku.requestPermission() pops SUI's
+        //    own dialog (not the OS one) which the user must accept.
+        //    We require a live binder (Shizuku service running) before
+        //    firing the call; otherwise SUI would never see the
+        //    request.
         val launched = try {
-            val shizukuClass = Class.forName("moe.shizuku.api.Shizuku")
-            val requestPermission = shizukuClass.getMethod(
-                "requestPermission", Int::class.javaPrimitiveType
-            )
-            requestPermission.invoke(null, REQ_SHIZUKU_PERMISSION)
-            true
-        } catch (_: Throwable) {
+            val b = Shizuku.getBinder()
+            if (b == null) {
+                Log.w(TAG, "Shizuku binder is null — service not running")
+                false
+            } else {
+                Shizuku.requestPermission(REQ_SHIZUKU_PERMISSION)
+                true
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "Shizuku.requestPermission failed: ${t.message}")
             false
         }
 
-        // 3) If the reflection path didn't work (older SUI / no AAR) just
-        //    launch the Shizuku app as a last resort.
+        // 3) Last-resort: launch the Shizuku app so the user can grant
+        //    from inside SUI manually.
         if (!launched) {
             val i = context.packageManager.getLaunchIntentForPackage(grantPkg)
             if (i != null) {
@@ -217,27 +249,16 @@ class ShizukuAdapter(private val context: Context) {
         val granted = grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         Log.i(TAG, "Shizuku runtime permission result granted=$granted")
-        // Re-fire the AIDL path so SUI registers the grant in its admin list.
+        // If the OS-level grant succeeded, also re-fire the SUI AAR
+        // request so SUI's internal registry sees us.
         if (granted) {
             runCatching {
-                val shizukuClass = Class.forName("moe.shizuku.api.Shizuku")
-                val requestPermission = shizukuClass.getMethod(
-                    "requestPermission", Int::class.javaPrimitiveType
-                )
-                requestPermission.invoke(null, REQ_SHIZUKU_PERMISSION)
+                if (Shizuku.getBinder() != null) {
+                    Shizuku.requestPermission(REQ_SHIZUKU_PERMISSION)
+                }
             }
         }
         return true
-    }
-
-    private class ShizukuConn : android.content.ServiceConnection {
-        @Volatile var binder: IBinder? = null
-        override fun onServiceConnected(name: android.content.ComponentName?, service: IBinder?) {
-            binder = service
-        }
-        override fun onServiceDisconnected(name: android.content.ComponentName?) {
-            binder = null
-        }
     }
 
     companion object {

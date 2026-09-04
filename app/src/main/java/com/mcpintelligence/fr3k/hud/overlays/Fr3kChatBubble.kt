@@ -57,6 +57,7 @@ class Fr3kChatBubble(
     private val bubble: View
     private val modelButton: Button
     private val ttsButton: Button
+    private val resizeGrip: View
 
     private var bubbleX = 0
     private var bubbleY = (120 * density).toInt()
@@ -229,9 +230,16 @@ class Fr3kChatBubble(
             addView(send, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
-        // Resize grip removed — the user wanted a small fixed-size popup,
-        // not a drag-to-resize surface. Size is now set at construction
-        // time and stays put.
+        // Resize grip — anchored bottom-right so the user can drag it
+        // to grow / shrink the chat bubble. Small (16dp square) and
+        // accent-coloured so it doesn't look like a hitomi bottom X.
+        resizeGrip = View(ctx).apply {
+            background = GradientDrawable().apply {
+                setColor(0xFF7d3cff.toInt())
+            }
+            contentDescription = "Drag to resize"
+            alpha = 0.7f
+        }
 
         // The root view is now the chat bubble itself: tailDrawable
         // is its background, headerRow / transcript / inputRow / grip
@@ -258,6 +266,11 @@ class Fr3kChatBubble(
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
             addView(sp2)
+            // Resize grip — bottom-right so the user can drag to grow/shrink.
+            val gripParams = LinearLayout.LayoutParams(
+                (16 * density).toInt(), (16 * density).toInt()
+            ).apply { gravity = android.view.Gravity.END }
+            addView(resizeGrip, gripParams)
         }
 
         // Resizable params: keep the width dynamic so the user can grow the
@@ -270,6 +283,7 @@ class Fr3kChatBubble(
         params.y = bubbleY
 
         installTouch()
+        installResizeTouch()
     }
 
     override fun show() {
@@ -359,6 +373,57 @@ class Fr3kChatBubble(
     }
 
     /**
+     * Resize grip touch handler. The grip is a 16dp square in the
+     * bottom-right corner; dragging it changes the chat bubble's
+     * [params.width] and [params.height], clamped to reasonable limits.
+     * Updates the root container's layout params so the LinearLayout
+     * reflows.
+     */
+    private fun installResizeTouch() {
+        val minW = (180 * density).toInt()
+        val maxW = (560 * density).toInt()
+        val minH = (200 * density).toInt()
+        val maxH = (720 * density).toInt()
+        var startW = 0
+        var startH = 0
+        var startX = 0
+        var startY = 0
+        resizeGrip.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startW = params.width
+                    startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        root.height.takeIf { it > 0 } ?: startH
+                    } else params.height
+                    startX = event.rawX.toInt()
+                    startY = event.rawY.toInt()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - startX
+                    val dy = event.rawY.toInt() - startY
+                    val newW = (startW + dx).coerceIn(minW, maxW)
+                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    params.width = newW
+                    params.height = newH
+                    (root as LinearLayout).let { rl ->
+                        for (i in 0 until rl.childCount) {
+                            val child = rl.getChildAt(i)
+                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
+                                width = newW
+                            }
+                        }
+                    }
+                    host.update(root, params)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
+        }
+    }
+
+    /**
      * Cycle the active model through the OpenCode Zen free-list. Each tap
      * moves to the next free model. Long-press opens a text-prompt picker.
      */
@@ -384,38 +449,36 @@ class Fr3kChatBubble(
     }
 
     private fun showModelPicker() {
-        // Lazy: ask the user to type a model id into the input box and submit
-        // to switch. Simple and reliable; no extra dialog.
-        input.hint = "type model id (e.g. big-pickle) and send"
-        input.requestFocus()
-        // Bring up the soft keyboard.
-        val imm = host.context.getSystemService(Context.INPUT_METHOD_SERVICE)
-            as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(input, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-        appendLine("fr3k: type a model id and SEND to switch")
-        // Override the next send to be a model switch instead of a prompt.
-        send.text = "SWITCH"
-        val original = send.tag
-        send.setOnClickListener {
-            val id = input.text?.toString()?.trim().orEmpty()
-            if (id.isNotEmpty()) {
-                val app = Fr3kApplication.get()
-                val provider = app.aiProviders.get("opencode-zen")
-                    as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
-                if (provider != null) {
-                    provider.setModel(id)
-                    header.text = "FR3K ▸ $id"
-                    appendLine("fr3k: model → $id")
-                } else {
-                    appendLine("fr3k: opencode not registered")
-                }
-                input.setText("")
-            }
-            // Restore SEND.
-            send.text = "SEND"
-            input.hint = "ask…"
-            send.setOnClickListener { onSend() }
+        val app = Fr3kApplication.get()
+        val provider = app.aiProviders.get("opencode-zen")
+            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
+        if (provider == null) {
+            appendLine("fr3k: opencode not registered")
+            return
         }
+        val models = provider.availableFreeModels()
+        if (models.isEmpty()) {
+            appendLine("fr3k: no free models cached — pull-to-refresh from provider")
+            return
+        }
+        // Build a popup menu listing every free model. Tapping one
+        // switches the provider to it and dismisses the popup.
+        val popup = android.widget.PopupMenu(host.context, input)
+        models.forEachIndexed { idx, m ->
+            val label = if (m.id == provider.selectedModel()) "✓ ${m.id}" else m.id
+            popup.menu.add(0, idx, idx, label)
+        }
+        popup.setOnMenuItemClickListener { item ->
+            val chosen = models[item.itemId]
+            provider.setModel(chosen.id)
+            header.text = "FR3K ▸ ${chosen.id}"
+            appendLine("fr3k: model → ${chosen.id}")
+            true
+        }
+        popup.setOnDismissListener {
+            // No state to restore — the input box was never touched.
+        }
+        popup.show()
     }
 
     private fun onSend() {

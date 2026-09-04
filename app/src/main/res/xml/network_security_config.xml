@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cleartext HTTP is allowed everywhere because:
+      - the in-app browser often points at LAN hosts (routers, dev
+        servers, localhost services) that only speak HTTP
+      - many local-network cameras / NAS devices still don't have TLS
+      - hitting an http URL and getting ERR_CLEARTEXT_NOT_PERMITTED
+        instead of a real page is the worst possible failure mode for
+        a power-user HUD
+
+    HTTPS is still the default — cleartext is only permitted via this
+    explicit opt-in.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

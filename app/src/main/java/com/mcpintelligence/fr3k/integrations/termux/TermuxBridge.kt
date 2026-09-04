@@ -50,7 +50,61 @@ class TermuxBridge(private val context: Context) {
      * package `com.termux.permission.RUN_COMMAND`. Until both are satisfied
      * `runRaw` will refuse to fire.
      */
-    fun isUsable(): Boolean = isAvailable() && hasRunCommandPermission()
+    fun isUsable(): Boolean = isAvailable() &&
+        (hasRunCommandPermission() || probeAuthorisation())
+
+    /**
+     * Authoritative "can we run a command" check. Sends a
+     * `com.termux.permission_check` probe broadcast and waits for the
+     * `com.termux.permission_check_result` answer. Termux only answers
+     * `granted=true` if the user has actively approved our package.
+     * The static `checkSelfPermission` path can lag behind the actual
+     * state (e.g. on first install, or when the perm was just toggled
+     * in Settings), so this probe is the ground truth.
+     */
+    @Volatile private var lastProbeOk: Boolean = false
+    @Volatile private var lastProbeAt: Long = 0
+    private val probeCacheMs = 5_000L
+
+    fun probeAuthorisation(timeoutMs: Long = 3000): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastProbeAt < probeCacheMs) return lastProbeOk
+        if (!isAvailable()) {
+            lastProbeOk = false
+            lastProbeAt = now
+            return false
+        }
+        val ok = try {
+            val probe = Intent("com.termux.permission_check")
+                .setPackage("com.termux")
+            val latch = java.util.concurrent.CountDownLatch(1)
+            val result = arrayOfNulls<Boolean>(1)
+            val receiver = object : android.content.BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val granted = intent?.getBooleanExtra("granted", false) ?: false
+                    result[0] = granted
+                    latch.countDown()
+                }
+            }
+            val filter = android.content.IntentFilter("com.termux.permission_check_result")
+            if (Build.VERSION.SDK_INT >= 33) {
+                context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+            } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
+                context.registerReceiver(receiver, filter)
+            }
+            context.sendBroadcast(probe)
+            latch.await(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+            runCatching { context.unregisterReceiver(receiver) }
+            result[0] == true
+        } catch (t: Throwable) {
+            Log.w(TAG, "probeAuthorisation failed: ${t.message}")
+            false
+        }
+        lastProbeOk = ok
+        lastProbeAt = now
+        return ok
+    }
 
     /** True only when Termux has explicitly granted our package RUN_COMMAND. */
     fun hasRunCommandPermission(): Boolean {
@@ -109,7 +163,7 @@ class TermuxBridge(private val context: Context) {
      * `com.termux.RUN_COMMAND` intent — the modern Termux:API path — and
      * captures the result broadcast on a counting latch.
      */
-    fun runRaw(command: String, timeoutMs: Long = 8000): Result {
+    fun runRaw(command: String, timeoutMs: Long = 30_000): Result {
         if (!isUsable()) {
             val why = if (!isAvailable()) "termux not installed"
             else "RUN_COMMAND permission not granted — see grantInstructions()"

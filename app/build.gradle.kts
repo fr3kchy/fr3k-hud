@@ -81,4 +81,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+
+    // Shizuku AAR — gives us the real `Shizuku.requestPermission()` and
+    // `ShizukuService` classes. The reflection-only path silently fails
+    // because the AAR isn't on the classpath, so SUI never sees us in
+    // its "apps that can use this" list. With the AAR, requestPermission
+    // pops the SUI grant dialog and our package gets registered.
+    implementation("dev.rikka.shizuku:api:13.1.5")
 }

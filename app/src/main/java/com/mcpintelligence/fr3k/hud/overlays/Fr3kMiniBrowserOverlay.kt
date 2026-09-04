@@ -16,7 +16,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.mcpintelligence.fr3k.core.UrlSanitiser
 
 /**
  * Mini browser overlay window — mirrors Hitomi's `overlay_browser` (BeOS-style
@@ -181,20 +180,58 @@ class Fr3kMiniBrowserOverlay(
         viewX = params.x; viewY = params.y
     }
 
-    /** Public entry — clean URL via the sanitiser, then load. */
+    /**
+     * Normalise what the user typed in the address bar into something
+     * WebView will actually load. Without a scheme `webView.loadUrl`
+     * rejects the input ("net::ERR_UNKNOWN_URL_SCHEME") and Android
+     * blocks cleartext HTTP on API 28+ by default, so the user gets
+     * "cleartext not permitted" the moment they type `http://foo`.
+     *
+     * Rules:
+     *   - empty / whitespace -> do nothing
+     *   - "localhost[:port][/...]"            -> http://
+     *   - "127.0.0.1[:port][/...]" / RFC1918  -> http://
+     *   - "foo" or "foo.com[/...]" (no scheme) -> https://
+     *   - anything with a scheme              -> leave alone
+     *   - "javascript:" / "file:" / "data:"  -> leave alone (caller's job)
+     */
+    private fun normaliseUrl(raw: String): String {
+        val t = raw.trim()
+        if (t.isEmpty()) return t
+        val lower = t.lowercase()
+        // Already has a recognised scheme — leave alone.
+        if (listOf("http://", "https://", "file://", "javascript:", "data:", "content://", "about:")
+                .any { lower.startsWith(it) }) return t
+        // Local / private network — use http so plain-HTTP routers, dev
+        // servers, and localhost services just work.
+        val isLocal = lower.startsWith("localhost") ||
+            lower.startsWith("127.") ||
+            lower.startsWith("10.") ||
+            lower.startsWith("192.168.") ||
+            lower.startsWith("169.254.") ||
+            lower.matches(Regex("^172\\.(1[6-9]|2\\d|3[01])\\..*"))
+        val scheme = if (isLocal) "http://" else "https://"
+        // If the user already wrote a host:port with a path, drop the
+        // leading "http(s)://" we just added (none there) — they're
+        // effectively just "host[:port][/path]" which we prefix.
+        // Also handle "user@host" by leaving as-is after prefixing.
+        return scheme + t
+    }
+
+    /** Public entry — auto-scheme the URL, then load. */
     fun openUrl(rawUrl: String) {
-        val cleaned = UrlSanitiser().clean(rawUrl).clean
-        urlField.setText(cleaned)
-        webView.loadUrl(cleaned)
+        val normalised = normaliseUrl(rawUrl)
+        urlField.setText(normalised)
+        webView.loadUrl(normalised)
         show()
     }
 
     private fun onGo() {
         val text = urlField.text?.toString()?.trim().orEmpty()
         if (text.isBlank()) return
-        val cleaned = UrlSanitiser().clean(text).clean
-        urlField.setText(cleaned)
-        webView.loadUrl(cleaned)
+        val normalised = normaliseUrl(text)
+        urlField.setText(normalised)
+        webView.loadUrl(normalised)
     }
 
     private fun installTouch() {
