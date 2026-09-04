@@ -50,12 +50,26 @@ class ForegroundAppReceiver : BroadcastReceiver() {
     companion object { private const val TAG = "FR3K.receiver" }
 }
 
-/** Boot receiver — restarts the core foreground service after device reboot. */
+/** Boot receiver — restarts the core foreground service after device reboot
+ *  and refreshes the partner-app install state for the integrations panel.
+ *
+ *  We deliberately do NOT start the HUD service on its own — Android since
+ *  8.0 prevents background services from starting, and the user is supposed
+ *  to be in control of when the orb is on screen. But the install-state
+ *  cache is fair game: it just walks the partner-app package list and
+ *  writes a small JSON the IntegrationsActivity can read on first open
+ *  after a reboot, so the panel comes up with accurate status without
+ *  making the user open each section. */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_BOOT_COMPLETED ||
-            intent?.action == "android.intent.action.QUICKBOOT_POWERON") {
-            Log.i(TAG, "boot completed — leaving services to user gesture for V1")
+        if (intent?.action != Intent.ACTION_BOOT_COMPLETED &&
+            intent?.action != "android.intent.action.QUICKBOOT_POWERON" &&
+            intent?.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        Log.i(TAG, "boot/replace — refreshing partner-app install state")
+        try {
+            InstallStateProbe.refresh(context)
+        } catch (t: Throwable) {
+            Log.w(TAG, "InstallStateProbe.refresh failed: ${t.message}")
         }
     }
     companion object { private const val TAG = "FR3K.boot" }

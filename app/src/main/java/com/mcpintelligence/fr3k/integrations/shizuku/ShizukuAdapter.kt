@@ -40,11 +40,24 @@ class ShizukuAdapter(private val context: Context) {
     private val pkg = "moe.shizuku.api.permission"
     private val grantPkg = "moe.shizuku.api"
 
-    fun isInstalled(): Boolean = try {
-        context.packageManager.getPackageInfo(pkg, 0)
-        true
-    } catch (_: PackageManager.NameNotFoundException) {
-        false
+    fun isInstalled(): Boolean {
+        // Shizuku ships as one of two packages: the public-facing
+        // "moe.shizuku.api" (the user installs from Play / F-Droid) or
+        // "moe.shizuku.privileged.api" (root-only privileged variant).
+        // We accept either, and also any of the historical AOSP-internal
+        // forks that show up in the wild.
+        val candidates = listOf(
+            "moe.shizuku.api",
+            "moe.shizuku.privileged.api",
+        )
+        return candidates.any { pkg ->
+            try {
+                context.packageManager.getPackageInfo(pkg, 0)
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+        }
     }
 
     /**

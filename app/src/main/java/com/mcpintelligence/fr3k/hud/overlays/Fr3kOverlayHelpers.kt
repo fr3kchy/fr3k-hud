@@ -41,13 +41,13 @@ class Fr3kExitTarget(
         val bg = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(0xFF7d3cff.toInt())
-            setStroke((2+2).dp(), 0xFFb18cff.toInt())
+            setStroke((1+1).dp(), 0xFFb18cff.toInt())
         }
 
         x = TextView(ctx).apply {
             text = "×"
             setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             gravity = Gravity.CENTER
             background = bg
@@ -57,20 +57,21 @@ class Fr3kExitTarget(
             val label = TextView(ctx).apply {
                 text = "×"
                 setTextColor(Color.WHITE)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
                 gravity = Gravity.CENTER
                 background = bg
             }
+            // Compact 56dp circle (was 140dp — too dominant on a phone screen)
             addView(label, FrameLayout.LayoutParams(
-                (56+84).dp(),
-                (56+84).dp(),
+                56.dp(),
+                56.dp(),
                 Gravity.CENTER,
             ))
         }
 
         params = WindowManager.LayoutParams(
-            (56+84).dp(), (56+84).dp(),
+            56.dp(), 56.dp(),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -78,8 +79,11 @@ class Fr3kExitTarget(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT,
         ).also {
-            it.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            it.y = (40+84).dp()
+            // Push it to the right side so it doesn't fight the
+            // back-gesture handle on the left.
+            it.gravity = Gravity.BOTTOM or Gravity.END
+            it.x = (24+24).dp()   // 48dp from the right edge
+            it.y = (24+24).dp()   // 48dp from the bottom edge
         }
     }
 

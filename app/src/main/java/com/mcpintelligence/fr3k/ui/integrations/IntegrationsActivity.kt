@@ -198,7 +198,11 @@ class IntegrationsActivity : Activity() {
                     })
                 } else if (!termuxGranted) {
                     addView(makeButton("SHOW GRANT INSTRUCTIONS") {
-                        showToast(termux.grantInstructions())
+                        showInstructionsDialog(
+                            title = "Termux — grant RUN_COMMAND",
+                            body = termux.grantInstructions(),
+                            copyLabel = "COPY",
+                        )
                     })
                 } else {
                     addView(makeButton("SMOKE-TEST: echo hi from fr3k") {
@@ -212,6 +216,14 @@ class IntegrationsActivity : Activity() {
             container.addView(this@IntegrationsActivity.spacer(density, 12))
 
             // ----- Shizuku -----
+            // Always try to bind to Shizuku on activity open so our package
+            // shows up in Shizuku's "apps that can use this" list — without
+            // an active bind request, Shizuku's permission UI doesn't know
+            // we exist. The bind is harmless: it doesn't exec anything,
+            // it just registers our UID with the Shizuku service.
+            if (shizuku.isInstalled()) {
+                runCatching { shizuku.bind() }
+            }
             val shIn = shizuku.isInstalled()
             val shAuth = shizuku.isAuthorized()
             val shPing = shizuku.pingBinder()
@@ -241,21 +253,39 @@ class IntegrationsActivity : Activity() {
             container.addView(this@IntegrationsActivity.spacer(density, 12))
 
             // ----- LSPatch -----
+            // LSPatch (by JingMatrix) is a STANDALONE module loader — it
+            // re-signs a host APK with the module's classes.dex merged in,
+            // so it works on non-rooted devices. Root is only required if
+            // you also want the LSPosed *runtime* (Vector / Zygisk) path
+            // listed in the VECTOR / ROOT section below. We detect both
+            // "LSPatch manager" (org.lsposed.lspatch) and the older
+            // "LSPosed manager" (org.lsposed.manager) so users on either
+            // fork see the right install state.
             val lspModules = lspatch.scan()
             val lspMgr = lspatch.hasManager()
+            val lspMgrPkg = lspatch.managerPackage()
             val lspBody = LinearLayout(this@IntegrationsActivity).apply {
                 orientation = LinearLayout.VERTICAL
-                addView(tv("tier: 3 (LSPatch module installed)", if (lspModules.isNotEmpty()) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f))
+                addView(tv("tier: 3 (LSPatch host-app repackage — no root needed)", if (lspModules.isNotEmpty()) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 4))
-                addView(tv("manager installed: ${if (lspMgr) "yes" else "no — install JingMatrix LSPosed manager"}", 0xFF9ca3af.toInt(), 11f))
+                addView(tv(
+                    "manager installed: ${if (lspMgr) "yes (${lspMgrPkg ?: "?"})" else "no — install JingMatrix LSPatch (no root required)"}",
+                    0xFF9ca3af.toInt(), 11f,
+                ))
                 addView(tv("modules: ${lspModules.size} discovered", 0xFF9ca3af.toInt(), 11f))
                 for (m in lspModules.take(3)) {
                     addView(tv("  • ${m.id}  v${m.version}  (${if (m.isEnabled) "enabled" else "DISABLED"})", 0xFF9ca3af.toInt(), 10f))
                 }
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!lspMgr) {
-                    addView(makeButton("OPEN LSPATCH MANAGER") {
-                        lspatch.openManager()
+                    addView(makeButton("OPEN LSPATCH GITHUB") {
+                        // Open the JingMatrix LSPatch releases page —
+                        // the apk is not on Play Store. We use a chooser
+                        // so the user can pick a browser.
+                        val i = android.content.Intent(android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://github.com/JingMatrix/LSPatch/releases"))
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        runCatching { startActivity(i) }
                     })
                 } else {
                     addView(makeButton("ANNOUNCE FR3K TO MODULES") {
@@ -274,7 +304,7 @@ class IntegrationsActivity : Activity() {
                     })
                 }
             }
-            container.addView(section("LSPATCH (TIER 3)", lspBody))
+            container.addView(section("LSPATCH (TIER 3) — no root", lspBody))
             container.addView(this@IntegrationsActivity.spacer(density, 12))
 
             // ----- Morphe -----
@@ -302,24 +332,37 @@ class IntegrationsActivity : Activity() {
             container.addView(this@IntegrationsActivity.spacer(density, 12))
 
             // ----- Vector / root -----
+            // Vector / LSPosed runtime is OPTIONAL — it only works on
+            // rooted devices (Riru/Zygisk injects the LSPosed runtime
+            // into every running process). Non-rooted users get a clear
+            // "skip this section" message instead of being asked to
+            // install a root-only package. The standalone LSPatch path
+            // (TIER 3 above) covers the common no-root use case.
             val v = vector.status()
             val vBody = LinearLayout(this@IntegrationsActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(tv(
-                    "tier: 4 (rooted / Vector)",
-                    if (v.rootAvailable || v.vectorPackage != null) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f,
+                    "tier: 4 (LSPosed runtime — ROOT ONLY, OPTIONAL)",
+                    if (v.rootAvailable) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f,
                 ))
                 addView(this@IntegrationsActivity.spacer(density, 4))
-                addView(tv("root available: ${v.rootAvailable}  (su at ${v.suPath ?: "n/a"})", 0xFF9ca3af.toInt(), 11f))
-                addView(tv("Vector pkg: ${v.vectorPackage ?: "none"}", 0xFF9ca3af.toInt(), 11f))
-                addView(tv("LSPatch modules: ${v.lspatchPackages.size}", 0xFF9ca3af.toInt(), 11f))
-                addView(this@IntegrationsActivity.spacer(density, 8))
-                addView(makeButton("SMOKE-TEST: su -c 'id'") {
-                    val out = vector.runRootedShell("id", 4000)
-                    showToast(out.take(400))
-                })
+                if (!v.rootAvailable) {
+                    addView(tv(
+                        "Root not available. Skip this section — standalone LSPatch (above) works without root.",
+                        0xFF9ca3af.toInt(), 11f,
+                    ))
+                } else {
+                    addView(tv("root available: yes  (su at ${v.suPath ?: "?"})", 0xFF4ade80.toInt(), 11f))
+                    addView(tv("Vector pkg: ${v.vectorPackage ?: "none"}", 0xFF9ca3af.toInt(), 11f))
+                    addView(tv("LSPatch modules: ${v.lspatchPackages.size}", 0xFF9ca3af.toInt(), 11f))
+                    addView(this@IntegrationsActivity.spacer(density, 8))
+                    addView(makeButton("SMOKE-TEST: su -c 'id'") {
+                        val out = vector.runRootedShell("id", 4000)
+                        showToast(out.take(400))
+                    })
+                }
             }
-            container.addView(section("VECTOR / ROOT (TIER 4)", vBody))
+            container.addView(section("VECTOR / ROOT (TIER 4) — optional, root only", vBody))
             container.addView(this@IntegrationsActivity.spacer(density, 24))
 
             addView(makeButton("CLOSE") { finish() })
@@ -354,6 +397,100 @@ class IntegrationsActivity : Activity() {
     private fun showToast(text: String) {
         android.widget.Toast.makeText(this, text, android.widget.Toast.LENGTH_LONG).show()
     }
+
+    /**
+     * Pop a copyable instructions dialog. Used for Termux grant-instructions
+     * (the toast is too short for a multi-line shell block) and any other
+     * long shell/text the user needs to read or paste somewhere else.
+     */
+    private fun showInstructionsDialog(title: String, body: String, copyLabel: String = "COPY") {
+        val density = resources.displayMetrics.density
+        val pad = (16 * density).toInt()
+
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFF11111c.toInt())
+            setPadding(pad, pad, pad, pad)
+        }
+
+        container.addView(android.widget.TextView(this).apply {
+            text = title
+            setTextColor(0xFF7d3cff.toInt())
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+
+        container.addView(android.widget.TextView(this).apply {
+            text = "\n"
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 4f)
+        })
+
+        val text = android.widget.TextView(this).apply {
+            text = body
+            setTextColor(0xFFcdd1e0.toInt())
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setTextIsSelectable(true)   // long-press to select
+            setPadding(0, (8 * density).toInt(), 0, (12 * density).toInt())
+        }
+        // Wrap in a scroll view so long instructions don't blow up the dialog
+        val scroll = android.widget.ScrollView(this).apply {
+            isFillViewport = true
+            addView(text, android.widget.LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            ))
+        }
+        container.addView(scroll, android.widget.LinearLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            (300 * density).toInt(),
+        ))
+
+        // Inline a small button factory for the dialog (we can't reuse
+        // the buildContent-scoped makeButton from outside its closure).
+        val act = this@IntegrationsActivity
+        fun dialogButton(label: String, onClick: () -> Unit): android.widget.TextView =
+            android.widget.TextView(act).apply {
+                setText(label)
+                setTextColor(0xFF05060A.toInt())
+                setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f)
+                typeface = android.graphics.Typeface.MONOSPACE
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setBackgroundColor(0xFF7d3cff.toInt())
+                setPadding(
+                    (12 * density).toInt(), (8 * density).toInt(),
+                    (12 * density).toInt(), (8 * density).toInt(),
+                )
+                setOnClickListener { onClick() }
+            }
+
+        // Bottom action row: [COPY] [CLOSE]
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+        }
+        row.addView(dialogButton(copyLabel) {
+            val cm = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            cm.setPrimaryClip(android.content.ClipData.newPlainText("fr3k-hud", body))
+            showToast("Copied to clipboard — paste in Termux")
+        })
+        row.addView(View(this).apply {
+            val s = (8 * density).toInt()
+            layoutParams = android.widget.LinearLayout.LayoutParams(s, s)
+        })
+        row.addView(dialogButton("CLOSE") { dlg?.dismiss() })
+        container.addView(row)
+
+        val dlg = android.app.AlertDialog.Builder(this)
+            .setView(container)
+            .create()
+        this.dlg = dlg
+        dlg.window?.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(0xFF11111c.toInt())
+        )
+        dlg.show()
+    }
+    private var dlg: android.app.AlertDialog? = null
 
     companion object {
         const val REQ_ALL_PERMS = 8001

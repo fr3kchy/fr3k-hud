@@ -69,6 +69,8 @@
         <package android:name="com.termux.api" />
         <package android:name="com.termux.tasker" />
         <package android:name="moe.shizuku.api.permission" />
+        <package android:name="moe.shizuku.api" />
+        <package android:name="moe.shizuku.privileged.api" />
         <package android:name="com.itsaky.lspatch" />
         <package android:name="org.lsposed.lspatch" />
         <package android:name="io.github.jingmatrix.lspatch" />
@@ -307,6 +309,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
         <receiver

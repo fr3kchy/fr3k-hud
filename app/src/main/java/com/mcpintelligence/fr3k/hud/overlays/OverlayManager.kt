@@ -25,12 +25,12 @@ class OverlayManager(context: Context) {
 
     private val registry = FrappeOverlayRegistry(chatBubble, browser, terminal, exitTarget, edgeArc, particle)
 
-    fun openChat() { chatBubble.show(); lightParticleTo(chatBubble.rootView()) }
+    fun openChat() { chatBubble.show(); /* particle auto-fires only during drag */ }
     fun openBrowser(url: String? = null) {
         if (url != null) browser.openUrl(url) else browser.show()
-        lightParticleTo(browser.rootView())
+        /* particle auto-fires only during drag */
     }
-    fun openTerminal() { terminal.show(); lightParticleTo(terminal.rootView()) }
+    fun openTerminal() { terminal.show(); /* particle auto-fires only during drag */ }
     fun hideAll() {
         registry.all().forEach { it.hide() }
     }
@@ -38,10 +38,19 @@ class OverlayManager(context: Context) {
         registry.all().forEach { it.hide() }
     }
 
-    private fun lightParticleTo(target: View) {
-        // Anchor A = orb (caller supplies via [OrbPosition]); B = center of target.
-        // For now we just leave anchors at 0,0; Fr3kHudOrb sets them when present.
+    /**
+     * Show the drag-particle link between the orb and [target] for a short
+     * flash. Auto-hides after [holdMs] (default 600ms) so it never sticks.
+     */
+    fun lightParticleTo(target: View, holdMs: Long = 600L) {
+        val loc = IntArray(2)
+        target.getLocationOnScreen(loc)
         particle.show()
+        // Schedule hide; do it on the overlay's own looper to avoid leaking
+        // back to the service thread.
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            particle.hide()
+        }, holdMs)
     }
 
     fun updateParticleAnchors(orbX: Int, orbY: Int, targetView: View) {

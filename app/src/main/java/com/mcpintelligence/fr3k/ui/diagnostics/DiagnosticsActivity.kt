@@ -57,12 +57,64 @@ class DiagnosticsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent { Fr3kTheme { DiagnosticsScreen(onClose = { finish() }) } }
     }
+
+    /**
+     * One-tap grant from the diagnostics panel. Branches on the kind of
+     * permission:
+     *   - Normal runtime: `requestPermissions` opens the OS dialog.
+     *   - Special (overlay, notification-listener, write-settings, …):
+     *     opens the matching `Settings.ACTION_*` screen.
+     *   - Anything else: falls back to the app's app-info page so the
+     *     user can grant manually.
+     */
+    fun requestPermission(permission: String) {
+        when (permission) {
+            "android.permission.SYSTEM_ALERT_WINDOW" -> {
+                startActivity(
+                    android.content.Intent(
+                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:$packageName"),
+                    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+            "android.permission.WRITE_SETTINGS" -> {
+                startActivity(
+                    android.content.Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS)
+                        .setData(android.net.Uri.parse("package:$packageName"))
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+            "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE",
+            "android.permission.ACCESS_NOTIFICATION_POLICY" -> {
+                startActivity(
+                    android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+            "android.permission.PACKAGE_USAGE_STATS" -> {
+                startActivity(
+                    android.content.Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+            else -> {
+                // Regular runtime permission — fire the standard dialog.
+                androidx.core.app.ActivityCompat.requestPermissions(
+                    this, arrayOf(permission), 9300,
+                )
+            }
+        }
+    }
 }
 
 @Composable
 private fun DiagnosticsScreen(onClose: () -> Unit) {
     val app = Fr3kApplication.get()
     val context = app.applicationContext
+    // Pull the activity out of LocalContext so the per-row GRANT button
+    // can fire `requestPermission(...)` directly. We keep this scoped to
+    // the @Composable so a ContextServiceLocator isn't needed.
+    val activity = androidx.compose.ui.platform.LocalContext.current as? DiagnosticsActivity
     val caps by app.capabilityRegistry.snapshot.collectAsState()
     val plugins by remember(app) { app.fr3kCore.pluginManager.statuses.toMap() }.let { state ->
         androidx.compose.runtime.mutableStateOf(state)
@@ -101,14 +153,28 @@ private fun DiagnosticsScreen(onClose: () -> Unit) {
             Section("DEVICE") { kv(bundle.device) }
             Section("PERMISSIONS") {
                 bundle.permissions.forEach { (k, v) ->
-                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(k, color = Fr3kPalette.Text, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
-                        Text(
-                            text = if (v) "GRANTED" else "DENIED",
-                            color = if (v) Fr3kPalette.Ok else Fr3kPalette.Err,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 10.sp,
-                        )
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Text(k, color = Fr3kPalette.Text, fontFamily = FontFamily.Monospace, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                        if (v) {
+                            Text(
+                                text = "GRANTED",
+                                color = Fr3kPalette.Ok,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                            )
+                        } else {
+                            // Each denied perm gets a one-tap "GRANT" button
+                            // that fires the standard request flow. Special
+                            // permissions (overlay, notification-listener,
+                            // write-settings, …) go to their dedicated
+                            // Settings screen instead.
+                            Button(
+                                onClick = { activity?.requestPermission(k) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Fr3kPalette.Accent, contentColor = Fr3kPalette.Bg),
+                            ) {
+                                Text("GRANT", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            }
+                        }
                     }
                 }
             }

@@ -56,6 +56,7 @@ class Fr3kHudOrb(
     private var touchDownTime = 0L
     private var lastTapTime = 0L
     private var tapCount = 0
+    private var dragStarted = false
     private val touchSlopPx = (16 * context.resources.displayMetrics.density).toInt()
     private val longPressMs = 450L
     private val doubleTapMs = 250L
@@ -164,7 +165,6 @@ class Fr3kHudOrb(
         // touches that actually start *inside* the orb's bounds; outside
         // touches never reach this listener.
         orbView.setOnTouchListener { _, event ->
-            android.util.Log.i("FR3K", "touch ${event.action} at ${event.rawX.toInt()},${event.rawY.toInt()}")
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params.x
@@ -172,12 +172,19 @@ class Fr3kHudOrb(
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     touchDownTime = System.currentTimeMillis()
-                    lifecycle?.onOrbDragStart()
+                    dragStarted = false
+                    // NOTE: do NOT fire onOrbDragStart here — taps should
+                    // never reveal the drag UI. We only fire it the first
+                    // time the finger crosses the touch slop in MOVE.
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
+                    if (!dragStarted && (kotlin.math.abs(dx) > touchSlopPx || kotlin.math.abs(dy) > touchSlopPx)) {
+                        dragStarted = true
+                        lifecycle?.onOrbDragStart()
+                    }
                     if (kotlin.math.abs(dx) > touchSlopPx || kotlin.math.abs(dy) > touchSlopPx) {
                         params.x = initialX + dx
                         params.y = initialY + dy
@@ -191,39 +198,46 @@ class Fr3kHudOrb(
                     val dy = (event.rawY - initialTouchY).toInt()
                     val elapsed = System.currentTimeMillis() - touchDownTime
                     val moved = kotlin.math.abs(dx) > touchSlopPx || kotlin.math.abs(dy) > touchSlopPx
-                    when {
-                        !moved && elapsed >= longPressMs -> listener?.onLongPress()
-                        !moved && kotlin.math.abs(dy) >= swipeMinDistPx && dy < 0 -> listener?.onSwipeUp()
-                        !moved && kotlin.math.abs(dy) >= swipeMinDistPx && dy > 0 -> listener?.onSwipeDown()
-                        !moved -> {
-                            val now = System.currentTimeMillis()
-                            if (now - lastTapTime < doubleTapMs) {
-                                tapCount++
-                                if (tapCount >= 1) {
-                                    listener?.onDoubleTap()
-                                    tapCount = 0
-                                }
-                            } else {
+                    if (dragStarted) {
+                        // We only emit dragEnd if dragStart actually fired —
+                        // otherwise dragEnd would try to hide UI that was
+                        // never shown.
+                        magnetToEdge()
+                        val metrics = context.resources.displayMetrics
+                        val orbCenterX = params.x + params.width / 2
+                        val orbCenterY = params.y + params.height / 2
+                        // Close-target now sits in the bottom-right corner
+                        // (Gravity.BOTTOM | Gravity.END, 48dp inset, 56dp
+                        // diameter). Compute the centre of the X-target so
+                        // dropping the orb on it actually closes.
+                        val closeRadius = (48 * metrics.density)
+                        val closeZoneX = metrics.widthPixels - (24 + 24 + 28) * metrics.density
+                        val closeZoneY = metrics.heightPixels - (24 + 24 + 28) * metrics.density
+                        val droppedOnClose = kotlin.math.abs(orbCenterX - closeZoneX) < closeRadius &&
+                            kotlin.math.abs(orbCenterY - closeZoneY) < closeRadius
+                        val droppedOffScreen = params.x < 0 || params.y < 0 ||
+                            params.x + params.width > metrics.widthPixels ||
+                            params.y + params.height > metrics.heightPixels
+                        lifecycle?.onOrbDragEnd(params.x, params.y, droppedOnClose, droppedOffScreen)
+                    } else if (!moved && elapsed >= longPressMs) {
+                        listener?.onLongPress()
+                    } else if (!moved && kotlin.math.abs(dy) >= swipeMinDistPx && dy < 0) {
+                        listener?.onSwipeUp()
+                    } else if (!moved && kotlin.math.abs(dy) >= swipeMinDistPx && dy > 0) {
+                        listener?.onSwipeDown()
+                    } else if (!moved) {
+                        val now = System.currentTimeMillis()
+                        if (now - lastTapTime < doubleTapMs) {
+                            tapCount++
+                            if (tapCount >= 1) {
+                                listener?.onDoubleTap()
                                 tapCount = 0
-                                listener?.onTap()
                             }
-                            lastTapTime = now
+                        } else {
+                            tapCount = 0
+                            listener?.onTap()
                         }
-                        else -> {
-                            magnetToEdge()
-                            val metrics = context.resources.displayMetrics
-                            val orbCenterX = params.x + params.width / 2
-                            val orbCenterY = params.y + params.height / 2
-                            val closeZoneX = metrics.widthPixels / 2
-                            val closeZoneY = metrics.heightPixels - (56 * metrics.density).toInt()
-                            val closeRadius = (72 * metrics.density)
-                            val droppedOnClose = kotlin.math.abs(orbCenterX - closeZoneX) < closeRadius &&
-                                kotlin.math.abs(orbCenterY - closeZoneY) < closeRadius
-                            val droppedOffScreen = params.x < 0 || params.y < 0 ||
-                                params.x + params.width > metrics.widthPixels ||
-                                params.y + params.height > metrics.heightPixels
-                            lifecycle?.onOrbDragEnd(params.x, params.y, droppedOnClose, droppedOffScreen)
-                        }
+                        lastTapTime = now
                     }
                     true
                 }

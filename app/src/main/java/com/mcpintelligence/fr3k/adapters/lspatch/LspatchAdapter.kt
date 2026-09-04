@@ -174,25 +174,37 @@ class LspatchAdapter(context: Context) {
     fun hasAny(): Boolean = scan().isNotEmpty()
 
     /** True if the well-known LSPatch manager packages are installed. */
-    fun hasManager(): Boolean {
-        val managers = listOf(
-            "org.lsposed.manager",
-            "com.itsaky.lspatch",
-            "io.github.jingmatrix.lspatch",
-        )
-        return managers.any { pkg ->
-            runCatching { ctx.packageManager.getPackageInfo(pkg, 0) }.isSuccess
+    /**
+     * The list of LSPatch/LSPosed manager package names we recognise. The
+     * standalone LSPatch (JingMatrix) uses a different package name from
+     * the LSPosed manager, and the user-installed build on the emulator
+     * surfaces as `org.lsposed.lspatch`. We probe all of them.
+     */
+    private val managerPackages = listOf(
+        "org.lsposed.lspatch",       // JingMatrix standalone LSPatch
+        "org.lsposed.manager",       // upstream LSPosed manager
+        "io.github.jingmatrix.lspatch",
+        "com.itsaky.lspatch",
+    )
+
+    fun hasManager(): Boolean = managerPackage() != null
+
+    /**
+     * Returns the actual installed manager package name, or null if none
+     * of the known managers are installed. Used to label the install
+     * status row in the integrations panel.
+     */
+    fun managerPackage(): String? {
+        for (pkg in managerPackages) {
+            val ok = runCatching { ctx.packageManager.getPackageInfo(pkg, 0) }.isSuccess
+            if (ok) return pkg
         }
+        return null
     }
 
     /** Open the LSPatch manager if installed, else Play Store. */
     fun openManager() {
-        val managers = listOf(
-            "org.lsposed.manager",
-            "io.github.jingmatrix.lspatch",
-            "com.itsaky.lspatch",
-        )
-        for (m in managers) {
+        for (m in managerPackages) {
             val i = ctx.packageManager.getLaunchIntentForPackage(m)
             if (i != null) {
                 i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -201,7 +213,7 @@ class LspatchAdapter(context: Context) {
             }
         }
         val play = android.content.Intent(android.content.Intent.ACTION_VIEW)
-            .setData(android.net.Uri.parse("https://github.com/JingMatrix/LSPosed"))
+            .setData(android.net.Uri.parse("https://github.com/JingMatrix/LSPatch/releases"))
             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
         runCatching { ctx.startActivity(play) }
     }
