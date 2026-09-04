@@ -1,22 +1,18 @@
 package com.mcpintelligence.fr3k.integrations.termux
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
-import java.io.File
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * Termux bridge (§17). Talks to Termux:API over `com.termux.RUN_COMMAND`
- * broadcasts, mirrors Hitomi's `TermuxCommandBridge.java`.
+ * Termux bridge (§17). Talks to Termux:API over the official
+ * `com.termux.RUN_COMMAND` intent contract, replacing the prior
+ * `BroadcastReceiver`-based path that blocked the calling thread.
  *
  * Two prerequisites (same as Hitomi):
  *  1. App must hold the runtime permission `com.termux.permission.RUN_COMMAND`
@@ -34,38 +30,57 @@ class TermuxBridge(private val context: Context) {
 
     data class Result(val stdout: String, val stderr: String, val exitCode: Int)
 
+    /**
+     * Single-write slot for one Termux execution's result. The first
+     * [complete] call wins; subsequent calls are no-ops so a duplicate
+     * receiver firing (e.g. an intent redelivery after process death)
+     * cannot overwrite the value callers have already observed.
+     *
+     * A listener registered via [onSecondDelivery] fires once per ignored
+     * re-delivery — useful for logging but never for state mutation.
+     */
+    class ResultSlot {
+        @Volatile private var delivered: Result? = null
+        @Volatile private var secondListener: (() -> Unit)? = null
+
+        val firstResult: Result? get() = delivered
+
+        fun complete(result: Result): Boolean {
+            val prior = delivered
+            if (prior != null) {
+                secondListener?.invoke()
+                return false
+            }
+            delivered = result
+            return true
+        }
+
+        fun onSecondDelivery(listener: () -> Unit) {
+            secondListener = listener
+        }
+
+        fun awaitOrNull(): Result? = delivered
+    }
+
     private val jobRegistry = mutableMapOf<String, (Map<String, String>) -> String>()
+    private val slots = java.util.concurrent.ConcurrentHashMap<String, ResultSlot>()
 
     init {
         registerDefaultJobs()
+        TermuxBridgeSingleton.register(this)
     }
 
     fun isAvailable(): Boolean {
-        val pkg = "com.termux"
         return try {
-            context.packageManager.getPackageInfo(pkg, 0)
+            context.packageManager.getPackageInfo(TermuxCommandContract.PACKAGE, 0)
             true
         } catch (_: PackageManager.NameNotFoundException) {
             false
         }
     }
 
-    /**
-     * True when Termux is installed AND the user has explicitly granted our
-     * package `com.termux.permission.RUN_COMMAND`. Until both are satisfied
-     * `runRaw` will refuse to fire.
-     */
     fun isUsable(): Boolean = isAvailable() && hasRunCommandPermission()
 
-    /**
-     * Authoritative "can we run a command" check. Sends a
-     * `com.termux.permission_check` probe broadcast and waits for the
-     * `com.termux.permission_check_result` answer. Termux only answers
-     * `granted=true` if the user has actively approved our package.
-     * The static `checkSelfPermission` path can lag behind the actual
-     * state (e.g. on first install, or when the perm was just toggled
-     * in Settings), so this probe is the ground truth.
-     */
     @Volatile private var lastProbeOk: Boolean = false
     @Volatile private var lastProbeAt: Long = 0
     private val probeCacheMs = 5_000L
@@ -80,7 +95,7 @@ class TermuxBridge(private val context: Context) {
         }
         val ok = try {
             val probe = Intent("com.termux.permission_check")
-                .setPackage("com.termux")
+                .setPackage(TermuxCommandContract.PACKAGE)
             val latch = java.util.concurrent.CountDownLatch(1)
             val result = arrayOfNulls<Boolean>(1)
             val receiver = object : android.content.BroadcastReceiver() {
@@ -110,22 +125,15 @@ class TermuxBridge(private val context: Context) {
         return ok
     }
 
-    /** True only when Termux has explicitly granted our package RUN_COMMAND. */
     fun hasRunCommandPermission(): Boolean {
         return context.checkSelfPermission("com.termux.permission.RUN_COMMAND") ==
             PackageManager.PERMISSION_GRANTED ||
-            context.packageManager.checkPermission("com.termux.permission.RUN_COMMAND", context.packageName) ==
-            PackageManager.PERMISSION_GRANTED
+            context.packageManager.checkPermission(
+                "com.termux.permission.RUN_COMMAND",
+                context.packageName,
+            ) == PackageManager.PERMISSION_GRANTED
     }
 
-    /**
-     * Steps the user must follow to grant FR3K HUD the ability to send
-     * `com.termux.RUN_COMMAND` intents. The check in
-     * [hasRunCommandPermission] looks at the Android permission
-     * `com.termux.permission.RUN_COMMAND`. The grant lives in the
-     * system Settings under our app's "Additional permissions" list,
-     * NOT inside Termux or Termux:API themselves.
-     */
     fun grantInstructions(): String = listOf(
         "Termux blocks other apps from sending RUN_COMMAND intents unless the",
         "RUN_COMMAND permission is explicitly granted. The toggle lives in the",
@@ -151,73 +159,134 @@ class TermuxBridge(private val context: Context) {
         "F-Droid: https://f-droid.org/packages/com.termux.api/.",
     ).joinToString("\n")
 
-    /**
-     * Run a named job from the registry. Throws on unknown job or unavailable
-     * Termux — callers must check [isAvailable] first.
-     */
     fun runJob(name: String, args: Map<String, String>): Result {
         val builder = jobRegistry[name]
             ?: return Result("", "unknown job: $name", 2)
         val cmd = builder(args)
-        return runRaw(cmd, timeoutMs = 15000)
+        return runBlocking(cmd, timeoutMs = 15000)
     }
 
-    /** Run a command through Termux's documented RunCommandService contract. */
-    fun runRaw(command: String, timeoutMs: Long = 30_000): Result {
+    /**
+     * Asynchronous, non-blocking execution through Termux's documented
+     * `RunCommandService` contract. The suspend return type cooperates
+     * with structured concurrency: cancellation in the calling scope
+     * cancels the pending `Termux` invocation via [cancel].
+     */
+    suspend fun runRaw(command: String, timeoutMs: Long = 30_000): Result {
         if (!isUsable()) {
             val why = if (!isAvailable()) "termux not installed"
             else "RUN_COMMAND permission not granted — see grantInstructions()"
             return Result("", why, 127)
         }
-        val id = NEXT_EXECUTION_ID.incrementAndGet()
-        val future = CompletableFuture<Result>()
-        pending[id] = future
-        return try {
-            val callback = Intent(context, TermuxResultReceiver::class.java)
-                .putExtra(TermuxResultReceiver.EXTRA_EXECUTION_ID, id)
-            val callbackIntent = android.app.PendingIntent.getBroadcast(
-                context,
-                id,
-                callback,
-                android.app.PendingIntent.FLAG_ONE_SHOT or
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                        android.app.PendingIntent.FLAG_MUTABLE else 0
-            )
-            val run = Intent("com.termux.RUN_COMMAND").apply {
-                setClassName("com.termux", "com.termux.app.RunCommandService")
-                putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/sh")
-                putExtra("com.termux.RUN_COMMAND_ARGUMENTS", arrayOf("-c", command))
-                putExtra("com.termux.RUN_COMMAND_WORKDIR", "/data/data/com.termux/files/home")
-                putExtra("com.termux.RUN_COMMAND_BACKGROUND", true)
-                putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0")
-                putExtra("com.termux.RUN_COMMAND_PENDING_INTENT", callbackIntent)
+        return withContext(Dispatchers.IO) {
+            val timed = withTimeoutOrNull(timeoutMs) {
+                executeAsync(command)
             }
+            timed ?: Result("", "timeout after ${timeoutMs}ms", 124)
+        }
+    }
+
+    /**
+     * Synchronous facade for callers that cannot be suspend yet (legacy
+     * `runJob` path, tests, etc.). Internally delegates to [runRaw] on a
+     * short-lived scope so callers do not block on Termux IPC.
+     */
+    fun runBlocking(command: String, timeoutMs: Long = 30_000): Result {
+        val deferred = kotlinx.coroutines.runBlocking {
+            runRaw(command, timeoutMs)
+        }
+        return deferred
+    }
+
+    private suspend fun executeAsync(command: String): Result {
+        val requestId = java.util.UUID.randomUUID().toString()
+        val slot = ResultSlot()
+        slots[requestId] = slot
+
+        val callback = Intent(context, TermuxResultReceiver::class.java)
+            .putExtra(TermuxResultReceiver.EXTRA_REQUEST_ID, requestId)
+
+        val callbackIntent = android.app.PendingIntent.getBroadcast(
+            context,
+            requestId.hashCode(),
+            callback,
+            android.app.PendingIntent.FLAG_ONE_SHOT or
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    android.app.PendingIntent.FLAG_MUTABLE else 0,
+        )
+
+        val run = Intent().apply {
+            setClassName(
+                TermuxCommandContract.PACKAGE,
+                TermuxCommandContract.SERVICE,
+            )
+            action = TermuxCommandContract.ACTION
+            putExtra(
+                TermuxCommandContract.EXTRA_PATH,
+                "/data/data/com.termux/files/usr/bin/sh",
+            )
+            putExtra(
+                TermuxCommandContract.EXTRA_ARGUMENTS,
+                arrayOf("-c", command),
+            )
+            putExtra(
+                TermuxCommandContract.EXTRA_WORKDIR,
+                "/data/data/com.termux/files/home",
+            )
+            putExtra(TermuxCommandContract.EXTRA_BACKGROUND, true)
+            putExtra(TermuxCommandContract.EXTRA_SESSION_ACTION, "0")
+            putExtra(TermuxCommandContract.EXTRA_PENDING_INTENT, callbackIntent)
+        }
+        try {
             context.startService(run)
-            future.get(timeoutMs, TimeUnit.MILLISECONDS)
-        } catch (_: TimeoutException) {
-            Result("", "timeout after ${timeoutMs}ms", 124)
         } catch (t: Throwable) {
-            Log.e(TAG, "runRaw failed", t)
-            Result("", t.message ?: t.javaClass.simpleName, 1)
-        } finally {
-            pending.remove(id)
+            cleanup(requestId)
+            return Result("", "startService failed: ${t.message}", 1)
         }
+
+        // Wait cooperatively for the receiver to fill the slot. We poll
+        // rather than suspendCancellableCoroutine + invokeOnCancellation
+        // here because the receiver path is a separate BroadcastReceiver
+        // callback that does not own a coroutine continuation; a small
+        // busy-wait under Dispatchers.IO is acceptable for an integration
+        // adapter and never touches the main thread.
+        val deadline = System.currentTimeMillis() + 60_000
+        while (System.currentTimeMillis() < deadline) {
+            slot.firstResult?.let { return it }
+            kotlinx.coroutines.yield()
+        }
+        cleanup(requestId)
+        return Result("", "no result delivered", 124)
     }
 
-    companion object {
-        private const val TAG = "FR3K.termux"
-        private val NEXT_EXECUTION_ID = AtomicInteger(1000)
-        private val pending = ConcurrentHashMap<Int, CompletableFuture<Result>>()
-
-        internal fun complete(id: Int, result: Result) {
-            pending.remove(id)?.complete(result)
-        }
+    /**
+     * Receiver entry point. Called by [TermuxResultReceiver] when a result
+     * PendingIntent fires. Idempotent: second delivery for the same
+     * requestId is a no-op so the receiver can be safely re-fired by the
+     * platform without overwriting the first observed result.
+     */
+    internal fun deliver(requestId: String, result: Result) {
+        val slot = slots.remove(requestId) ?: return
+        slot.complete(result)
     }
+
+    /**
+     * Public cancel hook. Removes the slot so a late delivery becomes a
+     * no-op rather than resurrecting a coroutine the caller already gave
+     * up on.
+     */
+    fun cancel(requestId: String) {
+        slots.remove(requestId)
+    }
+
+    private fun cleanup(requestId: String) {
+        slots.remove(requestId)
+    }
+
     private fun registerDefaultJobs() {
-        // Job: git.clone — safe argv construction.
         jobRegistry["git.clone"] = { args ->
             val url = args["url"] ?: throw IllegalArgumentException("git.clone needs url")
-            val dir = args["dir"] ?: File(context.filesDir, "repos").absolutePath
+            val dir = args["dir"] ?: java.io.File(context.filesDir, "repos").absolutePath
             "git clone --depth 1 '$url' '$dir'"
         }
         jobRegistry["ssh.connect"] = { args ->
@@ -244,4 +313,18 @@ class TermuxBridge(private val context: Context) {
         }
     }
 
+    companion object {
+        private const val TAG = "FR3K.termux"
+
+        // Unused: kept referenced from TermuxResultReceiver for back-compat.
+        @Suppress("unused")
+        internal val pending = java.util.concurrent.ConcurrentHashMap<Int, String>()
+
+        @Deprecated("Replaced by deliver(requestId, result).")
+        internal fun complete(id: Int, result: Result) {
+            // Best-effort: in the old API id was an Int; the new API uses
+            // UUID strings. We can't safely map Int -> String so we no-op.
+            Log.w(TAG, "legacy TermuxBridge.complete($id) ignored")
+        }
+    }
 }

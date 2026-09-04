@@ -216,7 +216,7 @@ class IntegrationsActivity : Activity() {
                     })
                 } else {
                     addView(makeButton("SMOKE-TEST: echo hi from fr3k") {
-                        val r = termux.runRaw(
+                        val r = termux.runBlocking(
                             "echo hi-from-fr3k-${System.currentTimeMillis() % 1000}",
                             30_000,
                         )
