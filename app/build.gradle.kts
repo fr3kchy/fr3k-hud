@@ -13,8 +13,8 @@ android {
         applicationId = "com.mcpintelligence.fr3k.hud"
         minSdk = 31
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 415
+        versionName = "0.4.15"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -88,4 +88,9 @@ dependencies {
     // its "apps that can use this" list. With the AAR, requestPermission
     // pops the SUI grant dialog and our package gets registered.
     implementation("dev.rikka.shizuku:api:13.1.5")
+
+    // JVM unit tests — file-parsing and pure-Kotlin contract tests.
+    // Instrumented tests are NOT wired here; physical-device assertions
+    // live in scripts/device/.
+    testImplementation("junit:junit:4.13.2")
 }
