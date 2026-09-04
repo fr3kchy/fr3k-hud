@@ -195,12 +195,14 @@ class IntegrationsActivity : Activity() {
                 addView(this@IntegrationsActivity.spacer(density, 4))
                 addView(tv("installed: ${if (termuxAvail) "yes" else "no — install com.termux + com.termux.api"}", 0xFF9ca3af.toInt(), 11f))
                 addView(tv("RUN_COMMAND granted: ${if (termuxGranted) "yes" else "no"}", 0xFF9ca3af.toInt(), 11f))
+                addView(tv("probe (live): ${if (termuxUsable) "yes" else "no"}",
+                    if (!termuxUsable && termuxAvail) 0xFFfb923c.toInt() else 0xFF9ca3af.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!termuxAvail) {
                     addView(makeButton("OPEN PLAY STORE → TERMUX") {
                         openPlayStore("com.termux")
                     })
-                } else if (!termuxGranted) {
+                } else if (!termuxUsable) {
                     addView(makeButton("OPEN FR3K APP PERMISSIONS → RUN COMMANDS") {
                         openAppInfoPermissions()
                     })
@@ -214,8 +216,10 @@ class IntegrationsActivity : Activity() {
                     })
                 } else {
                     addView(makeButton("SMOKE-TEST: echo hi from fr3k") {
-                        val r = termux.runJob("network.ping", mapOf("host" to "127.0.0.1"))
-                            .let { termux.runRaw("echo hi-from-fr3k-${System.currentTimeMillis() % 1000}", 6000) }
+                        val r = termux.runRaw(
+                            "echo hi-from-fr3k-${System.currentTimeMillis() % 1000}",
+                            30_000,
+                        )
                         showToast("rc=${r.exitCode}\nstdout=${r.stdout}\nstderr=${r.stderr}")
                     })
                 }
@@ -233,6 +237,7 @@ class IntegrationsActivity : Activity() {
                 runCatching { shizuku.bind() }
             }
             val shIn = shizuku.isInstalled()
+            val shManager = shizuku.isManagerRunning()
             val shAuth = shizuku.isAuthorized()
             val shPing = shizuku.pingBinder()
             val shBody = LinearLayout(this@IntegrationsActivity).apply {
@@ -240,12 +245,30 @@ class IntegrationsActivity : Activity() {
                 addView(tv("tier: 2 (Shizuku permission grant)", if (shPing) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 4))
                 addView(tv("Shizuku installed: ${if (shIn) "yes" else "no"}", 0xFF9ca3af.toInt(), 11f))
+                addView(tv("Shizuku manager running: ${if (shManager) "yes" else "no"}",
+                    if (!shManager && shIn) 0xFFfb923c.toInt() else 0xFF9ca3af.toInt(), 11f))
                 addView(tv("Shizuku authorised: ${if (shAuth) "yes" else "no"}", 0xFF9ca3af.toInt(), 11f))
                 addView(tv("IPC link live: ${if (shPing) "yes" else "no"}", 0xFF9ca3af.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!shIn) {
                     addView(makeButton("OPEN PLAY STORE → SHIZUKU") {
                         openPlayStore("moe.shizuku.api")
+                    })
+                } else if (!shManager) {
+                    // Manager is installed but not running. On rooted
+                    // devices SUI starts on boot; on non-rooted
+                    // devices the user has to launch SUI manually
+                    // and tap "start". The API package alone is
+                    // not enough.
+                    addView(tv(
+                        "SUI Manager is installed but the service is not running. " +
+                        "Open the Shizuku app and tap \"Start\" — once the " +
+                        "binder is live, return here and grant permission.",
+                        0xFFfb923c.toInt(), 11f,
+                    ))
+                    addView(this@IntegrationsActivity.spacer(density, 4))
+                    addView(makeButton("OPEN SHIZUKU APP") {
+                        shizuku.openGrantScreen(this@IntegrationsActivity)
                     })
                 } else if (!shAuth) {
                     addView(makeButton("GRANT SHIZUKU PERMISSION") {

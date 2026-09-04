@@ -249,7 +249,7 @@ class Fr3kTerminalOverlay(
         val app = Fr3kApplication.get()
         val bridge = runCatching { app.termuxBridge }.getOrNull()
         if (bridge != null && bridge.isAvailable()) {
-            val result = bridge.runRaw(cmd, 8000)
+            val result = bridge.runRaw(cmd, 30_000)
             appendLine(result.stdout.lines().joinToString("\n"))
             if (result.stderr.isNotBlank()) appendLine("stderr: ${result.stderr}")
             appendLine("exit ${result.exitCode}")

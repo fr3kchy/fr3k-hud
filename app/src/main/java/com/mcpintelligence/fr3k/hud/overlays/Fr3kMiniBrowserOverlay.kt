@@ -41,6 +41,7 @@ class Fr3kMiniBrowserOverlay(
     private val back: Button
     private val close: Button
     private val reload: Button
+    private val resizeGrip: View
 
     private var viewX = 0
     private var viewY = (160 * density).toInt()
@@ -131,6 +132,17 @@ class Fr3kMiniBrowserOverlay(
             addView(go, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
+        // Resize grip — anchored bottom-right of the WebView, drag it
+        // to grow / shrink the browser window. 16dp square so it
+        // doesn't visually compete with the close button.
+        resizeGrip = View(ctx).apply {
+            background = GradientDrawable().apply {
+                setColor(0xFF7d3cff.toInt())
+            }
+            contentDescription = "Drag to resize"
+            alpha = 0.7f
+        }
+
         webView = WebView(ctx).apply {
             setBackgroundColor(0xFF0d0d18.toInt())
             settings.javaScriptEnabled = true
@@ -148,7 +160,24 @@ class Fr3kMiniBrowserOverlay(
             addView(dragHandle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (0+28).dp()))
             addView(titleRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(addressRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(webView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+            // WebView + resize grip in a FrameLayout so the grip can
+            // sit in the bottom-right corner without being part of
+            // the vertical flow.
+            val webContainer = android.widget.FrameLayout(ctx).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+                )
+                addView(webView, android.widget.FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                ))
+                addView(resizeGrip, android.widget.FrameLayout.LayoutParams(
+                    (16 * density).toInt(),
+                    (16 * density).toInt(),
+                    android.view.Gravity.END or android.view.Gravity.BOTTOM,
+                ))
+            }
+            addView(webContainer)
         }
 
         params = OverlayParams.forBrowser(360.dp(), 420.dp())
@@ -156,6 +185,7 @@ class Fr3kMiniBrowserOverlay(
         params.y = viewY
 
         installTouch()
+        installResizeTouch()
     }
 
     override fun show() {
@@ -250,6 +280,47 @@ class Fr3kMiniBrowserOverlay(
                     onDragEnd()
                     !dragging
                 }
+                else -> false
+            }
+        }
+    }
+
+    /**
+     * Resize grip touch handler. 16dp square in the bottom-right of
+     * the WebView; dragging changes params.width and params.height
+     * (clamped 240..720 x 320..960 dp) and updates the root.
+     */
+    private fun installResizeTouch() {
+        val minW = (240 * density).toInt()
+        val maxW = (720 * density).toInt()
+        val minH = (320 * density).toInt()
+        val maxH = (960 * density).toInt()
+        var startW = 0
+        var startH = 0
+        var startX = 0
+        var startY = 0
+        resizeGrip.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startW = params.width
+                    startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        root.height.takeIf { it > 0 } ?: startH
+                    } else params.height
+                    startX = event.rawX.toInt()
+                    startY = event.rawY.toInt()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - startX
+                    val dy = event.rawY.toInt() - startY
+                    val newW = (startW + dx).coerceIn(minW, maxW)
+                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    params.width = newW
+                    params.height = newH
+                    host.update(root, params)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
                 else -> false
             }
         }

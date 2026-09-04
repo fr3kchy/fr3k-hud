@@ -458,7 +458,18 @@ class Fr3kChatBubble(
         }
         val models = provider.availableFreeModels()
         if (models.isEmpty()) {
-            appendLine("fr3k: no free models cached — pull-to-refresh from provider")
+            appendLine("fr3k: no free models cached — refreshing from provider")
+            // Kick off a background refresh so the next open of the
+            // picker has a full list. Don't block here.
+            scope.launch {
+                try {
+                    val r = provider.refreshFreeModels()
+                    val count = r.getOrNull()?.size ?: 0
+                    appendLine("fr3k: refresh got $count models")
+                } catch (t: Throwable) {
+                    appendLine("fr3k: refresh failed: ${t.message}")
+                }
+            }
             return
         }
         // Build a popup menu listing every free model. Tapping one
@@ -468,7 +479,24 @@ class Fr3kChatBubble(
             val label = if (m.id == provider.selectedModel()) "✓ ${m.id}" else m.id
             popup.menu.add(0, idx, idx, label)
         }
+        // Add a refresh action at the bottom of the menu so the user
+        // can force a re-fetch of the free-models list without leaving
+        // the chat.
+        popup.menu.add(0, -1, models.size, "↻ refresh free models")
         popup.setOnMenuItemClickListener { item ->
+            if (item.itemId == -1) {
+                appendLine("fr3k: refreshing free models…")
+                scope.launch {
+                    try {
+                        val r = provider.refreshFreeModels()
+                        val count = r.getOrNull()?.size ?: 0
+                        appendLine("fr3k: refresh got $count models")
+                    } catch (t: Throwable) {
+                        appendLine("fr3k: refresh failed: ${t.message}")
+                    }
+                }
+                return@setOnMenuItemClickListener true
+            }
             val chosen = models[item.itemId]
             provider.setModel(chosen.id)
             header.text = "FR3K ▸ ${chosen.id}"

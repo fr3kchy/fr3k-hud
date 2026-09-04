@@ -101,6 +101,14 @@ class MainActivity : ComponentActivity() {
         } catch (t: Throwable) {
             android.util.Log.e("FR3K", "auto-start failed", t)
         }
+        // Shortcut: if launched with EXTRA_OPEN_INTEGRATIONS, jump
+        // straight to the integrations panel. Useful for adb testing
+        // and for deep links from the system Settings "Manage apps"
+        // screen so users can land on the right page after granting
+        // a permission.
+        if (intent?.getBooleanExtra("open_integrations", false) == true) {
+            startActivity(Intent(this, IntegrationsActivity::class.java))
+        }
     }
 
     override fun onRequestPermissionsResult(

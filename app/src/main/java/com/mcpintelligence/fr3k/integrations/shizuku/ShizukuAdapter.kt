@@ -64,6 +64,22 @@ class ShizukuAdapter(private val context: Context) {
     }
 
     /**
+     * True if the Shizuku Manager service is actually running and
+     * has bound its AIDL interface. Without a live binder, every
+     * `Shizuku.requestPermission()` call silently fails — that's
+     * why "GRANT SHIZUKU" appears to do nothing on devices where
+     * only the API package is installed.
+     */
+    fun isManagerRunning(): Boolean {
+        if (!isInstalled()) return false
+        return try {
+            Shizuku.getBinder() != null
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    /**
      * True if the user has accepted our package in Shizuku's permission
      * dialog. SUI 13.5+ uses the runtime permission
      * `moe.shizuku.api.permission.PERMISSION` which is also surfaced by
@@ -75,7 +91,13 @@ class ShizukuAdapter(private val context: Context) {
     fun isAuthorized(): Boolean {
         if (!isInstalled()) return false
         val aarCheck = try {
-            if (Shizuku.getBinder() != null) {
+            // Cache the binder so we don't block the UI thread on every
+            // status query. The first time we see a binder, capture it
+            // and reuse it.
+            val cached = cachedBinder
+            val live = cached ?: Shizuku.getBinder()
+            if (cached == null && live != null) cachedBinder = live
+            if (live != null) {
                 Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
             } else false
         } catch (_: Throwable) { false }
@@ -88,17 +110,53 @@ class ShizukuAdapter(private val context: Context) {
         }
     }
 
-    /** Bind to Shizuku and return the IBinder (or null if unavailable). */
+    @Volatile private var cachedBinder: IBinder? = null
+
+    /**
+     * Trigger the Shizuku binder acquisition off the UI thread and
+     * return the cached binder (which is updated asynchronously when
+     * the listener fires). The first call to this function also kicks
+     * off a background coroutine that calls [bindBlocking] once, which
+     * populates the cache for all subsequent synchronous reads.
+     */
     fun bind(): IBinder? {
         if (!isInstalled()) return null
+        // Fast path: cached or already live.
+        cachedBinder?.let { return it }
+        Shizuku.getBinder()?.let {
+            cachedBinder = it
+            return it
+        }
+        // Slow path: kick off a background bind. Don't block the
+        // caller — return whatever the cache has after a short wait.
+        ensureBackgroundBind()
+        return cachedBinder
+    }
+
+    @Volatile private var backgroundBindStarted = false
+    private fun ensureBackgroundBind() {
+        if (backgroundBindStarted) return
+        backgroundBindStarted = true
+        Thread({
+            try {
+                bindBlocking()
+            } catch (t: Throwable) {
+                Log.w(TAG, "background bind failed: ${t.message}")
+            } finally {
+                backgroundBindStarted = false
+            }
+        }, "fr3k-shizuku-bind").start()
+    }
+
+    /**
+     * Blocking bind. Tries the cached binder first, then waits up to
+     * 2s on the listener path. Should only be called from a worker
+     * thread (see [bind]).
+     */
+    private fun bindBlocking(): IBinder? {
+        if (!isInstalled()) return null
         return try {
-            // Shizuku keeps a cached binder across the process — if we
-            // already have one, return it directly.
-            Shizuku.getBinder()?.let { return it }
-            // Otherwise wait for the binder to arrive via the listener
-            // path. The AAR has no `bind(ServiceConnection)` static —
-            // service binding goes through the AIDL intent and the
-            // listener fires when SUI hands us the binder.
+            Shizuku.getBinder()?.let { cachedBinder = it; return it }
             val holder = arrayOfNulls<IBinder>(1)
             val latch = java.util.concurrent.CountDownLatch(1)
             val listener = object : Shizuku.OnBinderReceivedListener {
@@ -108,15 +166,16 @@ class ShizukuAdapter(private val context: Context) {
                 }
             }
             Shizuku.addBinderReceivedListener(listener)
-            // Trigger the bind if it hasn't already happened. The AAR
-            // does this internally on construction, but a poke doesn't
-            // hurt and is idempotent.
             Shizuku.pingBinder()
-            latch.await(2000, java.util.concurrent.TimeUnit.MILLISECONDS)
+            val got = latch.await(2000, java.util.concurrent.TimeUnit.MILLISECONDS)
             Shizuku.removeBinderReceivedListener(listener)
-            holder[0]
+            val b = holder[0]
+            if (got && b != null) {
+                cachedBinder = b
+                b
+            } else null
         } catch (t: Throwable) {
-            Log.w(TAG, "Shizuku bind failed: ${t.message}")
+            Log.w(TAG, "Shizuku bindBlocking failed: ${t.message}")
             null
         }
     }
@@ -125,23 +184,27 @@ class ShizukuAdapter(private val context: Context) {
      * Ping the bound Shizuku service with a no-op call. Returns true if
      * the IPC link is live and our UID is authorised.
      */
+    /**
+     * True if a live Shizuku binder is available AND a quick IPC
+     * round-trip succeeds. Cheap to call: we just call the AAR's
+     * `Shizuku.pingBinder()` which does its own threading and
+     * returns the cached result if the binder is already known.
+     */
     fun pingBinder(): Boolean {
-        val b = bind() ?: return false
+        if (!isInstalled()) return false
         return try {
-            val data = Parcel.obtain()
-            val reply = Parcel.obtain()
-            data.writeInterfaceToken("moe.shizuku.api.IShizukuService")
-            // IShizukuService.exit() with our process is too destructive;
-            // use the safer "version" call (no side effects).
-            val r = b.transact(/* code for getVersion */ 0x01, data, reply, 0)
-            reply.readException()
-            val version = reply.readInt()
-            reply.recycle()
-            data.recycle()
-            r && version > 0
-        } catch (e: RemoteException) {
-            Log.w(TAG, "Shizuku pingBinder RemoteException: ${e.message}")
-            false
+            // First, make sure the cache is populated. The bind() call
+            // is now non-blocking — if the binder isn't there yet, we
+            // fall back to a synchronous short wait via the AAR.
+            val b = cachedBinder ?: Shizuku.getBinder()
+            if (b != null) {
+                cachedBinder = b
+                // Use the AAR's own pingBinder() which does an internal
+                // IPC ping and returns the cached result.
+                Shizuku.pingBinder()
+            } else {
+                false
+            }
         } catch (t: Throwable) {
             Log.w(TAG, "Shizuku pingBinder failed: ${t.message}")
             false
@@ -193,6 +256,10 @@ class ShizukuAdapter(private val context: Context) {
      * launching the Shizuku app so the user can grant manually.
      */
     fun openGrantScreen(activity: android.app.Activity? = null) {
+        // Invalidate any cached binder state so the next status read
+        // re-queries SUI after the user toggles the grant.
+        cachedBinder = null
+        backgroundBindStarted = false
         // 1) If we're on API 33+ and our manifest declared the
         //    `moe.shizuku.api.permission.PERMISSION` runtime permission,
         //    fire the standard Android grant dialog first. SUI 13.5+
@@ -249,6 +316,10 @@ class ShizukuAdapter(private val context: Context) {
         val granted = grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         Log.i(TAG, "Shizuku runtime permission result granted=$granted")
+        // Clear the cached binder so the next read re-queries SUI's
+        // authoritative state instead of the stale pre-grant value.
+        cachedBinder = null
+        backgroundBindStarted = false
         // If the OS-level grant succeeded, also re-fire the SUI AAR
         // request so SUI's internal registry sees us.
         if (granted) {
