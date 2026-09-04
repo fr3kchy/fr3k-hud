@@ -26,12 +26,30 @@ class OverlayManager(context: Context) {
 
     private val registry = FrappeOverlayRegistry(chatBubble, browser, terminal, exitTarget, edgeArc, particle, radial)
 
-    fun openChat() { chatBubble.show(); /* particle auto-fires only during drag */ }
-    fun openBrowser(url: String? = null) {
-        if (url != null) browser.openUrl(url) else browser.show()
+    fun openChat() {
+        try {
+            chatBubble.show()
+        } catch (t: Throwable) {
+            android.util.Log.e("FR3K_HUD", "openChat failed", t)
+        }
         /* particle auto-fires only during drag */
     }
-    fun openTerminal() { terminal.show(); /* particle auto-fires only during drag */ }
+    fun openBrowser(url: String? = null) {
+        try {
+            if (url != null) browser.openUrl(url) else browser.show()
+        } catch (t: Throwable) {
+            android.util.Log.e("FR3K_HUD", "openBrowser failed", t)
+        }
+        /* particle auto-fires only during drag */
+    }
+    fun openTerminal() {
+        try {
+            terminal.show()
+        } catch (t: Throwable) {
+            android.util.Log.e("FR3K_HUD", "openTerminal failed", t)
+        }
+        /* particle auto-fires only during drag */
+    }
     fun hideAll() {
         registry.all().forEach { it.hide() }
     }

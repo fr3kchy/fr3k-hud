@@ -83,6 +83,24 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        // Auto-start the HUD service if overlay + notification perms are
+        // already granted. The orb should appear on app launch without the
+        // user having to tap "Start". If perms are missing, the user can
+        // still tap "Start" from the dashboard to grant them.
+        try {
+            val canOverlay = com.mcpintelligence.fr3k.permissions.SpecialPermissionLauncher.canDrawOverlays(this)
+            val canNotif = android.os.Build.VERSION.SDK_INT < 33 ||
+                checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (canOverlay && canNotif) {
+                android.util.Log.i("FR3K", "auto-starting HudOverlayService from MainActivity.onCreate")
+                startForegroundService(Intent(this, HudOverlayService::class.java))
+            } else {
+                android.util.Log.i("FR3K", "skipping auto-start (overlay=$canOverlay, notif=$canNotif)")
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("FR3K", "auto-start failed", t)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -93,8 +111,11 @@ class MainActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQ_NOTIF && grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             // Notifications granted — start the HUD now if overlay was already OK.
+            // Use startForegroundService, NOT startService: the HUD is a foreground
+            // service on API 26+ and plain startService will throw
+            // IllegalStateException.
             if (com.mcpintelligence.fr3k.permissions.SpecialPermissionLauncher.canDrawOverlays(this)) {
-                startService(Intent(this, HudOverlayService::class.java))
+                startForegroundService(Intent(this, HudOverlayService::class.java))
             }
         }
     }

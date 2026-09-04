@@ -61,6 +61,7 @@ class Fr3kChatBubble(
 
     private var bubbleX = 0
     private var bubbleY = (120 * density).toInt()
+    private var hasSeededWelcome = false
 
     private val tailDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
@@ -82,19 +83,20 @@ class Fr3kChatBubble(
     init {
         val ctx = host.context
 
+        // The chat bubble shape is a drawable applied to the root view
+        // directly. We used to keep a separate sibling `bubble` View for
+        // the shape and a `content` LinearLayout for the buttons, but
+        // uiautomator and some accessibility paths only saw the empty
+        // shape and the dismiss/send/model buttons never reached the
+        // user. Folding everything into one root view fixes both: the
+        // shape is the background, and every header / button / transcript
+        // child is a real view under root.
         bubble = View(ctx).apply { background = tailDrawable }
-
         tail = View(ctx).apply {
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(0xFF1a1a26.toInt())
                 setStroke((1+2).dp(), 0xFF2b2b40.toInt())
-            }
-            layoutParams = LinearLayout.LayoutParams((18+18).dp(), (10+14).dp()).also {
-                it.gravity = Gravity.START or Gravity.BOTTOM
-                val ml = (18+24).dp()
-                val mb = (0+4).dp()
-                it.setMargins(ml, 0, 0, mb)
             }
         }
 
@@ -236,36 +238,36 @@ class Fr3kChatBubble(
             alpha = 0.65f
         }
 
-        val content = LinearLayout(ctx).apply {
-            orientation = LinearLayout.VERTICAL
-            addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(transcript, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (96+96).dp()))
-            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6+14).dp())
-            addView(sp)
-            addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
-            addView(sp2)
-            // Resize grip — anchored bottom-right so the user can drag it to
-            // grow / shrink the chat bubble. Size limited to [min, max] dp.
-            val gripParams = LinearLayout.LayoutParams(
-                (20 * density).toInt(), (20 * density).toInt()
-            ).apply { gravity = android.view.Gravity.END }
-            addView(resizeGrip, gripParams)
-        }
-
+        // The root view is now the chat bubble itself: tailDrawable
+        // is its background, headerRow / transcript / inputRow / grip
+        // are direct children. The old `content` LinearLayout wrapper
+        // is removed — it caused headerRow / transcript / inputRow to
+        // have a parent already when we tried to attach them to root.
         root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
+            background = tailDrawable
             // Explicit width on the root so the layout never collapses to
             // 0px even if the inner children report weird measured sizes.
             layoutParams = ViewGroup.LayoutParams(
                 320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            addView(bubble.apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            }, LinearLayout.LayoutParams(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(content, LinearLayout.LayoutParams(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT))
+            setPadding((10 * density).toInt(), (8 * density).toInt(), (10 * density).toInt(), (10 * density).toInt())
+            // Header row: title + model picker + TTS toggle + dismiss.
+            addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            // Transcript body.
+            val transcriptLp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (96+96).dp())
+            addView(transcript, transcriptLp)
+            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
+            addView(sp)
+            // Input row: text field + send button.
+            addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
+            addView(sp2)
+            // Resize grip — bottom-right so the user can drag to grow/shrink.
+            val gripParams = LinearLayout.LayoutParams(
+                (20 * density).toInt(), (20 * density).toInt()
+            ).apply { gravity = android.view.Gravity.END }
+            addView(resizeGrip, gripParams)
         }
 
         // Resizable params: keep the width dynamic so the user can grow the
@@ -286,13 +288,25 @@ class Fr3kChatBubble(
         try {
             host.add(root, params)
             isAttached = true
-        } catch (_: Throwable) { /* overlay already added */ }
+            android.util.Log.i("FR3K_HUD", "chat bubble shown at (${params.x}, ${params.y}) size ${params.width}x${params.height}")
+            // First-show welcome so the transcript isn't empty. We only
+            // seed once per process so reopens don't spam the user.
+            if (!hasSeededWelcome) {
+                hasSeededWelcome = true
+                appendLine("fr3k: HUD online. termux / shizuku / lspatch / morphe detected from the integrations panel.")
+                appendLine("fr3k: tap the M key to pick a model, or long-press the orb for the radial menu.")
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("FR3K_HUD", "chat bubble addView failed", t)
+        }
     }
 
     override fun hide() {
         if (!isAttached) return
-        host.remove(root)
-        isAttached = false
+        try {
+            host.remove(root)
+            isAttached = false
+        } catch (_: Throwable) {}
     }
 
     override fun onDragStart() {}
@@ -308,39 +322,85 @@ class Fr3kChatBubble(
     }
 
     private fun installTouch() {
-        var startX = 0
-        var startY = 0
-        var dragging = false
-        val moveListener = View.OnTouchListener { v, event ->
-            // If a pinch (2+ pointers) is in progress, let the scale
-            // detector take over and skip the drag.
-            if (event.pointerCount >= 2) {
-                return@OnTouchListener false
-            }
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = event.rawX.toInt()
-                    startY = event.rawY.toInt()
-                    dragging = false
-                    true
+        // Drag from either the bubble shape or the header row.
+        // Pinch-zoom is handled by the same listener via a shared
+        // ScaleGestureDetector — two-finger gesture scales the window,
+        // single-finger drags. The two are mutually exclusive (drag is
+        // suppressed when the scale detector is in-progress).
+        val scaleListener = object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                // Hitomi-style small popup: keep the bubble compact even
+                // when the user pinches. Larger sizes belong in a real
+                // chat surface, not the HUD overlay.
+                val minW = (180 * density).toInt()
+                val maxW = (360 * density).toInt()
+                val minH = (200 * density).toInt()
+                val maxH = (520 * density).toInt()
+                val factor = detector.scaleFactor
+                val newW = (params.width * factor).toInt().coerceIn(minW, maxW)
+                val newH = (params.height * factor).toInt().coerceIn(minH, maxH)
+                if (newW == params.width && newH == params.height) return true
+                params.width = newW
+                params.height = newH
+                (root as LinearLayout).let { rl ->
+                    for (i in 0 until rl.childCount) {
+                        val child = rl.getChildAt(i)
+                        if (child.layoutParams is LinearLayout.LayoutParams) {
+                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
+                                width = newW
+                            }
+                        }
+                    }
                 }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX.toInt() - startX
-                    val dy = event.rawY.toInt() - startY
-                    if (!dragging && (dx * dx + dy * dy) > (8+8).dp() * (8+8).dp()) dragging = true
-                    if (dragging) onDragMove(dx, dy)
-                    dragging
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    onDragEnd()
-                    !dragging
-                }
-                else -> false
+                host.update(root, params)
+                return true
             }
         }
-        // Drag from either the bubble shape or the header row.
-        bubble.setOnTouchListener(moveListener)
-        header.setOnTouchListener(moveListener)
+        val scaleDetector = android.view.ScaleGestureDetector(host.context, scaleListener)
+
+        fun listener(): View.OnTouchListener {
+            var startX = 0
+            var startY = 0
+            var dragging = false
+            return View.OnTouchListener { _, event ->
+                scaleDetector.onTouchEvent(event)
+                // Skip drag when the user is mid-pinch.
+                if (event.pointerCount >= 2) return@OnTouchListener false
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        startX = event.rawX.toInt()
+                        startY = event.rawY.toInt()
+                        dragging = false
+                        // Returning false on DOWN lets the touch continue to
+                        // child views (dismiss/send/model buttons) so they
+                        // receive their click events. We only claim the
+                        // gesture once the user actually moves.
+                        false
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.rawX.toInt() - startX
+                        val dy = event.rawY.toInt() - startY
+                        if (!dragging && (dx * dx + dy * dy) > (8+8).dp() * (8+8).dp()) dragging = true
+                        if (dragging) onDragMove(dx, dy)
+                        dragging
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        onDragEnd()
+                        // On a true tap (no drag), return false so the
+                        // child view (header / bubble) can still receive
+                        // their click events. The dismiss/send buttons
+                        // are wired via setOnClickListener and only fire
+                        // when the parent's touch returns false.
+                        !dragging
+                    }
+                    else -> false
+                }
+            }
+        }
+        // Touch listener on root (drag from anywhere except interactive
+        // children like EditText / buttons) and on the header text.
+        root.setOnTouchListener(listener())
+        header.setOnTouchListener(listener())
     }
 
     /**
@@ -350,10 +410,13 @@ class Fr3kChatBubble(
      * container's layout params so the LinearLayout reflows.
      */
     private fun installResizeTouch() {
-        val minW = (200 * density).toInt()
-        val maxW = (560 * density).toInt()
+        // The grip is a dedicated 20dp square in the bottom-right corner.
+        // Drag it to grow / shrink the chat bubble. Pinch-zoom is wired on
+        // the bubble/header in [installTouch] — the grip is single-finger only.
+        val minW = (180 * density).toInt()
+        val maxW = (360 * density).toInt()
         val minH = (200 * density).toInt()
-        val maxH = (720 * density).toInt()
+        val maxH = (520 * density).toInt()
         var startW = 0
         var startH = 0
         var startX = 0
@@ -392,38 +455,6 @@ class Fr3kChatBubble(
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
                 else -> false
             }
-        }
-
-        // Pinch-to-zoom: two-finger pinch scales both width and height.
-        val scaleListener = object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
-                val factor = detector.scaleFactor
-                val newW = (params.width * factor).toInt().coerceIn(minW, maxW)
-                val newH = (params.height * factor).toInt().coerceIn(minH, maxH)
-                if (newW == params.width && newH == params.height) return true
-                params.width = newW
-                params.height = newH
-                (root as LinearLayout).let { rl ->
-                    for (i in 0 until rl.childCount) {
-                        val child = rl.getChildAt(i)
-                        if (child.layoutParams is LinearLayout.LayoutParams) {
-                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
-                                width = newW
-                            }
-                        }
-                    }
-                }
-                host.update(root, params)
-                return true
-            }
-        }
-        val scaleDetector = android.view.ScaleGestureDetector(host.context, scaleListener)
-        // Wire the pinch detector on the root view. Multi-touch flows
-        // through the same listener, but drag is the dominant gesture
-        // so they coexist.
-        root.setOnTouchListener { _, event ->
-            scaleDetector.onTouchEvent(event)
-            false
         }
     }
 

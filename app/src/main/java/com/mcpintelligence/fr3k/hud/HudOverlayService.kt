@@ -62,11 +62,16 @@ class HudOverlayService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         overlays = OverlayManager(this)
         orb = Fr3kHudOrb(this, windowManager)
+        // CRITICAL: on API 34+ (Android 14), TYPE_APPLICATION_OVERLAY windows
+        // from a service are KILLED if startForeground() has not been called
+        // yet. So we must promote the service to foreground BEFORE we attach
+        // any overlay window. We do that before `orb.attach()`.
         startInForeground()
         orb.attach()
         orb.installTouchHandler()
         orb.setGestureListener(gestureListener)
         orb.setLifecycleListener(lifecycleListener)
+        Log.i("FR3K", "HudOverlayService onCreate done; orb attached")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
