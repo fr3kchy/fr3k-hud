@@ -45,13 +45,41 @@ object OverlayParams {
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
         gravity: Int = android.view.Gravity.TOP or android.view.Gravity.START,
+        softInputMode: Int = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED,
     ): WindowManager.LayoutParams = WindowManager.LayoutParams(
         width, height, type, flags, PixelFormat.TRANSLUCENT,
-    ).also { it.gravity = gravity }
+    ).also {
+        it.gravity = gravity
+        it.softInputMode = softInputMode
+    }
 
-    fun forChat(width: Int, height: Int) = make(width, height)
+    /**
+     * Overlay params for an input-aware window (chat, terminal). Drops
+     * `FLAG_NOT_FOCUSABLE` so the EditText can receive focus, and sets
+     * `SOFT_INPUT_ADJUST_RESIZE` so the system pushes the layout up when
+     * the keyboard appears. This is the magic combination that makes
+     * overlay-window text inputs show the soft keyboard.
+     */
+    fun forInput(
+        width: Int = WindowManager.LayoutParams.WRAP_CONTENT,
+        height: Int = WindowManager.LayoutParams.WRAP_CONTENT,
+    ): WindowManager.LayoutParams = WindowManager.LayoutParams(
+        width, height,
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        // FLAG_NOT_FOCUSABLE must be off, and FLAG_LAYOUT_NO_LIMITS lets us
+        // position without being clipped to the safe area.
+        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+        PixelFormat.TRANSLUCENT,
+    ).also {
+        it.gravity = android.view.Gravity.TOP or android.view.Gravity.START
+        it.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+    }
+
+    fun forChat(width: Int, height: Int) = forInput(width, height)
     fun forBrowser(width: Int, height: Int) = make(width, height)
-    fun forTerminal(width: Int, height: Int) = make(width, height)
+    fun forTerminal(width: Int, height: Int) = forInput(width, height)
 }
 
 /** Window manager reference shared by all overlays. */

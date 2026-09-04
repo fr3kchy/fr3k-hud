@@ -129,6 +129,23 @@ class Fr3kTerminalOverlay(
             isSingleLine = true
             imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO
             setOnEditorActionListener { _, _, _ -> onRun(); true }
+            // Tapping the input focuses it and shows the soft keyboard. This
+            // is the critical wiring for TYPE_APPLICATION_OVERLAY windows:
+            // even with FLAG_NOT_FOCUSABLE off and SOFT_INPUT_ADJUST_RESIZE,
+            // the IME doesn't appear unless the view explicitly requests it.
+            setOnClickListener {
+                requestFocus()
+                val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE)
+                    as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE)
+                        as android.view.inputmethod.InputMethodManager
+                    imm.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
         }
         runBtn = Button(ctx).apply {
             text = "RUN"
@@ -149,6 +166,13 @@ class Fr3kTerminalOverlay(
             addView(runBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
+        // Resize grip in the bottom-right of the terminal.
+        val grip = View(ctx).apply {
+            background = GradientDrawable().apply { setColor(0xFF39ff14.toInt()) }
+            contentDescription = "Drag to resize"
+            alpha = 0.65f
+        }
+
         root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             background = bg
@@ -158,6 +182,12 @@ class Fr3kTerminalOverlay(
             val sp = View(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6+14).dp())
             addView(sp)
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val sp2 = View(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
+            addView(sp2)
+            val gripParams = LinearLayout.LayoutParams(
+                (20 * density).toInt(), (20 * density).toInt()
+            ).apply { gravity = android.view.Gravity.END }
+            addView(grip, gripParams)
         }
 
         params = OverlayParams.forTerminal(360.dp(), 420.dp())
@@ -253,6 +283,47 @@ class Fr3kTerminalOverlay(
                     onDragEnd()
                     !dragging
                 }
+                else -> false
+            }
+        }
+        // Find the resize grip (last child View) and wire it.
+        val grip = (root as LinearLayout).getChildAt((root as LinearLayout).childCount - 1)
+        if (grip is View) {
+            installResizeTouch(grip)
+        }
+    }
+
+    private fun installResizeTouch(grip: View) {
+        val minW = (240 * density).toInt()
+        val maxW = (640 * density).toInt()
+        val minH = (200 * density).toInt()
+        val maxH = (760 * density).toInt()
+        var startW = 0
+        var startH = 0
+        var startX = 0
+        var startY = 0
+        grip.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startW = params.width
+                    startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        root.height.takeIf { it > 0 } ?: startH
+                    } else params.height
+                    startX = event.rawX.toInt()
+                    startY = event.rawY.toInt()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - startX
+                    val dy = event.rawY.toInt() - startY
+                    val newW = (startW + dx).coerceIn(minW, maxW)
+                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    params.width = newW
+                    params.height = newH
+                    host.update(root, params)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
                 else -> false
             }
         }

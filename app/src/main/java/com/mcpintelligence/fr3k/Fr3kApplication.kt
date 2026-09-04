@@ -83,6 +83,7 @@ class Fr3kApplication : Application() {
     private fun bootstrap() {
         Log.i(TAG, "FR3K booting on deviceId=${identity.deviceId} android=${identity.androidId} v${identity.appVersion}")
         registerHermes()
+        registerOpenCode()
         fr3kCore.pluginManager.register(GpsPlugin())
         fr3kCore.pluginManager.register(ShareCommandsPlugin(
             contextEngineProvider = { contextEngineImpl },
@@ -104,6 +105,26 @@ class Fr3kApplication : Application() {
         fr3kCore.pluginManager.register(
             HermesPlugin(
                 provider = hermesProvider,
+                aiProviderRegistry = aiProviders,
+                commandFactory = { askCommand },
+            )
+        )
+    }
+
+    /**
+     * Register OpenCode Zen as a second AI provider that defaults to
+     * [OpenCodeZenProvider.DEFAULT_MODEL] = `big-pickle`. This is the
+     * "no API key" free path: we talk to opencode.ai/zen with the public
+     * bearer key, fetch the live free-model list, and let the user pick.
+     */
+    private fun registerOpenCode() {
+        val openCodeProvider = com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider()
+        val askCommand = com.mcpintelligence.fr3k.integrations.opencode.AskOpenCodeCommand(
+            provider = { openCodeProvider },
+        )
+        fr3kCore.pluginManager.register(
+            com.mcpintelligence.fr3k.integrations.opencode.OpenCodePlugin(
+                provider = openCodeProvider,
                 aiProviderRegistry = aiProviders,
                 commandFactory = { askCommand },
             )

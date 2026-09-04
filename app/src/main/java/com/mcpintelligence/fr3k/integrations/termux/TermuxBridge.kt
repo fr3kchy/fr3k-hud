@@ -60,14 +60,29 @@ class TermuxBridge(private val context: Context) {
             PackageManager.PERMISSION_GRANTED
     }
 
-    /** Returns a copy-pasteable line for the user to grant the perm in Termux. */
+    /**
+     * Steps the user must follow to grant FR3K HUD the ability to send
+     * `com.termux.RUN_COMMAND` intents. The check in
+     * [hasRunCommandPermission] looks at the Android permission
+     * `com.termux.permission.RUN_COMMAND`; this dialog tells the user how
+     * to flip that switch in the Termux:API app (NOT in Termux itself).
+     */
     fun grantInstructions(): String = listOf(
-        "# In Termux, run:",
-        "mkdir -p ~/.termux",
-        "grep -qx 'allow-external-apps=true' ~/.termux/termux.properties 2>/dev/null || " +
-            "echo 'allow-external-apps=true' >> ~/.termux/termux.properties",
-        "# Then fully close and reopen Termux so it reloads the setting.",
-        "# In Termux:API menu, accept the 'Run Command' permission for FR3K HUD.",
+        "Termux blocks other apps from sending RUN_COMMAND intents unless the",
+        "user explicitly approves the requesting app in Termux:API settings.",
+        "",
+        "1. Install Termux:API from F-Droid if you haven't already",
+        "   (https://f-droid.org/packages/com.termux.api/).",
+        "2. Open Termux:API once and accept the plugin permission.",
+        "3. In Termux:API, tap the ⋮ menu and choose",
+        "   'Manage run-command permissions for apps'.",
+        "4. Find 'FR3K HUD' in the list and enable the toggle next to it.",
+        "5. Tap 'APPLY' at the top of the screen to commit.",
+        "6. Return to FR3K HUD and tap REFRESH in the Integrations panel.",
+        "",
+        "Termux also requires the Termux:API package to be installed (it ships",
+        "the com.termux.api service). If you only installed 'Termux' (the main",
+        "app), you also need 'Termux:API' from F-Droid.",
     ).joinToString("\n")
 
     /**

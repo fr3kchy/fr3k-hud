@@ -55,6 +55,9 @@ class Fr3kChatBubble(
     private val dismiss: Button
     private val header: TextView
     private val bubble: View
+    private val modelButton: Button
+    private val ttsButton: Button
+    private val resizeGrip: View
 
     private var bubbleX = 0
     private var bubbleY = (120 * density).toInt()
@@ -116,10 +119,45 @@ class Fr3kChatBubble(
             setOnClickListener { hide() }
         }
 
+        // Small "M" button to open the model picker (long-press cycles models).
+        modelButton = Button(ctx).apply {
+            text = "M"
+            setTextColor(0xFFcdd1e0.toInt())
+            setBackgroundColor(0xFF2b2b40.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            contentDescription = "Cycle AI model (long-press for picker)"
+            setPadding((4 * density).toInt(), 0, (4 * density).toInt(), 0)
+            isAllCaps = false
+            setOnClickListener { cycleModel() }
+            setOnLongClickListener { showModelPicker(); true }
+        }
+
+        // Small "🔊" toggle for spoken responses. Default Android renderer
+        // doesn't always have the speaker glyph, so we use "TTS" text.
+        ttsButton = Button(ctx).apply {
+            text = if (TtsPreference.isEnabled(ctx)) "TTS●" else "TTS"
+            setTextColor(if (TtsPreference.isEnabled(ctx)) 0xFF7d3cff.toInt() else 0xFF8e8a99.toInt())
+            setBackgroundColor(0xFF2b2b40.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            contentDescription = "Toggle spoken responses"
+            setPadding((4 * density).toInt(), 0, (4 * density).toInt(), 0)
+            isAllCaps = false
+            setOnClickListener {
+                val now = !TtsPreference.isEnabled(ctx)
+                TtsPreference.setEnabled(ctx, now)
+                text = if (now) "TTS●" else "TTS"
+                setTextColor(if (now) 0xFF7d3cff.toInt() else 0xFF8e8a99.toInt())
+            }
+        }
+
         val headerRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             addView(header, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(modelButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(ttsButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(dismiss, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
@@ -146,6 +184,20 @@ class Fr3kChatBubble(
             isSingleLine = true
             imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND
             setOnEditorActionListener { _, _, _ -> onSend(); true }
+            // Tapping the input focuses it and shows the soft keyboard.
+            setOnClickListener {
+                requestFocus()
+                val imm = host.context.getSystemService(Context.INPUT_METHOD_SERVICE)
+                    as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    val imm = host.context.getSystemService(Context.INPUT_METHOD_SERVICE)
+                        as android.view.inputmethod.InputMethodManager
+                    imm.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
         }
 
         send = Button(ctx).apply {
@@ -168,6 +220,14 @@ class Fr3kChatBubble(
             addView(send, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
+        resizeGrip = View(ctx).apply {
+            background = GradientDrawable().apply {
+                setColor(0xFF7d3cff.toInt())
+            }
+            contentDescription = "Drag to resize"
+            alpha = 0.65f
+        }
+
         val content = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
@@ -175,6 +235,14 @@ class Fr3kChatBubble(
             val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6+14).dp())
             addView(sp)
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
+            addView(sp2)
+            // Resize grip — anchored bottom-right so the user can drag it to
+            // grow / shrink the chat bubble. Size limited to [min, max] dp.
+            val gripParams = LinearLayout.LayoutParams(
+                (20 * density).toInt(), (20 * density).toInt()
+            ).apply { gravity = android.view.Gravity.END }
+            addView(resizeGrip, gripParams)
         }
 
         root = LinearLayout(ctx).apply {
@@ -187,11 +255,17 @@ class Fr3kChatBubble(
             addView(content, LinearLayout.LayoutParams(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
-        params = OverlayParams.make(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT)
+        // Resizable params: keep the width dynamic so the user can grow the
+        // bubble. Initial height is WRAP_CONTENT; once the user drags the
+        // grip, both width and height are persisted in [params] until next
+        // resize. Use forChat() so the EditText inside can receive focus
+        // and the soft keyboard appears on tap.
+        params = OverlayParams.forChat(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT)
         params.x = bubbleX
         params.y = bubbleY
 
         installTouch()
+        installResizeTouch()
     }
 
     override fun show() {
@@ -224,7 +298,7 @@ class Fr3kChatBubble(
         var startX = 0
         var startY = 0
         var dragging = false
-        bubble.setOnTouchListener { _, event ->
+        val moveListener = View.OnTouchListener { _, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.rawX.toInt()
@@ -246,6 +320,121 @@ class Fr3kChatBubble(
                 else -> false
             }
         }
+        // Drag from either the bubble shape or the header row.
+        bubble.setOnTouchListener(moveListener)
+        header.setOnTouchListener(moveListener)
+    }
+
+    /**
+     * Resize grip touch handler. The grip is a 20dp square in the bottom-
+     * right corner; dragging it changes the chat bubble's [params.width]
+     * and [params.height], clamped to reasonable limits. Updates the root
+     * container's layout params so the LinearLayout reflows.
+     */
+    private fun installResizeTouch() {
+        val minW = (200 * density).toInt()
+        val maxW = (560 * density).toInt()
+        val minH = (200 * density).toInt()
+        val maxH = (720 * density).toInt()
+        var startW = 0
+        var startH = 0
+        var startX = 0
+        var startY = 0
+        resizeGrip.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startW = params.width
+                    startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        // First resize: lock to current measured height.
+                        root.height.takeIf { it > 0 } ?: startH
+                    } else params.height
+                    startX = event.rawX.toInt()
+                    startY = event.rawY.toInt()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - startX
+                    val dy = event.rawY.toInt() - startY
+                    val newW = (startW + dx).coerceIn(minW, maxW)
+                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    params.width = newW
+                    params.height = newH
+                    // Update the root LinearLayout's children to match.
+                    (root as LinearLayout).let { rl ->
+                        for (i in 0 until rl.childCount) {
+                            val child = rl.getChildAt(i)
+                            child.layoutParams = (child.layoutParams as LinearLayout.LayoutParams).apply {
+                                width = newW
+                            }
+                        }
+                    }
+                    host.update(root, params)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
+        }
+    }
+
+    /**
+     * Cycle the active model through the OpenCode Zen free-list. Each tap
+     * moves to the next free model. Long-press opens a text-prompt picker.
+     */
+    private fun cycleModel() {
+        val app = Fr3kApplication.get()
+        val provider = app.aiProviders.get("opencode-zen")
+            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
+        if (provider == null) {
+            appendLine("fr3k: opencode not registered")
+            return
+        }
+        val current = provider.selectedModel()
+        val free = provider.availableFreeModels()
+        if (free.isEmpty()) {
+            appendLine("fr3k: no free models cached; refresh")
+            return
+        }
+        val idx = free.indexOfFirst { it.id == current }
+        val next = free[(idx + 1).mod(free.size)]
+        provider.setModel(next.id)
+        header.text = "FR3K ▸ ${next.id}"
+        appendLine("fr3k: switched → ${next.id}")
+    }
+
+    private fun showModelPicker() {
+        // Lazy: ask the user to type a model id into the input box and submit
+        // to switch. Simple and reliable; no extra dialog.
+        input.hint = "type model id (e.g. big-pickle) and send"
+        input.requestFocus()
+        // Bring up the soft keyboard.
+        val imm = host.context.getSystemService(Context.INPUT_METHOD_SERVICE)
+            as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(input, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        appendLine("fr3k: type a model id and SEND to switch")
+        // Override the next send to be a model switch instead of a prompt.
+        send.text = "SWITCH"
+        val original = send.tag
+        send.setOnClickListener {
+            val id = input.text?.toString()?.trim().orEmpty()
+            if (id.isNotEmpty()) {
+                val app = Fr3kApplication.get()
+                val provider = app.aiProviders.get("opencode-zen")
+                    as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
+                if (provider != null) {
+                    provider.setModel(id)
+                    header.text = "FR3K ▸ $id"
+                    appendLine("fr3k: model → $id")
+                } else {
+                    appendLine("fr3k: opencode not registered")
+                }
+                input.setText("")
+            }
+            // Restore SEND.
+            send.text = "SEND"
+            input.hint = "ask…"
+            send.setOnClickListener { onSend() }
+        }
     }
 
     private fun onSend() {
@@ -254,13 +443,30 @@ class Fr3kChatBubble(
         appendLine("you: $prompt")
         input.setText("")
         val app = Fr3kApplication.get()
-        val provider = app.aiProviders.get("hermes") as? com.mcpintelligence.fr3k.integrations.hermes.HermesProvider
-        if (provider == null) {
-            appendLine("fr3k: hermes provider unavailable")
-            return
+        // Default provider: OpenCode Zen (free, no API key, big-pickle model).
+        // Fallback to Hermes if OpenCode isn't registered.
+        val opencode = app.aiProviders.get("opencode-zen")
+            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
+        val hermes = app.aiProviders.get("hermes")
+            as? com.mcpintelligence.fr3k.integrations.hermes.HermesProvider
+        val (providerId, askCmd, providerRef) = when {
+            opencode != null -> Triple(
+                "opencode",
+                { com.mcpintelligence.fr3k.integrations.opencode.AskOpenCodeCommand(provider = { opencode }) },
+                opencode
+            )
+            hermes != null -> Triple(
+                "hermes",
+                { HermesAskCommand(provider = { hermes }) },
+                hermes
+            )
+            else -> {
+                appendLine("fr3k: no AI provider registered")
+                return
+            }
         }
         scope.launch {
-            val cmd = HermesAskCommand(provider = { provider })
+            val cmd = askCmd()
             val ctx = Fr3kContext(
                 deviceId = app.identity.deviceId,
                 consentLevel = ConsentLevel.NORMAL,
@@ -274,7 +480,9 @@ class Fr3kChatBubble(
                 is CommandResult.Cancelled -> "cancelled: ${result.reason}"
                 is CommandResult.NeedsConfirmation -> "needs: ${result.summary}"
             }
-            appendLine("hermes: $text")
+            appendLine("$providerId: $text")
+            // Speak the response if TTS is enabled.
+            TtsPreference.speakIfEnabled(host.context, text)
         }
     }
 

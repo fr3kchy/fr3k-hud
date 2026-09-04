@@ -22,8 +22,9 @@ class OverlayManager(context: Context) {
     val exitTarget by lazy { Fr3kExitTarget(host) { closeAll() } }
     val edgeArc by lazy { Fr3kEdgeArc(host) { restoreOrb() } }
     val particle by lazy { Fr3kParticleLink(host) }
+    val radial by lazy { RadialMenuOverlay(host) }
 
-    private val registry = FrappeOverlayRegistry(chatBubble, browser, terminal, exitTarget, edgeArc, particle)
+    private val registry = FrappeOverlayRegistry(chatBubble, browser, terminal, exitTarget, edgeArc, particle, radial)
 
     fun openChat() { chatBubble.show(); /* particle auto-fires only during drag */ }
     fun openBrowser(url: String? = null) {

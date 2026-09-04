@@ -224,23 +224,24 @@ class HudOverlayService : Service() {
     }
 
     /**
-     * Long-press radial menu — Hitomi's long-press radial. Pops 5 quick
-     * actions around the orb's last known position.
+     * Long-press radial menu — Hitomi's long-press radial. Renders as a
+     * floating `TYPE_APPLICATION_OVERLAY` window (no fullscreen activity),
+     * so the user's current app stays in place underneath instead of the
+     * FR3K HUD activity being brought to the foreground.
      */
     private fun showRadialMenu() {
         if (radialOpen) return
         radialOpen = true
-        // The actual radial menu is part of the chat bubble (hit "FR3K ▸ HERMES")
-        // — keeping the orb as a tap target. The radial menu is launched as a
-        // visible activity dialog instead.
-        val i = Intent(this, LongPressRadialActivity::class.java)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(i)
-        // Reset flag when activity finishes.
+        overlays.radial.show()
+        // Auto-unlock the debounce flag once the radial is dismissed.
         scope.launch(Dispatchers.Main) {
-            // simple debounce — re-enable after 1500ms
-            kotlinx.coroutines.delay(1500)
-            radialOpen = false
+            try {
+                while (overlays.radial.isAttached) {
+                    kotlinx.coroutines.delay(150)
+                }
+            } finally {
+                radialOpen = false
+            }
         }
     }
 
