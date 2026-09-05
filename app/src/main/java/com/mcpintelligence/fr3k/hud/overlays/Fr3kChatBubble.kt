@@ -72,7 +72,7 @@ class Fr3kChatBubble(
             18f.dp(), 18f.dp(),    // bottom-left (where the tail attaches)
         )
         setColor(0xFF1a1a26.toInt())
-        setStroke((1+2).dp(), 0xFF2b2b40.toInt())
+        setStroke(0.dp(), 0x13000000.toInt()) // hairline, barely visible
     }
 
     private val transcriptBg = GradientDrawable().apply {
@@ -96,64 +96,64 @@ class Fr3kChatBubble(
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(0xFF1a1a26.toInt())
-                setStroke((1+2).dp(), 0xFF2b2b40.toInt())
+                setStroke(0.dp(), 0x13000000.toInt()) // hairline, barely visible
             }
         }
 
         header = TextView(ctx).apply {
             text = "FR3K ▸ HERMES"
             setTextColor(0xFF7d3cff.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 9f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
-            letterSpacing = 0.1f
+            letterSpacing = 0.16f
             ellipsize = TextUtils.TruncateAt.END
             maxLines = 1
-            setPadding((12+14).dp(), (10+14).dp(), (8+14).dp(), (2+14).dp())
+            setPadding(10.dp(), 6.dp(), 6.dp(), 2.dp())
         }
 
         dismiss = Button(ctx).apply {
             text = "×"
-            setTextColor(0xFF7d3cff.toInt())
-            setBackgroundColor(0xFF1a1a26.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            setTextColor(0xFF8e8a99.toInt())
+            setBackgroundColor(0x00000000.toInt()) // transparent — the bubble bg shows through
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             contentDescription = "Dismiss bubble"
-            // Big square close button — 36dp x 36dp — so it's a real target
-            // and not the tiny ✕ that gets lost in the header.
+            // Compact square close — 28dp so it's a real target but slim.
             setPadding(0, 0, 0, 0)
-            val closeSize = (36 * density).toInt()
-            layoutParams = android.widget.LinearLayout.LayoutParams(closeSize, closeSize)
+            layoutParams = android.widget.LinearLayout.LayoutParams(28.dp(), 28.dp())
+            isAllCaps = false
             setOnClickListener {
                 hide()
                 TtsPreference.shutdown()
             }
         }
 
-        // Small "M" button to open the model picker (long-press cycles models).
+        // Compact "M" key — 28dp square, cycle models on tap.
         modelButton = Button(ctx).apply {
             text = "M"
             setTextColor(0xFFcdd1e0.toInt())
-            setBackgroundColor(0xFF2b2b40.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setBackgroundColor(0x1A2b2b40.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 9f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             contentDescription = "Cycle AI model (long-press for picker)"
-            setPadding((4 * density).toInt(), 0, (4 * density).toInt(), 0)
+            setPadding(0, 0, 0, 0)
             isAllCaps = false
+            layoutParams = android.widget.LinearLayout.LayoutParams(24.dp(), 24.dp())
             setOnClickListener { cycleModel() }
             setOnLongClickListener { showModelPicker(); true }
         }
 
-        // Small "🔊" toggle for spoken responses. Default Android renderer
-        // doesn't always have the speaker glyph, so we use "TTS" text.
+        // Compact "TTS" toggle — 28dp wide, tap toggles.
         ttsButton = Button(ctx).apply {
             text = if (TtsPreference.isEnabled(ctx)) "TTS●" else "TTS"
             setTextColor(if (TtsPreference.isEnabled(ctx)) 0xFF7d3cff.toInt() else 0xFF8e8a99.toInt())
-            setBackgroundColor(0xFF2b2b40.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            setBackgroundColor(0x1A2b2b40.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 8f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             contentDescription = "Toggle spoken responses"
-            setPadding((4 * density).toInt(), 0, (4 * density).toInt(), 0)
+            setPadding(0, 0, 0, 0)
             isAllCaps = false
+            layoutParams = android.widget.LinearLayout.LayoutParams(32.dp(), 24.dp())
             setOnClickListener {
                 val now = !TtsPreference.isEnabled(ctx)
                 TtsPreference.setEnabled(ctx, now)
@@ -174,9 +174,9 @@ class Fr3kChatBubble(
         transcript = TextView(ctx).apply {
             background = transcriptBg
             setTextColor(0xFFcdd1e0.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
             typeface = android.graphics.Typeface.MONOSPACE
-            setPadding((10+14).dp(), (8+14).dp(), (10+14).dp(), (8+14).dp())
+            setPadding(10.dp(), 6.dp(), 10.dp(), 6.dp())
             maxLines = 6
             ellipsize = TextUtils.TruncateAt.END
             text = "tap send to ask Hermes anything."
@@ -188,7 +188,7 @@ class Fr3kChatBubble(
             setHintTextColor(0xFF6a6878.toInt())
             setTextColor(0xFFe8eaf2.toInt())
             setBackgroundColor(0xFF0d0d18.toInt())
-            setPadding((8+14).dp(), (6+14).dp(), (8+14).dp(), (6+14).dp())
+            setPadding(8.dp(), 6.dp(), 8.dp(), 6.dp())
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
             typeface = android.graphics.Typeface.MONOSPACE
             isSingleLine = true
@@ -217,7 +217,7 @@ class Fr3kChatBubble(
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             contentDescription = "Send to Hermes"
-            setPadding((10+14).dp(), (6+14).dp(), (10+14).dp(), (6+14).dp())
+            setPadding(10.dp(), 6.dp(), 10.dp(), 6.dp())
             setOnClickListener { onSend() }
         }
 
@@ -225,7 +225,7 @@ class Fr3kChatBubble(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             addView(input, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams((6+14).dp(), 1)
+            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(6.dp(), 1)
             addView(sp)
             addView(send, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
@@ -252,9 +252,9 @@ class Fr3kChatBubble(
             // Explicit width on the root so the layout never collapses to
             // 0px even if the inner children report weird measured sizes.
             layoutParams = ViewGroup.LayoutParams(
-                320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
+                300.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            setPadding((10 * density).toInt(), (8 * density).toInt(), (10 * density).toInt(), (10 * density).toInt())
+            setPadding(6.dp(), 4.dp(), 6.dp(), 6.dp())
             // Header row: title + model picker + TTS toggle + dismiss.
             addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // Transcript body.
@@ -265,15 +265,15 @@ class Fr3kChatBubble(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
             )
             addView(transcript, transcriptLp)
-            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (6 * density).toInt())
+            val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
             addView(sp)
             // Input row: text field + send button.
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
+            val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (1 * density).toInt())
             addView(sp2)
             // Resize grip — bottom-right so the user can drag to grow/shrink.
             val gripParams = LinearLayout.LayoutParams(
-                (16 * density).toInt(), (16 * density).toInt()
+                (14 * density).toInt(), (14 * density).toInt()
             ).apply { gravity = android.view.Gravity.END }
             addView(resizeGrip, gripParams)
         }
@@ -283,7 +283,7 @@ class Fr3kChatBubble(
         // grip, both width and height are persisted in [params] until next
         // resize. Use forChat() so the EditText inside can receive focus
         // and the soft keyboard appears on tap.
-        params = OverlayParams.forChat(320.dp(), ViewGroup.LayoutParams.WRAP_CONTENT)
+        params = OverlayParams.forChat(300.dp(), ViewGroup.LayoutParams.WRAP_CONTENT)
         params.x = bubbleX
         params.y = bubbleY
 
@@ -294,6 +294,12 @@ class Fr3kChatBubble(
     override fun show() {
         if (isAttached) return
         try {
+            // Clamp the spawn position so the bubble never rests off-screen
+            // (the initial bubbleY inside a drag can land negative after a
+            // keyboard resize or an earlier off-screen drag).
+            val (cx, cy) = clampToDisplay(bubbleX, bubbleY)
+            bubbleX = cx; bubbleY = cy
+            params.x = cx; params.y = cy
             host.add(root, params)
             isAttached = true
             android.util.Log.i("FR3K_HUD", "chat bubble shown at (${params.x}, ${params.y}) size ${params.width}x${params.height}")
@@ -325,8 +331,23 @@ class Fr3kChatBubble(
         host.update(root, params)
     }
     override fun onDragEnd() {
-        bubbleX = params.x
-        bubbleY = params.y
+        val (cx, cy) = clampToDisplay(params.x, params.y)
+        params.x = cx; params.y = cy
+        bubbleX = cx; bubbleY = cy
+        host.update(root, params)
+    }
+
+    /** Clamp a window position to on-screen bounds so drags can't fling it off. */
+    private fun clampToDisplay(x: Int, y: Int): Pair<Int, Int> {
+        val wm = host.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val out = android.graphics.Point()
+        wm.defaultDisplay.getSize(out)
+        // Use the measured window width/height if we have them; else the params.
+        val w = params.width.takeIf { it in 1..out.x } ?: (300 * density).toInt()
+        val h = params.height.takeIf { it in 1..out.y } ?: (120 * density).toInt()
+        val maxX = (out.x - w).coerceAtLeast(0)
+        val maxY = (out.y - h - (28 * density).toInt()).coerceAtLeast(0)
+        return x.coerceIn(0, maxX) to y.coerceIn(0, maxY)
     }
 
     private fun installTouch() {
@@ -354,7 +375,7 @@ class Fr3kChatBubble(
                     MotionEvent.ACTION_MOVE -> {
                         val dx = event.rawX.toInt() - startX
                         val dy = event.rawY.toInt() - startY
-                        if (!dragging && (dx * dx + dy * dy) > (8+8).dp() * (8+8).dp()) dragging = true
+                        if (!dragging && (dx * dx + dy * dy) > 64) dragging = true
                         if (dragging) onDragMove(dx, dy)
                         dragging
                     }

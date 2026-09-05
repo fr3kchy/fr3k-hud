@@ -48,36 +48,36 @@ class Fr3kMiniBrowserOverlay(
 
     init {
         val bg = GradientDrawable().apply {
-            cornerRadius = 12f.dp()
-            setColor(0xFF11111c.toInt())
-            setStroke((1+2).dp(), 0xFF2b2b40.toInt())
+            cornerRadius = 10f.dp()
+            setColor(0xF211111c.toInt())
+            setStroke(0.dp(), 0x13000000.toInt()) // hairline
         }
 
         val header = TextView(ctx).apply {
-            text = "FR3K ▸ BROWSER"
+            text = "BROWSER"
             setTextColor(0xFF7d3cff.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 9f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
-            letterSpacing = 0.1f
-            setPadding((12+14).dp(), (8+14).dp(), (8+14).dp(), (4+14).dp())
+            letterSpacing = 0.16f
+            setPadding(10.dp(), 6.dp(), 6.dp(), 2.dp())
         }
         dragHandle = View(ctx).apply {
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadii = floatArrayOf(12f.dp(), 12f.dp(), 0f, 0f, 0f, 0f, 12f.dp(), 12f.dp())
-                setColor(0xFF1a1a26.toInt())
-                setStroke((1+2).dp(), 0xFF2b2b40.toInt())
+                cornerRadii = floatArrayOf(10f.dp(), 10f.dp(), 0f, 0f, 0f, 0f, 10f.dp(), 10f.dp())
+                setColor(0x0011111c.toInt()) // transparent but a touch target
             }
         }
         close = Button(ctx).apply {
             text = "×"
             setTextColor(0xFF8e8a99.toInt())
             setBackgroundColor(Color.TRANSPARENT)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             contentDescription = "Close browser"
-            setPadding(0, 0, (6 * density).toInt(), 0)
-            // Compact icon button — fixed 32dp so the title row stays slim.
-            layoutParams = LinearLayout.LayoutParams((32 * density).toInt(), (28 * density).toInt())
+            setPadding(0, 0, 8.dp(), 0)
+            // Compact icon button — fixed 28dp so the title row stays slim.
+            layoutParams = LinearLayout.LayoutParams(28.dp(), 28.dp())
+            isAllCaps = false
             setOnClickListener { hide() }
         }
         val titleRow = LinearLayout(ctx).apply {
@@ -105,23 +105,22 @@ class Fr3kMiniBrowserOverlay(
             // on it now.
             setOnClickListener { requestFocus() }
         }
-        // 32dp square icon buttons — the same width as the close button
-        // so the address row stays a tidy strip.
+        // Compact icon buttons — 28dp wide so the address row stays tidy.
         fun iconBtn(text: String, desc: String, onClick: () -> Unit): Button = Button(ctx).apply {
             this.text = text
             setTextColor(0xFFcdd1e0.toInt())
-            setBackgroundColor(0xFF1a1a26.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            setBackgroundColor(0x1A1a1a26.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             contentDescription = desc
             setPadding(0, 0, 0, 0)
-            layoutParams = LinearLayout.LayoutParams((32 * density).toInt(), (28 * density).toInt())
+            layoutParams = LinearLayout.LayoutParams(28.dp(), 28.dp())
             setOnClickListener { onClick() }
         }
         back = iconBtn("←", "Back") { if (webView.canGoBack()) webView.goBack() }
         reload = iconBtn("↻", "Reload") { webView.reload() }
         val go = iconBtn("GO", "Go to address") { onGo() }
-        // The GO button is a little wider to fit the text comfortably.
-        (go.layoutParams as LinearLayout.LayoutParams).width = (44 * density).toInt()
+        // The GO button is a little wider to fit the text.
+        (go.layoutParams as LinearLayout.LayoutParams).width = 40.dp()
 
         val addressRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -157,7 +156,7 @@ class Fr3kMiniBrowserOverlay(
         root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             background = bg
-            addView(dragHandle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (0+28).dp()))
+            addView(dragHandle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 18.dp()))
             addView(titleRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(addressRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // WebView + resize grip in a FrameLayout so the grip can
@@ -172,8 +171,8 @@ class Fr3kMiniBrowserOverlay(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                 ))
                 addView(resizeGrip, android.widget.FrameLayout.LayoutParams(
-                    (16 * density).toInt(),
-                    (16 * density).toInt(),
+                    (14 * density).toInt(),
+                    (14 * density).toInt(),
                     android.view.Gravity.END or android.view.Gravity.BOTTOM,
                 ))
             }
@@ -207,7 +206,21 @@ class Fr3kMiniBrowserOverlay(
         host.update(root, params)
     }
     override fun onDragEnd() {
-        viewX = params.x; viewY = params.y
+        val (cx, cy) = clampToDisplay(params.x, params.y)
+        params.x = cx; params.y = cy; viewX = cx; viewY = cy
+        host.update(root, params)
+    }
+
+    /** Clamp a window position to on-screen bounds so drags can't fling it off. */
+    private fun clampToDisplay(x: Int, y: Int): Pair<Int, Int> {
+        val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val out = android.graphics.Point()
+        wm.defaultDisplay.getSize(out)
+        val w = params.width.takeIf { it in 1..out.x } ?: (320 * density).toInt()
+        val h = params.height.takeIf { it in 1..out.y } ?: (200 * density).toInt()
+        val maxX = (out.x - w).coerceAtLeast(0)
+        val maxY = (out.y - h - (28 * density).toInt()).coerceAtLeast(0)
+        return x.coerceIn(0, maxX) to y.coerceIn(0, maxY)
     }
 
     /**
