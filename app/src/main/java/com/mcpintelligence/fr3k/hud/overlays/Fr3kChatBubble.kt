@@ -351,16 +351,35 @@ class Fr3kChatBubble(
     }
 
     private fun installTouch() {
-        // Drag-from-header only. The chat bubble is a fixed-size popup —
-        // the user explicitly asked for "not resizable", so the
-        // ScaleGestureDetector / resize grip / pinch-zoom code path is
-        // gone. Drag still works: header drag = move the window.
+        // Drag from the header, pinch-zoom anywhere: two-finger pinch
+        // grows/shrinks the bubble via the resize detector, one-finger
+        // drag moves it. The ScaleGestureDetector consumes multi-pointer
+        // events so drag doesn't fight it.
+        val resizeDetector = android.view.ScaleGestureDetector(
+            host.context,
+            object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                    val b = resizeBounds()
+                    val factor = detector.scaleFactor
+                    val newW = (params.width * factor).toInt().coerceIn(b.minW, b.maxW)
+                    val newH = ((params.height * factor).toInt()).coerceIn(b.minH, b.maxH)
+                    if (newW == params.width && newH == params.height) return true
+                    params.width = newW
+                    params.height = newH
+                    root.requestLayout()
+                    host.update(root, params)
+                    return true
+                }
+            },
+        )
+
         fun listener(): View.OnTouchListener {
             var startX = 0
             var startY = 0
             var dragging = false
             return View.OnTouchListener { _, event ->
-                if (event.pointerCount >= 2) return@OnTouchListener false
+                resizeDetector.onTouchEvent(event)
+                if (event.pointerCount >= 2) return@OnTouchListener true
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
                         startX = event.rawX.toInt()
@@ -406,10 +425,7 @@ class Fr3kChatBubble(
      * reflows.
      */
     private fun installResizeTouch() {
-        val minW = (180 * density).toInt()
-        val maxW = (560 * density).toInt()
-        val minH = (320 * density).toInt()
-        val maxH = (720 * density).toInt()
+        val b = resizeBounds()
         var startW = 0
         var startH = 0
         var startX = 0
@@ -419,7 +435,7 @@ class Fr3kChatBubble(
                 MotionEvent.ACTION_DOWN -> {
                     startW = params.width
                     startH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        root.height.takeIf { it > 0 } ?: minH
+                        root.height.takeIf { it > 0 } ?: b.minH
                     } else params.height
                     startX = event.rawX.toInt()
                     startY = event.rawY.toInt()
@@ -428,8 +444,14 @@ class Fr3kChatBubble(
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX.toInt() - startX
                     val dy = event.rawY.toInt() - startY
-                    val newW = (startW + dx).coerceIn(minW, maxW)
-                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    // If height is still WRAP_CONTENT (-2), seed it from the
+                    // actual measured height before adding dy so the box
+                    // doesn't collapse when the grip is dragged down.
+                    val baseH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        root.height.takeIf { it > 0 } ?: b.minH
+                    } else params.height
+                    val newW = (startW + dx).coerceIn(b.minW, b.maxW)
+                    val newH = (baseH + dy).coerceIn(b.minH, b.maxH)
                     params.width = newW
                     params.height = newH
                     // The children already use MATCH_PARENT/weight. Rewriting
@@ -445,6 +467,16 @@ class Fr3kChatBubble(
             }
         }
     }
+
+    /** Shared min/max bounds for both pinch-zoom and the resize grip. */
+    private data class ResizeBounds(val minW: Int, val maxW: Int, val minH: Int, val maxH: Int)
+
+    private fun resizeBounds(): ResizeBounds = ResizeBounds(
+        minW = (180 * density).toInt(),
+        maxW = (580 * density).toInt(),
+        minH = (260 * density).toInt(),
+        maxH = (760 * density).toInt(),
+    )
 
     /**
      * Cycle the active model through the OpenCode Zen free-list. Each tap

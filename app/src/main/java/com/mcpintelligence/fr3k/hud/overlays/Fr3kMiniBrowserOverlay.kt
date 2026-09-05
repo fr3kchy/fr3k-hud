@@ -146,6 +146,13 @@ class Fr3kMiniBrowserOverlay(
             setBackgroundColor(0xFF0d0d18.toInt())
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
+            // Allow on-page pinch-to-zoom of the rendered content (not just
+            // window resize) so the user can zoom into text/images.
+            settings.setSupportZoom(true)
+            settings.builtInZoomControls = true
+            settings.displayZoomControls = false
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     urlField.setText(url ?: "")
@@ -278,8 +285,28 @@ class Fr3kMiniBrowserOverlay(
     }
 
     private fun installTouch() {
+        // One drag listener on the header + pinch-zoom anywhere.
+        val resizeDetector = android.view.ScaleGestureDetector(
+            ctx,
+            object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: android.view.ScaleGestureDetector): Boolean {
+                    val b = resizeBounds()
+                    val factor = detector.scaleFactor
+                    val newW = (params.width * factor).toInt().coerceIn(b.minW, b.maxW)
+                    val newH = (params.height * factor).toInt().coerceIn(b.minH, b.maxH)
+                    if (newW == params.width && newH == params.height) return true
+                    params.width = newW
+                    params.height = newH
+                    root.requestLayout()
+                    host.update(root, params)
+                    return true
+                }
+            },
+        )
         var startX = 0; var startY = 0; var dragging = false
         dragHandle.setOnTouchListener { _, event ->
+            resizeDetector.onTouchEvent(event)
+            if (event.pointerCount >= 2) return@setOnTouchListener true
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> { startX = event.rawX.toInt(); startY = event.rawY.toInt(); dragging = false; true }
                 MotionEvent.ACTION_MOVE -> {
@@ -298,16 +325,23 @@ class Fr3kMiniBrowserOverlay(
         }
     }
 
+    /** Shared min/max bounds for both pinch-zoom and the resize grip. */
+    private data class ResizeBounds(val minW: Int, val maxW: Int, val minH: Int, val maxH: Int)
+
+    private fun resizeBounds(): ResizeBounds = ResizeBounds(
+        minW = (240 * density).toInt(),
+        maxW = (720 * density).toInt(),
+        minH = (160 * density).toInt(),
+        maxH = (960 * density).toInt(),
+    )
+
     /**
      * Resize grip touch handler. 16dp square in the bottom-right of
      * the WebView; dragging changes params.width and params.height
      * (clamped 240..720 x 320..960 dp) and updates the root.
      */
     private fun installResizeTouch() {
-        val minW = (240 * density).toInt()
-        val maxW = (720 * density).toInt()
-        val minH = (320 * density).toInt()
-        val maxH = (960 * density).toInt()
+        val b = resizeBounds()
         var startW = 0
         var startH = 0
         var startX = 0
@@ -326,8 +360,11 @@ class Fr3kMiniBrowserOverlay(
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX.toInt() - startX
                     val dy = event.rawY.toInt() - startY
-                    val newW = (startW + dx).coerceIn(minW, maxW)
-                    val newH = (startH + dy).coerceIn(minH, maxH)
+                    val baseH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        root.height.takeIf { it > 0 } ?: b.minH
+                    } else params.height
+                    val newW = (startW + dx).coerceIn(b.minW, b.maxW)
+                    val newH = (baseH + dy).coerceIn(b.minH, b.maxH)
                     params.width = newW
                     params.height = newH
                     host.update(root, params)
