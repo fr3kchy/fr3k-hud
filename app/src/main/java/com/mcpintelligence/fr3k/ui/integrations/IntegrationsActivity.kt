@@ -53,7 +53,20 @@ class IntegrationsActivity : ComponentActivity() {
             WindowManager.LayoutParams.MATCH_PARENT,
         )
         setContentView(buildContent())
+        // Register a single lifecycle-scoped collector on the ShizukuBridge
+        // state so the Shizuku section live-updates as the binder arrives.
+        // Guarded so rebuild() (called by setContentView below on every
+        // state change) does not stack unlimited collectors.
+        if (!shizukuObserverStarted) {
+            shizukuObserverStarted = true
+            lifecycleScope.launch {
+                com.mcpintelligence.fr3k.integrations.shizuku.ShizukuBridge.get().state
+                    .collect { setContentView(buildContent()) }
+            }
+        }
     }
+
+    @Volatile private var shizukuObserverStarted = false
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -245,27 +258,24 @@ class IntegrationsActivity : ComponentActivity() {
             container.addView(this@IntegrationsActivity.spacer(density, 12))
 
             // ----- Shizuku -----
-            // Always try to bind to Shizuku on activity open so our package
-            // shows up in Shizuku's "apps that can use this" list — without
-            // an active bind request, Shizuku's permission UI doesn't know
-            // we exist. The bind is harmless: it doesn't exec anything,
-            // it just registers our UID with the Shizuku service.
-            //
-            // All probe calls are dispatched on Dispatchers.IO so the
-            // onCreate build phase is never wedged by a slow binder.
-            var shIn = false
-            var shManager = false
-            var shAuth = false
-            var shPing = false
-            lifecycleScope.launch {
-                if (shizuku.isInstalled()) {
-                    runCatching { withContext(Dispatchers.IO) { shizuku.bind() } }
+            // Subscribe to the application-scoped ShizukuBridge state
+            // (Task 7), which tracks the real binder / permission lifecycle
+            // at process scope. The bridge observes package presence plus
+            // the running shizuku_server + binder callback and never
+            // collapses to "not installed" while a binder is pending.
+            val bridge = com.mcpintelligence.fr3k.integrations.shizuku.ShizukuBridge.get()
+            val shState = bridge.state.value
+            val shIn = shState !is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.Missing
+            val shManager = shState is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.ServerStarting ||
+                shState is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.BinderLivePermissionRequired ||
+                shState is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.Ready
+            val shAuth = shState is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.Ready
+            val shPing = shState is com.mcpintelligence.fr3k.integrations.shizuku.ShizukuState.Ready
+            // Drive a live bind attempt on the IO thread (non-blocking).
+            if (shIn) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { shizuku.bind() }
                 }
-                shIn = shizuku.isInstalled()
-                shManager = shizuku.isManagerRunning()
-                shAuth = shizuku.isAuthorized()
-                shPing = withContext(Dispatchers.IO) { shizuku.pingBinder() }
-                setContentView(buildContent())
             }
             val shBody = LinearLayout(this@IntegrationsActivity).apply {
                 orientation = LinearLayout.VERTICAL
