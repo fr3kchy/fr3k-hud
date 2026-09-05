@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import com.mcpintelligence.fr3k.Fr3kApplication
 import com.mcpintelligence.fr3k.adapters.morphe.MorphePatchRepository
 import com.mcpintelligence.fr3k.adapters.lspatch.LspatchAdapter
@@ -16,6 +18,10 @@ import com.mcpintelligence.fr3k.integrations.shizuku.ShizukuAdapter
 import com.mcpintelligence.fr3k.integrations.vector.VectorAdapter
 import com.mcpintelligence.fr3k.permissions.PermissionRegistry
 import com.mcpintelligence.fr3k.permissions.SpecialPermissionLauncher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Integrations panel — single surface that shows the live status of every
@@ -32,7 +38,7 @@ import com.mcpintelligence.fr3k.permissions.SpecialPermissionLauncher
  *   4. Morphe         — Tier 3 (READ_MEDIA_*; ships example patches in assets)
  *   5. Vector / root  — Tier 4 (probeRoot())
  */
-class IntegrationsActivity : Activity() {
+class IntegrationsActivity : ComponentActivity() {
 
     private val termux by lazy { Fr3kApplication.get().termuxBridge }
     private val shizuku by lazy { ShizukuAdapter(this) }
@@ -51,7 +57,7 @@ class IntegrationsActivity : Activity() {
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -89,7 +95,7 @@ class IntegrationsActivity : Activity() {
                 if (bold) setTypeface(typeface, android.graphics.Typeface.BOLD)
             }
 
-        fun makeButton(label: String, onClick: () -> Unit): TextView = TextView(this@IntegrationsActivity).apply {
+        fun makeButton(label: String, onClick: (TextView) -> Unit): TextView = TextView(this@IntegrationsActivity).apply {
             text = label
             setTextColor(0xFF05060A.toInt())
             setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f)
@@ -100,7 +106,7 @@ class IntegrationsActivity : Activity() {
                 (12 * density).toInt(), (8 * density).toInt(),
                 (12 * density).toInt(), (8 * density).toInt(),
             )
-            setOnClickListener { onClick() }
+            setOnClickListener { onClick(this) }
         }
 
         fun makeRow(label: String, onClick: () -> Unit): TextView = TextView(this@IntegrationsActivity).apply {
@@ -128,10 +134,10 @@ class IntegrationsActivity : Activity() {
                 android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 topMargin = (4 * density).toInt()
-                bottomMargin = (4 * density).toInt()
-            }
-            setOnClickListener { onClick() }
-        }
+                                bottomMargin = (4 * density).toInt()
+                            }
+                            setOnClickListener { onClick() }
+                        }
 
         fun section(title: String, body: View): View = LinearLayout(this@IntegrationsActivity).apply {
             orientation = LinearLayout.VERTICAL
@@ -199,15 +205,15 @@ class IntegrationsActivity : Activity() {
                     if (!termuxUsable && termuxAvail) 0xFFfb923c.toInt() else 0xFF9ca3af.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!termuxAvail) {
-                    addView(makeButton("OPEN PLAY STORE → TERMUX") {
+                    addView(makeButton("OPEN PLAY STORE → TERMUX") { _ ->
                         openPlayStore("com.termux")
                     })
                 } else if (!termuxUsable) {
-                    addView(makeButton("OPEN FR3K APP PERMISSIONS → RUN COMMANDS") {
+                    addView(makeButton("OPEN FR3K APP PERMISSIONS → RUN COMMANDS") { _ ->
                         openAppInfoPermissions()
                     })
                     addView(this@IntegrationsActivity.spacer(density, 4))
-                    addView(makeButton("OR: SHOW GRANT INSTRUCTIONS") {
+                    addView(makeButton("OR: SHOW GRANT INSTRUCTIONS") { _ ->
                         showInstructionsDialog(
                             title = "Termux — grant RUN_COMMAND",
                             body = termux.grantInstructions(),
@@ -215,12 +221,23 @@ class IntegrationsActivity : Activity() {
                         )
                     })
                 } else {
-                    addView(makeButton("SMOKE-TEST: echo hi from fr3k") {
-                        val r = termux.runBlocking(
-                            "echo hi-from-fr3k-${System.currentTimeMillis() % 1000}",
-                            30_000,
-                        )
-                        showToast("rc=${r.exitCode}\nstdout=${r.stdout}\nstderr=${r.stderr}")
+                    addView(makeButton("SMOKE-TEST: echo hi from fr3k") { btn ->
+                        // Dispatch on IO + suspend via lifecycleScope so
+                        // the click handler returns immediately and the
+                        // button shows RUNNING while the command runs.
+                        btn.isEnabled = false
+                        btn.text = "RUNNING…"
+                        lifecycleScope.launch {
+                            val r = withContext(Dispatchers.IO) {
+                                termux.runRaw(
+                                    "echo hi-from-fr3k-${System.currentTimeMillis() % 1000}",
+                                    30_000,
+                                )
+                            }
+                            showToast("rc=${r.exitCode}\nstdout=${r.stdout}\nstderr=${r.stderr}")
+                            btn.isEnabled = true
+                            btn.text = "SMOKE-TEST: echo hi from fr3k"
+                        }
                     })
                 }
             }
@@ -233,13 +250,23 @@ class IntegrationsActivity : Activity() {
             // an active bind request, Shizuku's permission UI doesn't know
             // we exist. The bind is harmless: it doesn't exec anything,
             // it just registers our UID with the Shizuku service.
-            if (shizuku.isInstalled()) {
-                runCatching { shizuku.bind() }
+            //
+            // All probe calls are dispatched on Dispatchers.IO so the
+            // onCreate build phase is never wedged by a slow binder.
+            var shIn = false
+            var shManager = false
+            var shAuth = false
+            var shPing = false
+            lifecycleScope.launch {
+                if (shizuku.isInstalled()) {
+                    runCatching { withContext(Dispatchers.IO) { shizuku.bind() } }
+                }
+                shIn = shizuku.isInstalled()
+                shManager = shizuku.isManagerRunning()
+                shAuth = shizuku.isAuthorized()
+                shPing = withContext(Dispatchers.IO) { shizuku.pingBinder() }
+                setContentView(buildContent())
             }
-            val shIn = shizuku.isInstalled()
-            val shManager = shizuku.isManagerRunning()
-            val shAuth = shizuku.isAuthorized()
-            val shPing = shizuku.pingBinder()
             val shBody = LinearLayout(this@IntegrationsActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(tv("tier: 2 (Shizuku permission grant)", if (shPing) 0xFF4ade80.toInt() else 0xFFfbbf24.toInt(), 11f))
@@ -251,7 +278,7 @@ class IntegrationsActivity : Activity() {
                 addView(tv("IPC link live: ${if (shPing) "yes" else "no"}", 0xFF9ca3af.toInt(), 11f))
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!shIn) {
-                    addView(makeButton("OPEN PLAY STORE → SHIZUKU") {
+                    addView(makeButton("OPEN PLAY STORE → SHIZUKU") { _ ->
                         openPlayStore("moe.shizuku.api")
                     })
                 } else if (!shManager) {
@@ -267,16 +294,23 @@ class IntegrationsActivity : Activity() {
                         0xFFfb923c.toInt(), 11f,
                     ))
                     addView(this@IntegrationsActivity.spacer(density, 4))
-                    addView(makeButton("OPEN SHIZUKU APP") {
+                    addView(makeButton("OPEN SHIZUKU APP") { _ ->
                         shizuku.openGrantScreen(this@IntegrationsActivity)
                     })
                 } else if (!shAuth) {
-                    addView(makeButton("GRANT SHIZUKU PERMISSION") {
+                    addView(makeButton("GRANT SHIZUKU PERMISSION") { _ ->
                         shizuku.openGrantScreen(this@IntegrationsActivity)
                     })
                 } else {
-                    addView(makeButton("PING SHIZUKU BINDER") {
-                        showToast("ping=${shizuku.pingBinder()}")
+                    addView(makeButton("PING SHIZUKU BINDER") { btn ->
+                        btn.isEnabled = false
+                        btn.text = "PINGING…"
+                        lifecycleScope.launch {
+                            val ok = withContext(Dispatchers.IO) { shizuku.pingBinder() }
+                            showToast("ping=$ok")
+                            btn.isEnabled = true
+                            btn.text = "PING SHIZUKU BINDER"
+                        }
                     })
                 }
             }
@@ -309,7 +343,7 @@ class IntegrationsActivity : Activity() {
                 }
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (!lspMgr) {
-                    addView(makeButton("OPEN LSPATCH GITHUB") {
+                    addView(makeButton("OPEN LSPATCH GITHUB") { _ ->
                         // Open the JingMatrix LSPatch releases page —
                         // the apk is not on Play Store. We use a chooser
                         // so the user can pick a browser.
@@ -319,14 +353,20 @@ class IntegrationsActivity : Activity() {
                         runCatching { startActivity(i) }
                     })
                 } else {
-                    addView(makeButton("ANNOUNCE FR3K TO MODULES") {
-                        val n = lspatch.announceToModules()
-                        showToast("announced to $n modules")
+                    addView(makeButton("ANNOUNCE FR3K TO MODULES") { btn ->
+                        btn.isEnabled = false
+                        btn.text = "ANNOUNCING…"
+                        lifecycleScope.launch {
+                            val n = withContext(Dispatchers.IO) { lspatch.announceToModules() }
+                            showToast("announced to $n modules")
+                            btn.isEnabled = true
+                            btn.text = "ANNOUNCE FR3K TO MODULES"
+                        }
                     })
                 }
                 if (PermissionRegistry.firstMissing(this@IntegrationsActivity, PermissionRegistry.Feature.LSPATCH) != null) {
                     addView(this@IntegrationsActivity.spacer(density, 6))
-                    addView(makeButton("GRANT STORAGE PERMISSION") {
+                    addView(makeButton("GRANT STORAGE PERMISSION") { _ ->
                         PermissionRegistry.requestRuntime(
                             this@IntegrationsActivity,
                             PermissionRegistry.Feature.LSPATCH,
@@ -350,7 +390,7 @@ class IntegrationsActivity : Activity() {
                 }
                 addView(this@IntegrationsActivity.spacer(density, 8))
                 if (PermissionRegistry.firstMissing(this@IntegrationsActivity, PermissionRegistry.Feature.MORPHE) != null) {
-                    addView(makeButton("GRANT MEDIA PERMISSIONS") {
+                    addView(makeButton("GRANT MEDIA PERMISSIONS") { _ ->
                         PermissionRegistry.requestRuntime(
                             this@IntegrationsActivity,
                             PermissionRegistry.Feature.MORPHE,
@@ -387,16 +427,24 @@ class IntegrationsActivity : Activity() {
                     addView(tv("Vector pkg: ${v.vectorPackage ?: "none"}", 0xFF9ca3af.toInt(), 11f))
                     addView(tv("LSPatch modules: ${v.lspatchPackages.size}", 0xFF9ca3af.toInt(), 11f))
                     addView(this@IntegrationsActivity.spacer(density, 8))
-                    addView(makeButton("SMOKE-TEST: su -c 'id'") {
-                        val out = vector.runRootedShell("id", 4000)
-                        showToast(out.take(400))
+                    addView(makeButton("SMOKE-TEST: su -c 'id'") { btn ->
+                        btn.isEnabled = false
+                        btn.text = "RUNNING…"
+                        lifecycleScope.launch {
+                            val out = withContext(Dispatchers.IO) {
+                                vector.runRootedShell("id", 4000)
+                            }
+                            showToast(out.take(400))
+                            btn.isEnabled = true
+                            btn.text = "SMOKE-TEST: su -c 'id'"
+                        }
                     })
                 }
             }
             container.addView(section("VECTOR / ROOT (TIER 4) — optional, root only", vBody))
             container.addView(this@IntegrationsActivity.spacer(density, 24))
 
-            addView(makeButton("CLOSE") { finish() })
+            addView(makeButton("CLOSE") { _ -> finish() })
         }
 
         val scroll = android.widget.ScrollView(this@IntegrationsActivity).apply {
