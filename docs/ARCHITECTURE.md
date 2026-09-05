@@ -11,12 +11,12 @@ FR3K HUD is a **layered, capability-aware Android application**. Each layer has 
 ├──────────────────────────────────────────────────────────────┤
 │ HUD overlay service (HudOverlayService — Tier 1)              │
 │ core service (Fr3kCoreService — Tier 0)                      │
-│ mesh / location services (V2)                                │
+│ location services (V2)                                        │
 ├──────────────────────────────────────────────────────────────┤
 │ Plugin Manager (failure isolation, owner-scoped teardown)     │
 │   ├ Hermes plugin (Tier 0)                                   │
+│   ├ BLACKWAVE plugin (fleet bridge consumer)                 │
 │   ├ Termux plugin (V2, Tier 0)                               │
-│   ├ MeshCore / Meshtastic plugins (V2)                       │
 │   └ Share / URL sanitiser / device handoff plugins            │
 ├──────────────────────────────────────────────────────────────┤
 │ CapabilityRegistry · CommandRegistry · DeviceRegistry        │

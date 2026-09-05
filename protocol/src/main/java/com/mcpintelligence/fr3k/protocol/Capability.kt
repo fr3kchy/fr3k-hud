@@ -128,4 +128,18 @@ object Capabilities {
     const val AI_LOCAL_CHAT = "ai.local.chat"
     const val AI_LOCAL_VISION = "ai.local.vision"
     const val AI_LOCAL_EMBED = "ai.local.embedding"
+
+    // BLACKWAVE fleet
+    const val BLACKWAVE_FLEET_DISCOVER = "blackwave.fleet.discover"
+    const val BLACKWAVE_PROFILE_APPLY = "blackwave.profile.apply"
+    const val BLACKWAVE_OTA_APPLY = "blackwave.ota.apply"
+    const val BLACKWAVE_RADIO_STATUS = "blackwave.radio.status"
+    const val BLACKWAVE_RADIO_CONFIGURE = "blackwave.radio.configure"
+    const val BLACKWAVE_RETICULUM_STATUS = "blackwave.reticulum.status"
+    const val BLACKWAVE_RETICULUM_LINK_TEST = "blackwave.reticulum.link_test"
+    const val BLACKWAVE_EPAPER_STATUS = "blackwave.epaper.status"
+    const val BLACKWAVE_BATTERY_TELEMETRY = "blackwave.battery.telemetry"
+    const val BLACKWAVE_LOCATION_READ = "blackwave.location.read"
+    const val BLACKWAVE_DEVICE_REBOOT = "blackwave.device.reboot"
+    const val BLACKWAVE_DEVICE_DESCRIBE = "blackwave.device.describe"
 }

@@ -13,8 +13,8 @@ android {
         applicationId = "com.mcpintelligence.fr3k.hud"
         minSdk = 31
         targetSdk = 35
-        versionCode = 415
-        versionName = "0.4.15"
+        versionCode = 416
+        versionName = "0.4.16"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

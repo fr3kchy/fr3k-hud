@@ -17,8 +17,9 @@ import com.mcpintelligence.fr3k.core.DeviceHandoffAdapter
 import com.mcpintelligence.fr3k.core.GpsPlugin
 import com.mcpintelligence.fr3k.core.ShareCommandsPlugin
 import com.mcpintelligence.fr3k.core.SystemPlugin
-import com.mcpintelligence.fr3k.core.MeshPlugin
 import com.mcpintelligence.fr3k.core.VoiceIntentPlanner
+import com.mcpintelligence.fr3k.integrations.blackwave.BlackwaveBridgeClient
+import com.mcpintelligence.fr3k.integrations.blackwave.BlackwavePlugin
 import com.mcpintelligence.fr3k.integrations.hermes.AiProviderRegistry
 import com.mcpintelligence.fr3k.integrations.hermes.HermesAskCommand
 import com.mcpintelligence.fr3k.integrations.hermes.HermesPlugin
@@ -78,19 +79,25 @@ class Fr3kApplication : Application() {
         super.onCreate()
         instance = this
         bootstrap()
+        // Register the Shizuku listeners at process scope so the binder /
+        // permission state is tracked once, not per Activity. Without this
+        // the Integrations panel's Shizuku section renders "manager not
+        // installed" even when the binder is live but the callback hasn't
+        // arrived yet.
+        com.mcpintelligence.fr3k.integrations.shizuku.ShizukuBridge.start(this)
     }
 
     private fun bootstrap() {
         Log.i(TAG, "FR3K booting on deviceId=${identity.deviceId} android=${identity.androidId} v${identity.appVersion}")
         registerHermes()
         registerOpenCode()
+        registerBlackwave()
         fr3kCore.pluginManager.register(GpsPlugin())
         fr3kCore.pluginManager.register(ShareCommandsPlugin(
             contextEngineProvider = { contextEngineImpl },
             deviceRegistryProvider = { deviceRegistryImpl },
         ))
         fr3kCore.pluginManager.register(SystemPlugin())
-        fr3kCore.pluginManager.register(MeshPlugin())
         fr3kCore.pluginManager.startAll()
         seedAutomations()
     }
@@ -128,6 +135,17 @@ class Fr3kApplication : Application() {
                 aiProviderRegistry = aiProviders,
                 commandFactory = { askCommand },
             )
+        )
+    }
+
+    private fun registerBlackwave() {
+        val bridgeClient = BlackwaveBridgeClient(
+            endpointProvider = { settingsImpl.settings.value.blackwaveEndpoint },
+            credentialProvider = { secureStore.get(settingsImpl.settings.value.blackwaveCredentialKey) },
+            clientIdProvider = { settingsImpl.settings.value.blackwaveClientId },
+        )
+        fr3kCore.pluginManager.register(
+            BlackwavePlugin(bridgeClient = bridgeClient)
         )
     }
 

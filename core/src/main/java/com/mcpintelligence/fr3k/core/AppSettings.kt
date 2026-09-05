@@ -27,6 +27,9 @@ class AppSettings {
         val consentProfile: ConsentLevel = ConsentLevel.NORMAL,
         val hermesEndpoint: String = "https://hermes.local/api/v1/agent",
         val hermesAuthTokenKey: String = "hermes.auth.token",
+        val blackwaveEndpoint: String = "https://blackwave.local:8878",
+        val blackwaveCredentialKey: String = "blackwave.credential",
+        val blackwaveClientId: String = "fr3k-hud",
         val termuxPackage: String = "com.termux",
         val autoShareTargets: List<String> = emptyList(),
         val telemetryEnabled: Boolean = true,
@@ -38,6 +41,7 @@ class AppSettings {
             put("hudPosition", hudPosition)
             put("consentProfile", consentProfile.name)
             put("hermesEndpoint", hermesEndpoint)
+            put("blackwaveEndpoint", blackwaveEndpoint)
             put("termuxPackage", termuxPackage)
             put("autoShareTargets", JSONArray(autoShareTargets))
             put("telemetryEnabled", telemetryEnabled)
