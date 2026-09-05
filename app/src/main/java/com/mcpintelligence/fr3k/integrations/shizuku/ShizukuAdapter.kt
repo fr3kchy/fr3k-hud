@@ -248,61 +248,30 @@ class ShizukuAdapter(private val context: Context) {
     /**
      * Request the Shizuku permission. SUI shows a system dialog, and on
      * accept our package appears in the SUI admin list ("apps that can
-     * use this"). Calls the real `Shizuku.requestPermission()` from the
-     * AAR — reflection was tried first and silently failed because the
-     * AAR class wasn't on the classpath at runtime.
+     * use this"). Delegates to [ShizukuBridge.requestPermission] which
+     * is the ONLY Shizuku grant path — it calls
+     * `Shizuku.requestPermission(code)` after the binder is live and
+     * never falls through to the OS `Activity.requestPermissions()`
+     * dialog (that path does not register us in SUI's admin list).
      *
-     * If the AAR call fails (e.g. Shizuku not installed), falls back to
-     * launching the Shizuku app so the user can grant manually.
+     * If the bridge refuses (no binder yet) or the grant can't fire,
+     * falls back to launching the Shizuku app so the user can grant
+     * manually inside SUI.
      */
     fun openGrantScreen(activity: android.app.Activity? = null) {
         // Invalidate any cached binder state so the next status read
         // re-queries SUI after the user toggles the grant.
         cachedBinder = null
         backgroundBindStarted = false
-        // 1) If we're on API 33+ and our manifest declared the
-        //    `moe.shizuku.api.permission.PERMISSION` runtime permission,
-        //    fire the standard Android grant dialog first. SUI 13.5+
-        //    accepts grants through this path and registers us in its
-        //    admin list automatically.
-        try {
-            if (android.os.Build.VERSION.SDK_INT >= 33 &&
-                context.checkSelfPermission("moe.shizuku.api.permission.PERMISSION") !=
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                if (activity != null) {
-                    activity.requestPermissions(
-                        arrayOf("moe.shizuku.api.permission.PERMISSION"),
-                        REQ_SHIZUKU_PERMISSION,
-                    )
-                    return
-                }
-            }
-        } catch (_: Throwable) { /* not declared — fall through */ }
 
-        // 2) Direct AAR call: this is the path that actually puts us in
-        //    the SUI admin list. Shizuku.requestPermission() pops SUI's
-        //    own dialog (not the OS one) which the user must accept.
-        //    We require a live binder (Shizuku service running) before
-        //    firing the call; otherwise SUI would never see the
-        //    request.
-        val launched = try {
-            val b = Shizuku.getBinder()
-            if (b == null) {
-                Log.w(TAG, "Shizuku binder is null — service not running")
-                false
-            } else {
-                Shizuku.requestPermission(REQ_SHIZUKU_PERMISSION)
-                true
-            }
-        } catch (t: Throwable) {
-            Log.w(TAG, "Shizuku.requestPermission failed: ${t.message}")
-            false
-        }
+        // Ask the bridge to fire the AAR grant request. It refuses
+        // unless the binder is live, keeping us from a silent no-op.
+        val dispatched = ShizukuBridge.get().requestPermission(REQ_SHIZUKU_PERMISSION)
 
-        // 3) Last-resort: launch the Shizuku app so the user can grant
-        //    from inside SUI manually.
-        if (!launched) {
+        // Last-resort: launch the Shizuku app so the user can grant
+        // from inside SUI manually.
+        if (!dispatched) {
+            Log.i(TAG, "Shizuku.requestPermission not dispatched — launching ${grantPkg}")
             val i = context.packageManager.getLaunchIntentForPackage(grantPkg)
             if (i != null) {
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
