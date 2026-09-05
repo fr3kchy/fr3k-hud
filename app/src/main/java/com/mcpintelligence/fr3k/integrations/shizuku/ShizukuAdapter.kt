@@ -38,7 +38,13 @@ import rikka.shizuku.Shizuku
  */
 class ShizukuAdapter(private val context: Context) {
 
-    data class ShResult(val stdout: String, val stderr: String, val exitCode: Int)
+    data class ShResult(
+        val stdout: String,
+        val stderr: String,
+        val exitCode: Int,
+        val durationMs: Long = 0,
+        val provenance: String = "",
+    )
 
     private val pkg = "moe.shizuku.api.permission"
     private val grantPkg = "moe.shizuku.api"
@@ -212,37 +218,36 @@ class ShizukuAdapter(private val context: Context) {
     }
 
     /**
-     * Run a command through Shizuku's elevated context. Equivalent of
-     * `Runtime.getRuntime().exec(cmd)` but with the system_server-grade
-     * UID/permission Shizuku has been granted by the user.
+     * Run a command through Shizuku's elevated context — but only via the
+     * policy-scoped executor ([ShizukuCommandExecutor]). Raw shell strings
+     * are denied by policy; this only accepts a typed operation
+     * (GetPackageInfo / ListPackageSplits / InstallApprovedApk /
+     * UninstallTestFixture / ReadSystemSetting). Returns stdout, stderr,
+     * exit code, duration and the operation provenance.
      */
+    @Deprecated("Use ShizukuCommandExecutor.execute(binder, op) with a typed Operation")
     fun shellCommand(command: String, timeoutMs: Long = 8000): ShResult {
-        val b = bind() ?: return ShResult("", "shizuku not available", 127)
+        val b = bind() ?: return ShResult("", "shizuku not available", 127, 0, "")
         if (!isAuthorized()) {
-            return ShResult("", "shizuku permission not granted for ${context.packageName}", 126)
+            return ShResult("", "shizuku permission not granted for ${context.packageName}", 126, 0, "")
         }
-        return try {
-            // IShizukuService.newProcess(String[] cmd, String[] env, String dir)
-            // transact code 0x0A on stable SUI builds.
-            val data = Parcel.obtain()
-            val reply = Parcel.obtain()
-            data.writeInterfaceToken("moe.shizuku.api.IShizukuService")
-            data.writeStringArray(arrayOf("/system/bin/sh", "-c", command))
-            data.writeStringArray(arrayOf<String>())
-            data.writeString("/")
-            b.transact(0x0A, data, reply, 0)
-            reply.readException()
-            // The newProcess binder returns a parcel with a file descriptor
-            // pair (stdout, stderr) and a PID. We don't try to consume them
-            // synchronously in this minimal adapter — callers wanting the
-            // actual output should use the higher-level [ShizukuShell] helper.
-            reply.recycle()
-            data.recycle()
-            ShResult("", "shizuku shellCommand not fully implemented in V1", -1)
-        } catch (t: Throwable) {
-            Log.w(TAG, "Shizuku shellCommand failed: ${t.message}")
-            ShResult("", t.message ?: t.javaClass.simpleName, 1)
+        // Policy-gate: a raw shell string is never allowed. Map to a typed
+        // operation request based on the command prefix — anything unknown
+        // is denied, never executed.
+        val (request, arg) = when {
+            command.startsWith("pm path ") -> "GetPackageInfo" to command.removePrefix("pm path ").trim()
+            command.startsWith("pm list ") -> "ListPackageSplits" to command.removePrefix("pm list ").trim()
+            command.startsWith("install ") -> "InstallApprovedApk" to command.removePrefix("install ").trim()
+            command.startsWith("uninstall ") -> "UninstallTestFixture" to command.removePrefix("uninstall ").trim()
+            command.startsWith("settings get ") -> "ReadSystemSetting" to command.removePrefix("settings get ").trim()
+            else -> "" to command
         }
+        val op = ShizukuCommandExecutor.Operation.from(request, arg)
+        if (op is ShizukuCommandExecutor.Operation.Denied) {
+            return ShResult("", "denied: ${op.reason}", 1, 0, "policy")
+        }
+        val exec = ShizukuCommandExecutor.execute(b, op as ShizukuCommandExecutor.Operation.Allowed)
+        return ShResult(exec.stdout, exec.stderr, exec.exitCode, exec.durationMs, exec.provenance)
     }
 
     /**
