@@ -579,7 +579,7 @@ private fun LanTransportBlock(session: AddDeviceState, onProbe: () -> Unit, onOp
             Spacer(Modifier.height(6.dp))
             Column {
                 devices.sortedBy { it.display_name }.forEach { card ->
-                    LanDeviceRow(card) { onOpen(card.model_id) }
+                    LanDeviceRow(card) { onOpen(card.device_id ?: card.model_id) }
                 }
             }
         }
@@ -769,40 +769,35 @@ private fun UnavailableBlock(title: String, reason: String, wizardStep: WizardSt
 /** §7 device detail panel — the fields listed in the pass spec. */
 @Composable
 private fun DeviceDetailPanel(modelId: String, status: DeviceStatusResponse) {
+    fun level(value: String): BwLevel = if (status.live && !status.cached && value.isNotBlank() &&
+        listOf("UNKNOWN", "NOT REPORTED", "N/P", "null").none { value.contains(it, ignoreCase = true) }) BwLevel.PASS else BwLevel.WARN
     Fr3kPanel(title = "device detail · $modelId") {
-        StatusRow(
-            "observation",
-            if (status.live) BwLevel.PASS else BwLevel.WARN,
-            "${status.observation_status} · observed ${status.observed_at ?: "—"}" +
-                if (status.cached) " · cached" else "",
-        )
-        val name = (status.identity["display_name"] as? JsonPrimitive)?.content
-        val deviceClass = (status.identity["device_class"] as? JsonPrimitive)?.content
-        StatusRow("display name", if (!name.isNullOrBlank()) BwLevel.PASS else BwLevel.WARN, name ?: "unknown")
-        if (!deviceClass.isNullOrBlank()) StatusRow("device class", BwLevel.PASS, deviceClass)
-        StatusRow(
-            "firmware",
-            BwLevel.PASS,
-            status.software["firmware_version"] ?: status.software["firmware"]
-                ?: status.software.entries.joinToString(", ") { "${it.key}=${it.value}" }.ifBlank { "—" },
-        )
-        if (status.connectivity.isNotEmpty()) {
-            StatusRow("connectivity", BwLevel.PASS, status.connectivity.entries.joinToString(", ") { "${it.key}=${it.value}" })
+        StatusRow("observation", if (status.live && !status.cached) BwLevel.PASS else BwLevel.WARN,
+            "${status.observation_status} · observed ${status.observed_at ?: "—"}" + if (status.cached) " · cached" else "")
+        val deviceId = (status.identity["device_id"] as? JsonPrimitive)?.content ?: "not enrolled"
+        StatusRow("identity", if (status.device_identity_verified) BwLevel.PASS else BwLevel.WARN,
+            "$deviceId · ${status.identity_evidence}")
+        val name = (status.identity["display_name"] as? JsonPrimitive)?.content ?: "unknown"
+        StatusRow("display name", level(name), name)
+        val firmware = status.software["installed_firmware"] ?: status.software["firmware_version"] ?: status.software["firmware"] ?: "NOT REPORTED"
+        StatusRow("firmware", level(firmware), firmware)
+        val fields = listOf("connectivity" to status.connectivity, "battery" to status.battery, "verification" to status.verification)
+        fields.forEach { (label, values) ->
+            if (values.isNotEmpty()) {
+                val text = values.entries.joinToString(", ") { "${it.key}=${it.value}" }
+                StatusRow(label, level(text), text)
+            }
         }
-        if (status.battery.isNotEmpty()) {
-            StatusRow("battery", BwLevel.PASS, status.battery.entries.joinToString(", ") { "${it.key}=${it.value}" })
+        StatusRow("capabilities", level(status.hardware.joinToString()),
+            status.hardware.joinToString().ifBlank { "none reported" } + " · ${status.capability_evidence}")
+        if (status.catalog_capabilities.isNotEmpty()) {
+            StatusRow("model claims", BwLevel.WARN, status.catalog_capabilities.joinToString())
         }
-        if (status.verification.isNotEmpty()) {
-            StatusRow("verification", BwLevel.PASS, status.verification.entries.joinToString(", ") { "${it.key}=${it.value}" })
-        }
-        if (status.hardware.isNotEmpty()) {
-            StatusRow("hardware", BwLevel.PASS, status.hardware.joinToString(", "))
-        }
-        if (status.power.isNotEmpty()) {
-            StatusRow("power", BwLevel.PASS, status.power.entries.joinToString(", ") { (k, v) -> "$k=${(v as? JsonPrimitive)?.content ?: v}" })
-        }
-        if (status.validation.isNotEmpty()) {
-            StatusRow("validation", BwLevel.PASS, status.validation.entries.joinToString(", ") { (k, v) -> "$k=${(v as? JsonPrimitive)?.content ?: v}" })
+        listOf("power" to status.power, "validation" to status.validation).forEach { (label, values) ->
+            if (values.isNotEmpty()) {
+                val text = values.entries.joinToString(", ") { (k,v) -> "$k=${(v as? JsonPrimitive)?.content ?: v}" }
+                StatusRow(label, level(text), text)
+            }
         }
     }
 }

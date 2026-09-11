@@ -159,4 +159,57 @@ class VisibleToolsDeviceTest {
             server.shutdown()
         }
     }
+
+    @Test fun termuxHealthMatchesCurrentPermissionAndRealProbe() = runBlocking {
+        val expected = InstrumentationRegistry.getArguments().getString("termuxExpected", "CONNECTED")
+        com.mcpintelligence.fr3k.integrations.termux.TermuxHealth.invalidate()
+        val state = com.mcpintelligence.fr3k.integrations.termux.TermuxHealth.probe(app, app.termuxBridge)
+        val label = com.mcpintelligence.fr3k.integrations.termux.TermuxHealth.statusLabel(state).label
+        assertEquals(expected, label)
+        assertEquals(expected == "CONNECTED", state.operational)
+    }
+
+    @Test fun configuredOpenRouterAuthenticatesWithoutExposingKey() = runBlocking {
+        val hasKey = !app.secureStore.get(app.settings.settings.value.openrouterApiKeyKey).isNullOrBlank()
+        org.junit.Assume.assumeTrue("OpenRouter key is not configured; live provider verification remains pending", hasKey)
+        val health = app.openRouterProvider.health()
+        assertTrue("OpenRouter validation: ${health.message}", health.online)
+    }
+
+    @Test fun liveFreeRouterUsesActualBrowserTool() = runBlocking {
+        val keyName = app.settings.settings.value.openrouterApiKeyKey
+        org.junit.Assume.assumeTrue("Live model test needs a configured key", !app.secureStore.get(keyName).isNullOrBlank())
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setHeader("Content-Type", "text/html").setBody("<html><title>FR3K live tool test</title><body>Harmless local browser fixture</body></html>"))
+        server.start()
+        val page = server.url("/fr3k-live-${System.nanoTime()}").toString()
+        val provider = com.mcpintelligence.fr3k.integrations.openrouter.OpenRouterProvider(apiKeyProvider = { app.secureStore.get(keyName) })
+        val bus = AgentToolBus()
+        val session = SharedAgentSession(bus, provider, "phone-test", maxToolRounds = 4)
+        val browser = withContext(Dispatchers.Main) { Fr3kMiniBrowserOverlay(host(), session = session) }
+        val delegate = BrowserAgentTool(browser)
+        val calls = java.util.concurrent.atomic.AtomicInteger()
+        bus.register(object : AgentTool {
+            override val id = "browser.navigate"
+            override val displayName = "Browser"
+            override val description = "Read the current browser URL. Use action getUrl. The browser already contains a local test page."
+            override val capability = "browser"
+            override val requiresNetwork = false
+            override suspend fun invoke(context: ToolContext, args: ToolArgs): ToolResult {
+                if (args.get("action") != "getUrl") return ToolResult.Failure("This test allows only getUrl")
+                calls.incrementAndGet()
+                return delegate.invoke(context, args)
+            }
+        })
+        try {
+            val opened = delegate.invoke(context, ToolArgs(mapOf("action" to "open", "url" to page)))
+            assertTrue(opened.toString(), opened is ToolResult.Success)
+            withTimeout(120000) { session.send("Use the browser tool to read the current URL, then report that exact URL. Do not navigate or perform any other operation.") }
+            assertTrue("No real tool invocation. " + session.lines.value.filter { it.speaker == "agent" }.joinToString { it.text }, calls.get() > 0)
+            assertTrue("Model did not report observed URL", session.lines.value.any { it.speaker == "agent" && it.text.contains(page) })
+        } finally {
+            withContext(Dispatchers.Main) { browser.shutdown() }
+            server.shutdown()
+        }
+    }
 }

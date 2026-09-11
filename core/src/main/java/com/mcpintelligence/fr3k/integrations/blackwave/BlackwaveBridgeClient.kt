@@ -155,6 +155,10 @@ data class DeviceStatusResponse(
     val observation_status: String = "unknown",
     val live: Boolean = false,
     val cached: Boolean = true,
+    val identity_evidence: String = "unknown",
+    val device_identity_verified: Boolean = false,
+    val capability_evidence: String = "none",
+    val catalog_capabilities: List<String> = emptyList(),
 )
 
 /**
@@ -184,6 +188,9 @@ data class FleetDeviceCard(
     val enrollment: String = "",
     val device_class: String = "",
     val blackwave_authority: Boolean = false,
+    val device_id: String? = null,
+    val capabilities: List<String> = emptyList(),
+    val capability_evidence: String = "none",
 )
 
 /**
