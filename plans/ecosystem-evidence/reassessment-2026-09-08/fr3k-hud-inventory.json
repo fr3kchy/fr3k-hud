@@ -1,0 +1,1238 @@
+[
+  {
+    "path": ".gitignore",
+    "bytes": 206,
+    "sha256": "a1b7fb14d8c64fb11b51f1a426a35aba9f5e1325ff42339d426ce47cf9c7fdfd",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "README.md",
+    "bytes": 8301,
+    "sha256": "d56623eb8d8af4ec957c383943fb186fdfcd31b23cbca06025fc5d049cad71d7",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/build.gradle.kts",
+    "bytes": 3407,
+    "sha256": "16b3361fdcffacdd9bfec5766d97c24ee87f7facdcd8c75d62e294f0a039fe4c",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/proguard-rules.pro",
+    "bytes": 197,
+    "sha256": "8526c98a7d291d42417466c8cfd06e0e860a9540df1cfa9512b607a3267c8ef8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/AndroidManifest.xml",
+    "bytes": 17479,
+    "sha256": "6ef8a98af81be172fef7781c36f6b3f7052de80b533762c51e409c870e8d30c2",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/Fr3kApplication.kt",
+    "bytes": 8697,
+    "sha256": "025b5e4f08e20502cba1fd631c99efb471fd31d56da3d7ed84d9978f1adc3302",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/adapters/lspatch/LspatchAdapter.kt",
+    "bytes": 8914,
+    "sha256": "bb8025e9c6c555593a76d8f3eaf39d333326d862d31f1ec8ee76cccdc862077d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/adapters/morphe/MorphePatchRepository.kt",
+    "bytes": 5356,
+    "sha256": "b004c65c6a620c509c139d027e99e8b4e57156534423ac47eac35051b05b9201",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCoreService.kt",
+    "bytes": 2309,
+    "sha256": "a9642601565a995fde4c9995302538853440c66002b1f7e43a98fa585ee45f2f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/AutomationActionExecutor.kt",
+    "bytes": 3631,
+    "sha256": "6405ceecccb4221a48aa2c057ddbed1eb88c2daaa773bd56acfc6ab41a097415",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/Fr3kHudOrb.kt",
+    "bytes": 12060,
+    "sha256": "a0afe88d07fb530df1c7668e0ca41ca5a579f7160f9658c4bda24692ecd354ce",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/HudOverlayService.kt",
+    "bytes": 11453,
+    "sha256": "546a847c073837e9a432bed2866236ca2e09f77bdad01773307fc0746ea12444",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/LongPressRadialActivity.kt",
+    "bytes": 6268,
+    "sha256": "d70b1f77c1207598d3c226d0d3f125bdf2b53817cce28fa4a230112f12911a95",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kChatBubble.kt",
+    "bytes": 29799,
+    "sha256": "5d526c916efcef6178c936d9d8bf928d8f5f078d89e3ddcf65125d719ca42442",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kMiniBrowserOverlay.kt",
+    "bytes": 16636,
+    "sha256": "366ad68807dc1eb0b271128e555ff60613d9c5d06e15380afbafaa4c016a37a8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kOverlay.kt",
+    "bytes": 5239,
+    "sha256": "7a00ccf2b428c86c119f7f434241f1055f1d9089e7b4300d55b6be740b3fa9fa",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kOverlayHelpers.kt",
+    "bytes": 10081,
+    "sha256": "065ab3c5bb3d9beb0fc5def8aeada4f4b4fb152b0043a77c8f9c0ee2f295d27e",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kTerminalOverlay.kt",
+    "bytes": 15533,
+    "sha256": "da392e569a8653d6c6871ccf83a678186d2a05ab9d0d41a3bce0bacd658e1055",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/OverlayManager.kt",
+    "bytes": 3455,
+    "sha256": "1f378e45b7cb213f0871b2bd7141fe81448eb1b93ec19debe578b7c9c437f80f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/RadialMenuOverlay.kt",
+    "bytes": 8110,
+    "sha256": "de2a2fd19098c4a97c5402a08da08d46be07ff9640d4a449dfa3fac6b79bef57",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/TtsPreference.kt",
+    "bytes": 2445,
+    "sha256": "1e1aaaf9fa9fc439e8ceb8ab66606f367a140f13aab3fd50ff96b217a9357a5f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/quickhud/Fr3kHudTileService.kt",
+    "bytes": 2241,
+    "sha256": "aa973e1a2b21f40982308d561ddd41043ef7c81602863a18d327ebe2aa9e45f0",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/quickhud/QuickHudActivity.kt",
+    "bytes": 7652,
+    "sha256": "6212ad1d5bc73cacfb4fe43dd1804b6393aaed4173ca500d34ae808f91d56355",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/receivers/InstallStateProbe.kt",
+    "bytes": 7456,
+    "sha256": "22ccdac449cbb66014353447b82ee569204fafd9b76150ae69bdee9e50d07e4d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/receivers/Receivers.kt",
+    "bytes": 6596,
+    "sha256": "6a1920db3fb4efb52511b8f1340a906c84788ad0d39ac954ef22e1b0fd982b93",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuAdapter.kt",
+    "bytes": 13115,
+    "sha256": "63fd439c8066d4bcc9cb0a6448f5a34d09410b593604defaa32e984ca650a674",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuBridge.kt",
+    "bytes": 6839,
+    "sha256": "a58a5f925bafea55ee20571ab4b717d0dcf69b8d9f741a52d62ded8eec8dd07b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuCommandExecutor.kt",
+    "bytes": 7004,
+    "sha256": "b14f67b4d14089b0be0e27d24eb74953ed4c4e18a56bc6b60c2d8853232212fe",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuState.kt",
+    "bytes": 7424,
+    "sha256": "ee2f2dfc4ea1d601b70a715e884be4868913f916dd9b2b4fc8e494bd0f9d10c5",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxBridge.kt",
+    "bytes": 13288,
+    "sha256": "405aecdd14134084679770d6a9a24e5a8df89034287a9130079223a053c18c77",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxCommandContract.kt",
+    "bytes": 3982,
+    "sha256": "3ff33ce72a1c2b7262e50cfbe8ebb2f47cd53526b642bd2648a4da73238fb5e7",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultParser.kt",
+    "bytes": 5740,
+    "sha256": "16f9134057cce0314151591a6349212fd79d0750c89b46cf72f9813a8cf5628f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultReceiver.kt",
+    "bytes": 2840,
+    "sha256": "7643e3e18c0c06eac10e924eb07e5a1288d5cd258459568ee8beaf69bb2ea530",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/vector/VectorAdapter.kt",
+    "bytes": 5145,
+    "sha256": "933b4826623cd6afdc3354122eb38e3b6e076a507bb64c56d2489efe3b4e2639",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/location/LocationService.kt",
+    "bytes": 2187,
+    "sha256": "dd8b2fc375f4c1fa2b2898fc02a5d9945beb3b1f1d59b44b35f534eefc38c457",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/mesh/MeshService.kt",
+    "bytes": 2150,
+    "sha256": "404ffe01b249559ac699b30635108b67d19230701250f51737eaa72434bdd226",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/permissions/PermissionRegistry.kt",
+    "bytes": 5953,
+    "sha256": "aadf0199110a7ea75150c75db424f1f4cd10ceaa5e8bb57fa38a0f2a5db49516",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/permissions/SpecialPermissionLauncher.kt",
+    "bytes": 1455,
+    "sha256": "c417931d7a582be654fe8062f3592fd95f884d150c12b7825ea45c100aa38db3",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/share/ShareReceiverActivity.kt",
+    "bytes": 9580,
+    "sha256": "af05149ae3b6462fb14be971fb93616d44a93c56e83c249d0b8752c5732ae78d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/MainActivity.kt",
+    "bytes": 24241,
+    "sha256": "979dcd7d86f7fc691e1f736be581e936ce7b0c16390edda3881d3f7c7523a8f6",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/ask/AskAboutThisActivity.kt",
+    "bytes": 10619,
+    "sha256": "b60be84d72b765e5cc84347fec07d7a28b23bc81c607474c357ca59e721f6b7a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/automation/AutomationActivity.kt",
+    "bytes": 7646,
+    "sha256": "cff32cf795b490bf5365467b383fb1a6f8f81c6cabd2b16cf2f5ad81bb61d35a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/clipboard/SmartClipboardActivity.kt",
+    "bytes": 7927,
+    "sha256": "f8f0f3dbeaea8f583abaa8d3ab53acb18593bcfbef5319120314a6233287fda4",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/devoverlay/DeveloperOverlayActivity.kt",
+    "bytes": 6587,
+    "sha256": "bf6ce925cb2b888567af382a7f14e365b1a3b89d7145e2c62d3e6bc24c69e294",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/diagnostics/DiagnosticsActivity.kt",
+    "bytes": 11553,
+    "sha256": "b3efd1dc822f0757d23b3b06dc0f757956e9c357b1b14b87f1fe4737a55fc5b0",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/handoff/DeviceHandoffActivity.kt",
+    "bytes": 8823,
+    "sha256": "c54162e1fa806fc3f81638257ed3994533b0f14ac3b7e9350237dfb251a405f3",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/integrations/IntegrationsActivity.kt",
+    "bytes": 31103,
+    "sha256": "b0cabe0b02eb77a125272ef86c91eefd60b2a4a603ef34646afaa6108408169d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/palette/CommandPaletteActivity.kt",
+    "bytes": 9896,
+    "sha256": "8bf64c29d2a0687d8dbb2dfbe7b1601c7b0036e4bea5e4b7bfe39a4811aab603",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/screenshot/ScreenshotActivity.kt",
+    "bytes": 7929,
+    "sha256": "a5a735ef5f822264789da62dea6a5490725171ddc2c2f9c22875916ac54e002f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/settings/SettingsActivity.kt",
+    "bytes": 9124,
+    "sha256": "76922ee48236a4428e3b5252ff3c445d9f929e17077b57e4a5fcaac83794a899",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/drawable/fr3k_orb.xml",
+    "bytes": 236,
+    "sha256": "b7594340c19e8f0db25b711efd731f744b5e56fd104f981646a8c25af94e026e",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/drawable/ic_fr3k_notification.xml",
+    "bytes": 454,
+    "sha256": "9b73c4ecdb4f6e599549350698d7bad9f0cf67838f3835cf6ba603cc881f655b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/drawable/ic_launcher_foreground.xml",
+    "bytes": 552,
+    "sha256": "69cc71591ac39795683c36d46840044fb32e6db9cb41a97b6c67c86f92fe82ef",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "bytes": 254,
+    "sha256": "e3e815d8b771f88542096d6f9ffbf39d06c70483e51e02d6668316a578498676",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "bytes": 254,
+    "sha256": "e3e815d8b771f88542096d6f9ffbf39d06c70483e51e02d6668316a578498676",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/values/colors.xml",
+    "bytes": 535,
+    "sha256": "bd5cdea06bf3e93ee66f30af6f658600399f023f63bd2dde3245848cd41ae224",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/values/strings.xml",
+    "bytes": 1404,
+    "sha256": "9527661b87b9c62b869fb90fc1c8b4f8b84ae959503b6907223c2debe98b888a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/values/themes.xml",
+    "bytes": 787,
+    "sha256": "0126768be6c9ef1868035c6e6761c760239d4cedbb09a5b8d50aba5a321b4086",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "bytes": 395,
+    "sha256": "9b183d0f7b08f43633d97e98bc6c0d58169d2d71de977dfc7086540ceadc8d3a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/xml/file_paths.xml",
+    "bytes": 227,
+    "sha256": "3726e59294832a676f902efe4a2ed97ef62cb8a4fcd27c65c1d7d565fa53cf0e",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/main/res/xml/network_security_config.xml",
+    "bytes": 764,
+    "sha256": "a4f99ed25611e880d7440afef569cc3645124f9a97ffd9516e69be547f3108d0",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/BuildMetadataContractTest.kt",
+    "bytes": 5705,
+    "sha256": "070081c13093c7e924a658e9907ca77877c9ba2f19166184f65f2248bd10438d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/adapters/AdapterTests.kt",
+    "bytes": 984,
+    "sha256": "50297fe1dc5674da749a719b54886e1845b8cfff2279e549effdb4dd9f57297b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/NoBlockingUiContractTest.kt",
+    "bytes": 5579,
+    "sha256": "ea849dbb3c3e10b3ebcaac5ac98b349103b0410b0dfcf403b82781c1326d7fa6",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuCommandPolicyTest.kt",
+    "bytes": 4713,
+    "sha256": "0c600767917e2702f0c223b0285cc0d146640b11f003afd8a84d5fd68add5fb6",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuStateReducerTest.kt",
+    "bytes": 7827,
+    "sha256": "38963425f04fdba31c62750209dee98c26a5ed708cfdefde9ac9f82da5f746c8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/termux/TermuxCommandContractTest.kt",
+    "bytes": 5904,
+    "sha256": "1c0cc573848cbdbb99c384f3e55156bef1080fffbcd69185040a5878cb480d4a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultParserTest.kt",
+    "bytes": 7744,
+    "sha256": "7c49748d070f89eefb4a25e827c5212499a6d1bccdf997fd9d3a099506ac913b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.1.0.apk.sha256",
+    "bytes": 108,
+    "sha256": "fca804a2b9de322dc0c5eceead5edff523481ee0b4d54164057594787478bf7f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.4.15.apk.meta.json",
+    "bytes": 191,
+    "sha256": "682ed9840006d703e7a93795b95595648eb305c21deac281c44dfa2ea82f6f88",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.4.15.apk.sha256",
+    "bytes": 86,
+    "sha256": "19a36ed97f34a7698f30a4daea6d2132ee7c7569a632775a28b8c744477afe94",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "artifacts/screenshots/01-dashboard.png",
+    "bytes": 135033,
+    "sha256": "22bd2eadaaffebe0addec80e81b1375704e66ec5b12474424d95d1921d2b2d61",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/02-command-palette.png",
+    "bytes": 159946,
+    "sha256": "99a5aeeecaf5bbf35e48401a8f9514780794a35fbf098be4629e43ffa79ebd75",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/03-ask-about-this.png",
+    "bytes": 85798,
+    "sha256": "80738b288f14242f2874c697a508e4de98faab80b060de70b0e3bfc70fb12144",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/04-share-target.png",
+    "bytes": 51576,
+    "sha256": "ea6770ff223c21b3ef734b2e20c2f89dd385931ff68afd6e3b7492da8e7a9157",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/integrations-panel.png",
+    "bytes": 79606,
+    "sha256": "a16452e13a70bdc03ff7c2e999ed81710b87cf6efec38816903328a6e9da7123",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/01_dashboard.png",
+    "bytes": 157944,
+    "sha256": "2733e4e4e5f156f6be42c498d974e9f41240c1bbc5db43bda38b6ea5490da4bd",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/02_palette.png",
+    "bytes": 192479,
+    "sha256": "acb683c2da708fcb57bac386fcc402f0480452a33472c66b156003e0d1bd1cd4",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/03_ask.png",
+    "bytes": 92518,
+    "sha256": "a627efb17d594160418c27c67d02685eba60229ec2a1c9eb171691dac2e8440b",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/04_clipboard.png",
+    "bytes": 66888,
+    "sha256": "8bacad31427ba14c01f1d7eabfd4ca1c24839082f1bc812fcc56e3ce51e686cb",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/05_screenshot.png",
+    "bytes": 128433,
+    "sha256": "69115e02e2c9ef0849dcfe4f0b5ab3fd2750d58e23fef058c2edc2d44e4c40e2",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/06_quickhud.png",
+    "bytes": 138123,
+    "sha256": "d77fb1a63b9e970f1260ac5379443af94b56c7c5b7e657ebac3c0bff5a2e00b2",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/07_automation.png",
+    "bytes": 111445,
+    "sha256": "88ea1d955faf59b668e995951af441afb5d95cbc614ff0804b17e425b60877e0",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/08_handoff.png",
+    "bytes": 51258,
+    "sha256": "7e6df0f7bf6b2f183e12b5f9a5feaeb79bd472733931564f900a5aaaef50ea85",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/09_devoverlay.png",
+    "bytes": 87479,
+    "sha256": "f125a218b298ed2a84fbe79cdbe443cc7353b25923ee03a1f6bb335bd5ddc99d",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/10_diagnostics.png",
+    "bytes": 239489,
+    "sha256": "c6f83c32b285f7322aeade6747bb0e236a10b4c20977140117ec27a3c41c9acf",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/11_settings.png",
+    "bytes": 116113,
+    "sha256": "44e8c63b30e3f968a3bf5ea08a639efa57046ff9a2d2bdf0678db2655499dfad",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/12_hud_orb.png",
+    "bytes": 176277,
+    "sha256": "16b694969601a08f5f5a039a0b2c7cc8ebf6bd1558b5e661578245b6180230e1",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v2/13_share_receiver.png",
+    "bytes": 58163,
+    "sha256": "54b5ee0c6df23a291f9eef49856d689be636716eead4e15ff868e71fe1cdd220",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v3/01_after_start.png",
+    "bytes": 1199623,
+    "sha256": "a7438427c992f581230b07c9102293f474621c56b4e5a139aaa0f56bf748996b",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "artifacts/screenshots/v3/02_orb_running.png",
+    "bytes": 1199281,
+    "sha256": "e862e133c690b42001e0cf6356fa5f928b8b907dae08f3e36b41d22a7dabc517",
+    "classification": "asset-or-binary"
+  },
+  {
+    "path": "build.gradle.kts",
+    "bytes": 355,
+    "sha256": "58914c440dc4e48f8915eddc2b2f5bcc7b380ad63f8a78982182f73e6ad03012",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "build.sh",
+    "bytes": 2415,
+    "sha256": "4fdce4c444e1e7ee26ea478fe85c3e1bdcde5b12b4fa168c0b22f7b4fabfe9f5",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/build.gradle.kts",
+    "bytes": 1148,
+    "sha256": "6745d2ebdfb8968dc8548e64264fe4209a728f91b279e469fff59277c29977a8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/consumer-rules.pro",
+    "bytes": 55,
+    "sha256": "9a90a816bbc2cd868cd18e08a2f316a1d243b65ba88b33b85f1450043bab923a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AiRouter.kt",
+    "bytes": 2317,
+    "sha256": "dd034c62d9dc28f3e9dfc4625403dbfc3c33131b594c2740a6a10e9b1f71f746",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AppSettings.kt",
+    "bytes": 2089,
+    "sha256": "fba0fe1208a8487038c8dfdb9e11505f218e77b37b9c549297abc021e5951bef",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ApplicationProfiles.kt",
+    "bytes": 15111,
+    "sha256": "76a255e508b441453fcc00351270ff381d6bbd6417ec28dd2941f0e09f0cc66b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AutomationEngine.kt",
+    "bytes": 6158,
+    "sha256": "92033400cdc87f663716b6f7441834de4506e9262ab8a960f0d9b44e2b839045",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/CapabilityRegistry.kt",
+    "bytes": 3003,
+    "sha256": "61709f4aba40996dfe21cf410aba501a15f75e3ca647be9d26c143ba166bb895",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/CommandRegistry.kt",
+    "bytes": 2493,
+    "sha256": "47ddbfadd622d2e890d164afe595f0a2feec9818dd50cc617651f1e36922c35e",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ContextEngine.kt",
+    "bytes": 4910,
+    "sha256": "92c544c0ba5acc5f566ed1c1edfa03b41dc3a4b6d4a0009bd680de1a6a6f373d",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceHandoffAdapter.kt",
+    "bytes": 2764,
+    "sha256": "2a1a3e25d62d23bb8b9d0ce4a732851e9f8624f7fe30e4e94f9e2010470c7b84",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceIdentity.kt",
+    "bytes": 2292,
+    "sha256": "cff43ef17efbcc77a4a3598e3b0108b7b88939432cae906b6e451608dda963f4",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceRegistry.kt",
+    "bytes": 1990,
+    "sha256": "a6cb8540f5df7b90c6e34a94d569e5d2396aa69c7d69930d5d1bf3a1d2271d6a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DiagnosticsExporter.kt",
+    "bytes": 8591,
+    "sha256": "39011f240e3e7982d5fc641262698ac077997f7bff4febe33e2136e4542b8307",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCommand.kt",
+    "bytes": 2363,
+    "sha256": "925b1b83497e50e86d3b987fc953466be79480a4bbac19c7ac2c1476bb9436f0",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kContext.kt",
+    "bytes": 1495,
+    "sha256": "b2b7a5d66d1379880723aca8b1d62751845e8b9e5ac681fc23b8425eeeb5043b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCore.kt",
+    "bytes": 2067,
+    "sha256": "fd385f138105022fdbe6229e6ed27abae3c0d7bb375ccc57283180fb1f0ac240",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kPlugin.kt",
+    "bytes": 3825,
+    "sha256": "50f94a169452c4e95fc7b9db22eeb6fd87a8f11e4d4b980ddf313f832b044f51",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Screenshots.kt",
+    "bytes": 923,
+    "sha256": "724be5c6b9d2a63cad2b21e300980d671654f7176bc2505fb251acf36d058370",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/SecureStore.kt",
+    "bytes": 1261,
+    "sha256": "2b911681007deb7d8448a15ef82832231f11e88bdf943666f0c028502d94ba2f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ShareCommandsPlugin.kt",
+    "bytes": 7905,
+    "sha256": "94866c2071f375c907a34ceb9ee55387353275369915a9b95bcde86b62f2fc14",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/UrlSanitiser.kt",
+    "bytes": 3779,
+    "sha256": "2927f4c81b365bc93a9f8d31a962770745f109a895e530dc5b97d682a651ccd9",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/VoiceIntentPlanner.kt",
+    "bytes": 3386,
+    "sha256": "e7a297e5aef47b2fbc5991d738724f4bf2224ac1f087089defff1fc51ed81753",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/IntegrationState.kt",
+    "bytes": 5160,
+    "sha256": "3f256abfc19cf786401824c71b17adab1bb6dfe6dd35ef75e5137a6125ebad93",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveBridgeClient.kt",
+    "bytes": 6589,
+    "sha256": "bbb6ce7e04681b91531831988bac642f18b0b721a8c576171bcccd77864fa156",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwavePlugin.kt",
+    "bytes": 8112,
+    "sha256": "474d2b64d71e5031ddf5978d87434ed31803fe5382d985c10e1cc50eebe501e6",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveRoleManifest.kt",
+    "bytes": 1359,
+    "sha256": "afc80895b0e23a78c46b416b80af9a3f372d5e7565a7fe0873cfcd46906f8218",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/gps/GpsPlugin.kt",
+    "bytes": 3829,
+    "sha256": "f4bfdd4ae213d213e07154dae705e644269f7c4dd95674d8e4ecd3a6b491187f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesAskCommand.kt",
+    "bytes": 1741,
+    "sha256": "830355d84efd40ef8054994fc7e45add906f606b7706d83db4de446c04f39447",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesPlugin.kt",
+    "bytes": 2029,
+    "sha256": "b267f1b1b66d77fbd3e8819e1fc5df557dd9d2731eb84ba02febac3eced8d48c",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesProvider.kt",
+    "bytes": 3912,
+    "sha256": "f44f701f4d630baa5634316cab53eb76af25405a5736c2ff311992e52a057c57",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/AskOpenCodeCommand.kt",
+    "bytes": 2032,
+    "sha256": "8b5848657f4869ab009f4efa6c179aa5ae47963ea1e5dcda2fba0b5bfb6795a1",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodePlugin.kt",
+    "bytes": 1719,
+    "sha256": "b1255db2c359ae4fb3552d2a73cce48e2d056e0fb22d951d5d52c29e3632ec43",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodeZenModelRegistry.kt",
+    "bytes": 3538,
+    "sha256": "b65a3417b6667585c5e5e8bf3e76f7bbe34fbe15b7a0d57bdc8a63391dd4c69e",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodeZenProvider.kt",
+    "bytes": 6701,
+    "sha256": "b7db39b503896cb0f2be0e32d0f528133f9ad74b4a7ca3b1310ebd055137c72a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/share/CleanUrlCommand.kt",
+    "bytes": 1454,
+    "sha256": "a66d4bf1cf4d96d321286c18a04030c8e04bcecd519d8a69801568190c3b2c45",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/share/OpenOnDeviceCommand.kt",
+    "bytes": 2444,
+    "sha256": "2895d34c9b58c4cffd7d72082f1d9a50c2f9b7a57a01c252a6fcdae9ac3848ae",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/system/SystemPlugin.kt",
+    "bytes": 3637,
+    "sha256": "8a6665bad12ba6645cf3584c92664acbe9503de5d1ed5697b5fb7f57065de639",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/CapabilityRegistryTest.kt",
+    "bytes": 1831,
+    "sha256": "9a394f8ca5d1d4beea51e8a10895c3571e4e41a36c48bfddc09d95491359be74",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/CommandRegistryTest.kt",
+    "bytes": 1836,
+    "sha256": "b168000e9243a002250338f8edd14b083c8dda72de92cfd561142ab654decfe5",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/UrlSanitiserTest.kt",
+    "bytes": 1413,
+    "sha256": "6036520f9f2c6f14ecd34f00894fde7c988a47532cb1b4a605c69f8c9d0feec8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveBridgeClientTest.kt",
+    "bytes": 2661,
+    "sha256": "d25fd6c5f3fbcd9559ddd0e7dfc4745c38b5cb02eb84dc366a9440a26e29268f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveRoleManifestTest.kt",
+    "bytes": 958,
+    "sha256": "b8a4907b55961315fc938446e88b563830239f9e85e40d7abdbf2e14c9d67dc8",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "bytes": 7061,
+    "sha256": "5775e251a0b4de42069dfd857e20a272da4ae13d4f6d035401e519dccc82295e",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/CAPABILITIES.md",
+    "bytes": 2123,
+    "sha256": "17e0c6d78ccd61fd8e8b2edb03bd363c38748818d2afb81bc91f1cacd5891034",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/DEVELOPMENT.md",
+    "bytes": 2149,
+    "sha256": "918a21527cf042e130a85653ce38931f4b5f5fe8537e731b574e54102388a821",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/DEVICE_PAIRING.md",
+    "bytes": 1354,
+    "sha256": "1f2c881be05e9990b2da7e0f40bbab971fb603844bad5af7128acb5515595d1c",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/HERMES.md",
+    "bytes": 1742,
+    "sha256": "5b59240e2c6171b320c4b8be4c42a7bff3dad651ece6238f1e4080dc12101f16",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/MESH.md",
+    "bytes": 3507,
+    "sha256": "4142aa3fca1e3cd05c7073e9f2e8ed58d6731eecd2bce315e9e00a87eef5053f",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/PROTOCOL.md",
+    "bytes": 4166,
+    "sha256": "769a437442a99033f79b8d082a6d64f1ca6a04a7bd6ca1e223b37760976ad6cf",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/RELEASE.md",
+    "bytes": 1452,
+    "sha256": "84b7075f05d8776edb6dd7c68e99753cfdaacd0aaa25ab81119bb00448bea3f3",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/SECURITY.md",
+    "bytes": 3514,
+    "sha256": "5c3733d597a525cd518c33ab2f700d28eab19e96645f9160cfc81931f7bac54c",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/TERMUX.md",
+    "bytes": 1540,
+    "sha256": "ac2e083a7dd2ce6e8af32b8cb8a15b08d468695ade78c4da5691209b7518c085",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/TESTING.md",
+    "bytes": 2553,
+    "sha256": "a1745d77e131dbafe52da3cc9290cc7425d5e89fc4decbf03c007a9d95f9ec54",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/test-audit-2026-09-07.md",
+    "bytes": 12970,
+    "sha256": "01e1066e8b023e841f118bfd23793e33df3060407c5f69979b4bff6713cd58d2",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/verification/PHONE_BASELINE.md",
+    "bytes": 4375,
+    "sha256": "ed7f1e32e07b4c07ebdad53398875df96ef5d010df59651c55f70f370ca25632",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "docs/verification/PHONE_HERMES_MANIFEST.schema.json",
+    "bytes": 5336,
+    "sha256": "417d06b1ad794988cd22ad0842f40010445a282b1481c09329fc26734cacd03a",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "examples/device-manifest.example.json",
+    "bytes": 919,
+    "sha256": "08dc241ca5f105ef014a8f3212f14cd8d7b3faab4de8baf47a8e58c63ab12407",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "examples/patches/fr3k-browser-sendto.json",
+    "bytes": 466,
+    "sha256": "121943cd2cdb85da2e03a2aff772cb095d408a26c2919e82954b70fcbe7b7f2a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "gradle.properties",
+    "bytes": 406,
+    "sha256": "4671f563a8674ff24d3c0db527eab0b26b31c7c9848174de2f2b9801fa258016",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.jar",
+    "bytes": 43583,
+    "sha256": "2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.properties",
+    "bytes": 253,
+    "sha256": "d7010368a34c1c06df2bae1a85d8b24c39b2499c74ac892fc7e66d005dbd7b8a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "gradlew",
+    "bytes": 8762,
+    "sha256": "a3648413b47ef77af21d5ebc36c687c7d103aaef3e17f33de7d4f080a6f300a3",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "gradlew.bat",
+    "bytes": 2966,
+    "sha256": "57931b17dd228e5c24dac90e815d0bf82477e831a4618dfab4136f5446b42a9f",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "plans/001-total-blackwave-hud-integration.md",
+    "bytes": 23679,
+    "sha256": "cc29a5f383422763194b458ddf5f11a72099bc7eef6149a27bfec3c867652142",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/002-verification-baseline.md",
+    "bytes": 2547,
+    "sha256": "867d69c283e764cbac8b9ac39264f8de1a4405cb30ad42afc15b0efbe8de15af",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/003-standalone-defects.md",
+    "bytes": 2492,
+    "sha256": "3033e50178e6134f200f24ab4e19802bd57bd11c8a1248bdd48f3fed5f588ef7",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/004-mobile-contract-adapter.md",
+    "bytes": 2395,
+    "sha256": "1e089ef3941c41a01098acf0380b0bd5dbc06696863dadb35438d20a64bd0afb",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/005-hud-cardputer-local.md",
+    "bytes": 1810,
+    "sha256": "ac2a9daca32c993b92a03ca63da483be9335b82ba4bba2d61cf9368d556922ed",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/006-blackwave-cardputer.md",
+    "bytes": 1475,
+    "sha256": "8a72d175d4ca1eccbfa2af2511756f3d548f58bc290f6d8bf7839f36c8151d17",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/007-optional-hud-blackwave-resilience.md",
+    "bytes": 2391,
+    "sha256": "ef1dbce552ab870db433e72be58ebbabf6db0705ee51a2144932b8b81d8fddd6",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/FR3K_HUD_FULL_VALIDATION_PROMPT.md",
+    "bytes": 12488,
+    "sha256": "4c9933a4ea9812974ce00eae0117c9518adf92677013b3725c3a88397f31908b",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/README.md",
+    "bytes": 14584,
+    "sha256": "41ccbe8e686e589d6bddbc7815f016682e96f1d1295f417f3153876e1a7a6ca8",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/blackwave/assessment.md",
+    "bytes": 1605,
+    "sha256": "0015d5af459605a361ab850572b327d5111cfa4a83a59871692e49d4893ac152",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/blackwave/reconciliation.md",
+    "bytes": 737,
+    "sha256": "a64db7aab7c9c9aa64448583dc755f20051ae52ed6c319262b79ac45dd4d4150",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/cardputer/assessment.md",
+    "bytes": 1582,
+    "sha256": "59a18d40cb2c40bf96b6e3d6cee4e4cafe48402db26f8b8c944eab361c1ae993",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/cardputer/baseline.txt",
+    "bytes": 2195,
+    "sha256": "c71b8b5c66a1b8ee16cf5eba80fa5ddd41f93742f43e6816562bfb260f329854",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/cardputer/checks.json",
+    "bytes": 1683,
+    "sha256": "1edf6570f0b2df12ec9d2d0ffcd646c09d280b6506b584a8677a3ccaa6a19f4c",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/cardputer/inventory.txt",
+    "bytes": 7714,
+    "sha256": "fe8e0185967a7dd45337796adf5d901a1a273b63cc05cbbb6b724d20d40824fc",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/cardputer/reconciliation.md",
+    "bytes": 532,
+    "sha256": "33bff4ed4c61dc3130f7aa4a277a6013381fd19a07dd2997f1bcf1d941ab00aa",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/hud/assessment.md",
+    "bytes": 1516,
+    "sha256": "c31af8b671d061300113917d2e998b44ec4b6cd70d8f4a18c5a30da96cfafa59",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/hud/baseline.json",
+    "bytes": 11731,
+    "sha256": "c795b3a93c809357d0760024a65186f29d1adabffe372456b74c546caa9962e8",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/autoexpert-specialist-prompt.txt",
+    "bytes": 34253,
+    "sha256": "0c656c6c99f7829d075c8362d8423d6d9495e5f705f314429de9ed65e4288663",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/autoexpert-specialist.txt",
+    "bytes": 7794,
+    "sha256": "58f52fd02141d59e2ebbe556522109cdbcaa98977f9e2ae6a648a0d0b543e423",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/baseline.json",
+    "bytes": 11608,
+    "sha256": "aaba7e103ede30305ae506b3b6af7d97ad53ee574ab5853f003c20b454c8c06a",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-blackwave-diff-stat.txt",
+    "bytes": 2846,
+    "sha256": "5e82426a0991ad9c0a2a97ce38e5d8a777c03bd180a2c1713b0ae3115d7f399d",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-blackwave-files.json",
+    "bytes": 1483107,
+    "sha256": "66961cf2f595583c0f4fb75524cd92a02f2caa820c9304e4b790cab7ee89e925",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-cardputer-diff-stat.txt",
+    "bytes": 693,
+    "sha256": "1a1f0268e0b02ba069849f89ba48fefe85a33701b9779eedaf87bef59430e11a",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-cardputer-files.json",
+    "bytes": 52217,
+    "sha256": "281adc29845a006d0bbbc45f57c0b4e80a456975006d278d45063b90abc8b60f",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-hud-diff-stat.txt",
+    "bytes": 130,
+    "sha256": "01388f94419a2c49237c8b0676c4fd5f97c2dc2cf222c371becc1da80c09e20c",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "plans/ecosystem-evidence/lead/fr3k-hud-files.json",
+    "bytes": 39538,
+    "sha256": "f0bc20f3089a96946439c77b74261aa87d0063601952c15ef7e247e50669a7d8",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "protocol/build.gradle.kts",
+    "bytes": 670,
+    "sha256": "698a7ab58d62016d427343935cefe33ab63baa10be97489227a4ff09af624965",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Agent.kt",
+    "bytes": 2814,
+    "sha256": "e8fac9753667e6e37c483feffce23c562cf38c26dfd13740db005dcdbbc0bf64",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Capability.kt",
+    "bytes": 5003,
+    "sha256": "bdf73eb694e09e4c0e1314505e6908bbb40eac03df041e54bc50f45248742a0c",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Fr3kEnvelope.kt",
+    "bytes": 2876,
+    "sha256": "b4e5772131910b528c95f104b5658b604db637dc5a9509d5d59fd05166d36d8b",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "protocol/src/test/java/com/mcpintelligence/fr3k/protocol/Fr3kEnvelopeTest.kt",
+    "bytes": 1230,
+    "sha256": "8b353a5ed2e8e562f244d2316833025ca26c97031fccb2f3dbe1dc2121937a10",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "review/CHAT-BUBBLE-THOROUGH-REVIEW.md",
+    "bytes": 27803,
+    "sha256": "618cb3f3e2a63320df204e2986c23074a2e31fb4edaf19387c7b5e1ef851883b",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "review/FR3K-HUD-FULL-AUDIT.md",
+    "bytes": 63622,
+    "sha256": "b706d062f24a774fe5b42c4497effc1b6f3500da869ad3414f5ed55627302d3b",
+    "classification": "documentation-or-evidence"
+  },
+  {
+    "path": "schemas/agent-ask.schema.json",
+    "bytes": 2039,
+    "sha256": "bae732a8d695ca0c906565b12434e02afd61fe0d0752e18e0592c3a4f9535b65",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "schemas/device-manifest.schema.json",
+    "bytes": 1482,
+    "sha256": "6f84c22e9464f7480a03cc958a9c9a0498814d63bd3c906cf988cfe8e4140cb2",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "schemas/envelope.schema.json",
+    "bytes": 1114,
+    "sha256": "75c30513d6c7071a4c5ce8678422cbaaecaf330b2a8e58a9d0757b77c6d6c59a",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "scripts/device/collect_phone_baseline.sh",
+    "bytes": 10903,
+    "sha256": "0268fa62171a55af6b227c2a08e989107227c03b98294ecbfdcff34785d31d39",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "scripts/device/test_collect_phone_baseline.sh",
+    "bytes": 8097,
+    "sha256": "e3fafa029f8e9a194fcf243b08f13c3b1b1a49952f64ff53f2a016f3552bcbdd",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "scripts/device/test_validate_phone_hermes_manifest.py",
+    "bytes": 8140,
+    "sha256": "dd6087dbeca5511d994992fa562d8e4377a52532f80bc1a6c84962d434b7d461",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "scripts/device/validate_phone_hermes_manifest.py",
+    "bytes": 13383,
+    "sha256": "daee9d423815a834850a7932467e73519139e058c6945ff040edaee8fc84fb11",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "settings.gradle.kts",
+    "bytes": 369,
+    "sha256": "15dc798f7fbb4e00b355728cf721628a3a36299a140d20aa6dd80aa4e272e859",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "test.sh",
+    "bytes": 280,
+    "sha256": "f59df260e8006b4ab1650c430cd156dad67889212669a2bd1942a8d56f1d2ce3",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "transport/build.gradle.kts",
+    "bytes": 704,
+    "sha256": "b325ad92281363c8e227631d4405ba942d96d9a21635e3ca3813d08798c1cdbf",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/Fr3kTransport.kt",
+    "bytes": 1074,
+    "sha256": "f608491d502f6979efe2cf105e03b738d93e94fecf4ee6a656c5a0bab00d5add",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/HttpsTransport.kt",
+    "bytes": 3359,
+    "sha256": "9d86b6f1a01cde1b8bf43b5f0bd488b43d6514103ab974366e1f04d2b0beb6c1",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/TransportHub.kt",
+    "bytes": 2461,
+    "sha256": "ba834a9e92cf99765bcedc4b1e359b29dc22a4e82bface4430005170c5527fcb",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "ui/build.gradle.kts",
+    "bytes": 842,
+    "sha256": "b2289539a37b27f5a16d4a83c1f395d684d6cab393d7826a23127f73424b33d6",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "ui/src/main/java/com/mcpintelligence/fr3k/ui/Components.kt",
+    "bytes": 3585,
+    "sha256": "714241b18f6d50a525f0c21f1f571eafe2944c5dfae93736b5a0ad8f7fb9666c",
+    "classification": "source-or-config"
+  },
+  {
+    "path": "ui/src/main/java/com/mcpintelligence/fr3k/ui/Fr3kTheme.kt",
+    "bytes": 2807,
+    "sha256": "b0028bbdd8c15ee616aeb394e4d71d33028aede820014f4fb10e34e69f0c79d0",
+    "classification": "source-or-config"
+  }
+]

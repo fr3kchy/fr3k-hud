@@ -66,6 +66,8 @@ class Fr3kTerminalOverlay(
     private val params: WindowManager.LayoutParams
     private val header: TextView
     private val closeBtn: TextView
+    private val maxBtn: TextView
+    private val minBtn: TextView
     private val titleRow: LinearLayout
     private val transcript: TextView
     private val input: EditText
@@ -81,6 +83,17 @@ class Fr3kTerminalOverlay(
     // Last known position so drag deltas are relative to it.
     private var viewX = 0
     private var viewY = (120 * density).toInt()
+
+    // Maximise / minimise (§2). A window snapshot is taken before either
+    // transition so restore returns to the exact prior geometry.
+    private var maximised = false
+    private var minimised = false
+    private var savedW = 0
+    private var savedH = 0
+    private var savedX = 0
+    private var savedY = 0
+    private var pill: View? = null
+    private var pillParams: WindowManager.LayoutParams? = null
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var running: Job? = null
@@ -112,10 +125,30 @@ class Fr3kTerminalOverlay(
             setPadding(0, 0, 10.dp(), 0)
             setOnClickListener { hide() }
         }
+        minBtn = TextView(ctx).apply {
+            text = "–"
+            setTextColor(0xFF9ca3af.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            gravity = Gravity.CENTER
+            contentDescription = "Minimise terminal to a pill"
+            setPadding(0, 0, 6.dp(), 0)
+            setOnClickListener { minimise() }
+        }
+        maxBtn = TextView(ctx).apply {
+            text = "▢"
+            setTextColor(0xFF9ca3af.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            gravity = Gravity.CENTER
+            contentDescription = "Maximise window"
+            setPadding(0, 0, 6.dp(), 0)
+            setOnClickListener { toggleMaximise() }
+        }
         titleRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             addView(header, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(minBtn, LinearLayout.LayoutParams((24).dp(), (28).dp()))
+            addView(maxBtn, LinearLayout.LayoutParams((24).dp(), (28).dp()))
             addView(closeBtn, LinearLayout.LayoutParams((36).dp(), (28).dp()))
         }
 
@@ -222,6 +255,10 @@ class Fr3kTerminalOverlay(
 
     override fun show() {
         if (isAttached) return
+        if (minimised) {
+            restoreFromPill()
+            return
+        }
         try { host.add(root, params); isAttached = true } catch (_: Throwable) {}
     }
 
@@ -229,13 +266,17 @@ class Fr3kTerminalOverlay(
         if (!isAttached) return
         running?.cancel()
         running = null
+        if (minimised) {
+            pill?.let { host.remove(it) }
+            minimised = false
+        }
         host.remove(root)
         isAttached = false
     }
 
     override fun onDragStart() {}
     override fun onDragMove(dx: Int, dy: Int) {
-        if (!isAttached) return
+        if (!isAttached || minimised) return
         params.x = viewX + dx
         params.y = viewY + dy
         host.update(root, params)
@@ -245,13 +286,158 @@ class Fr3kTerminalOverlay(
     }
 
     /** Clamp the given window position to on-screen bounds. */
-    private fun clampToDisplay(x: Int, y: Int): Pair<Int, Int> {
+    private fun clampToDisplay(
+        x: Int,
+        y: Int,
+        w: Int = params.width,
+        h: Int = params.height,
+    ): Pair<Int, Int> {
         val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val out = android.graphics.Point()
         wm.defaultDisplay.getSize(out)
-        val maxX = (out.x - params.width).coerceAtLeast(0)
-        val maxY = (out.y - 28 * density.toInt()).coerceAtLeast(0) // leave the status bar visible
+        val maxX = (out.x - w).coerceAtLeast(0)
+        val maxY = (out.y - h - 28 * density.toInt()).coerceAtLeast(0) // leave the status bar visible
         return x.coerceIn(0, maxX) to y.coerceIn(0, maxY)
+    }
+
+    private fun toggleMaximise() {
+        if (!isAttached || minimised) return
+        if (maximised) restoreSize() else maximise()
+        updateWindowButtons()
+    }
+
+    private fun maximise() {
+        saveGeometry()
+        val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val out = android.graphics.Point()
+        wm.defaultDisplay.getSize(out)
+        val margin = (8 * density).toInt()
+        val topInset = (52 * density).toInt() // below the status bar
+        params.width = out.x - margin * 2
+        params.height = out.y - topInset - margin
+        params.x = margin
+        params.y = topInset
+        viewX = margin
+        viewY = topInset
+        windowResizeDone()
+        maximised = true
+        updateWindowButtons()
+    }
+
+    private fun restoreSize() {
+        if (savedW <= 0) return
+        params.width = savedW
+        params.height = savedH
+        params.x = savedX
+        params.y = savedY
+        viewX = savedX
+        viewY = savedY
+        windowResizeDone()
+        maximised = false
+        updateWindowButtons()
+    }
+
+    private fun saveGeometry() {
+        savedW = params.width
+        savedH = params.height
+        savedX = params.x
+        savedY = params.y
+    }
+
+    private fun updateWindowButtons() {
+        maxBtn.text = if (maximised) "▣" else "▢"
+        maxBtn.contentDescription = if (maximised) "Restore window size" else "Maximise window"
+    }
+
+    private fun windowResizeDone() {
+        root.requestLayout()
+        host.update(root, params)
+    }
+
+    fun minimise() {
+        if (!isAttached || minimised) return
+        saveGeometry()
+        val v = pill ?: buildPill().also { pill = it }
+        val pp = pillParams ?: OverlayParams.make((132).dp(), (34).dp()).also { pillParams = it }
+        pp.x = params.x
+        pp.y = params.y
+        host.remove(root)
+        host.add(v, pp)
+        pillParams = pp
+        minimised = true
+    }
+
+    fun restoreFromPill() {
+        if (!minimised) return
+        val v = pill ?: return
+        host.remove(v)
+        restoreSize()
+        host.add(root, params)
+        minimised = false
+    }
+
+    private fun buildPill(): View {
+        val label = TextView(ctx).apply {
+            text = "▸ TERMUX"
+            setTextColor(0xFF39ff14.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            gravity = Gravity.CENTER
+        }
+        val v = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                cornerRadius = 8f.dp()
+                setColor(0xF20A0F0C.toInt())
+                setStroke((1).dp(), 0xFF39ff14.toInt())
+            }
+            addView(label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+            contentDescription = "Terminal minimized — tap to restore"
+        }
+        // Draggable pill with tap-to-restore; drag deltas are relative to
+        // the moved-from position so the pill never jumps on first move.
+        var px = 0
+        var py = 0
+        var pDrag = false
+        v.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    px = event.rawX.toInt()
+                    py = event.rawY.toInt()
+                    pDrag = false
+                    false
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX.toInt() - px
+                    val dy = event.rawY.toInt() - py
+                    if (!pDrag && (dx * dx + dy * dy) > 64) pDrag = true
+                    if (pDrag) {
+                        val pp = pillParams ?: return@setOnTouchListener true
+                        pp.x += dx
+                        pp.y += dy
+                        px = event.rawX.toInt()
+                        py = event.rawY.toInt()
+                        host.update(v, pp)
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (pDrag) {
+                        val pp = pillParams ?: return@setOnTouchListener true
+                        val (cx, cy) = clampToDisplay(pp.x, pp.y, pp.width, pp.height)
+                        pp.x = cx
+                        pp.y = cy
+                        host.update(v, pp)
+                    } else {
+                        restoreFromPill()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+        return v
     }
 
     private fun installTouch() {
@@ -329,6 +515,15 @@ class Fr3kTerminalOverlay(
     private fun Float.dp(): Float = this * density
     private fun Int.dp(): Int = (this * density).toInt()
 
+    /** Show the actual tool execution without starting a second shell command. */
+    fun showAgentExecution(command: String, cwd: String?) {
+        if (minimised) restoreFromPill()
+        show()
+        appendLine("[agent] cwd: ${cwd ?: "/data/data/com.termux/files/home"}")
+        appendLine("$ $command")
+        appendLine("Running in Termux; output appears when the command returns.")
+    }
+
     /** Append a line to the transcript from anywhere. */
     fun appendLine(line: String) {
         ctx.mainExecutor.execute {
@@ -345,6 +540,39 @@ class Fr3kTerminalOverlay(
         running?.cancel()
         running = scope.launch { execute(cmd) }
     }
+
+    /**
+     * §3 agent entry — run a command as the agent, restoring the window if
+     * it was minimised so the agent's output stays visible. Returns the
+     * effective command string (with the cwd prefix baked in).
+     */
+    fun agentRun(
+        command: String,
+        cwd: String? = null,
+    ): String {
+        val trimmed = command.trim()
+        if (trimmed.isEmpty()) return ""
+        val effective = if (cwd.isNullOrBlank().not() && cwd != "~") {
+            "cd ${quoteShell(cwd!!)} && $trimmed"
+        } else {
+            trimmed
+        }
+        if (minimised) restoreFromPill()
+        if (!isAttached) show()
+        appendLine("[agent] $ $trimmed")
+        running?.cancel()
+        running = scope.launch { execute(effective) }
+        return effective
+    }
+
+    /** Whether Termux is actually available for agent execution. */
+    fun agentAvailable(): Boolean {
+        val app = runCatching { Fr3kApplication.get() }.getOrNull() ?: return false
+        val bridge = runCatching { app.termuxBridge }.getOrNull() ?: return false
+        return bridge.isAvailable()
+    }
+
+    private fun quoteShell(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 
     private suspend fun execute(cmd: String) {
         val app = Fr3kApplication.get()

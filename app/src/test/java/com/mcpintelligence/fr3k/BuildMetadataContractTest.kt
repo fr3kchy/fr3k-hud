@@ -12,15 +12,15 @@ import java.io.File
  * the artefact on disk matches the metadata baked into the APK. A mismatch
  * is a release-process bug, not a documentation bug.
  *
- * Baseline values track the current shipped artefact (0.4.15). When the
+ * Baseline values track the current application version (0.4.16). When the
  * version is bumped, bump these constants in the same commit.
  */
 class BuildMetadataContractTest {
 
     // Baseline version this test pins. Bump both this constant and
     // app/build.gradle.kts versionName/versionCode in the same commit.
-    private val baselineVersionName = "0.4.15"
-    private val baselineVersionCode = 415
+    private val baselineVersionName = "0.4.16"
+    private val baselineVersionCode = 416
 
     private val projectRoot: File by lazy {
         // unitTest runs from <repo>/app when invoked as :app:testDebugUnitTest

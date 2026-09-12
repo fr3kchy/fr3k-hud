@@ -10,12 +10,23 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.mcpintelligence.fr3k.Fr3kApplication
+import com.mcpintelligence.fr3k.core.CommandResult
+import com.mcpintelligence.fr3k.core.ConsentLevel
+import com.mcpintelligence.fr3k.core.Fr3kContext
+import com.mcpintelligence.fr3k.integrations.hermes.HermesAskCommand
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * Mini browser overlay window — mirrors Hitomi's `overlay_browser` (BeOS-style
@@ -26,6 +37,7 @@ import android.widget.TextView
 class Fr3kMiniBrowserOverlay(
     private val host: OverlayHost,
     private val density: Float = host.context.resources.displayMetrics.density,
+    private val session: com.mcpintelligence.fr3k.core.tools.SharedAgentSession = Fr3kApplication.get().agentSession,
 ) : Fr3kOverlay {
 
     override val name: String = "mini-browser"
@@ -42,6 +54,22 @@ class Fr3kMiniBrowserOverlay(
     private val close: Button
     private val reload: Button
     private val resizeGrip: View
+    private val chatToggle: Button
+    private val chatPanel: LinearLayout
+    private val chatTranscript: TextView
+    private val chatInput: EditText
+    private val chatSend: Button
+
+    private val sessionPanel = AgentSessionPanel(host.context, session)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Published page state — the agent API reads WebView facts back from here,
+    // never fabricated. Updated in the WebViewClient callbacks.
+    private var currentUrl = ""
+    private var currentTitle = ""
+    private var pageLoading = false
+    private var pageError: String? = null
+    private var navigationResult: kotlinx.coroutines.CompletableDeferred<String>? = null
+    private val agentMutex = kotlinx.coroutines.sync.Mutex()
 
     private var viewX = 0
     private var viewY = (160 * density).toInt()
@@ -84,8 +112,22 @@ class Fr3kMiniBrowserOverlay(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             addView(header, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            addView(close, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(close)
         }
+
+        // Compact chat strip — toggled by the chat button, hidden by default.
+        chatToggle = Button(ctx).apply {
+            text = "◨"
+            setTextColor(0xFF8e8a99.toInt())
+            setBackgroundColor(0x00000000.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            contentDescription = "Toggle inline chat"
+            setPadding(0, 0, 4.dp(), 0)
+            layoutParams = LinearLayout.LayoutParams(24.dp(), 24.dp())
+            isAllCaps = false
+            setOnClickListener { toggleChat() }
+        }
+        titleRow.addView(chatToggle)
 
         urlField = EditText(ctx).apply {
             hint = "https://…"
@@ -125,10 +167,10 @@ class Fr3kMiniBrowserOverlay(
         val addressRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            addView(back, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(reload, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(back)
+            addView(reload)
             addView(urlField, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            addView(go, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(go)
         }
 
         // Resize grip — anchored bottom-right of the WebView, drag it
@@ -146,6 +188,8 @@ class Fr3kMiniBrowserOverlay(
             setBackgroundColor(0xFF0d0d18.toInt())
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
+            settings.allowFileAccess = false
+            settings.allowContentAccess = false
             // Allow on-page pinch-to-zoom of the rendered content (not just
             // window resize) so the user can zoom into text/images.
             settings.setSupportZoom(true)
@@ -154,17 +198,95 @@ class Fr3kMiniBrowserOverlay(
             settings.useWideViewPort = true
             settings.loadWithOverviewMode = true
             webViewClient = object : WebViewClient() {
+                override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                    if (!url.isNullOrBlank()) currentUrl = url
+                    pageLoading = true
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     urlField.setText(url ?: "")
+                    if (!url.isNullOrBlank()) currentUrl = url
+                    pageLoading = false
+                    navigationResult?.complete(currentUrl)
+                }
+
+                override fun onReceivedError(view: WebView?, request: android.webkit.WebResourceRequest?, error: android.webkit.WebResourceError?) {
+                    if (request?.isForMainFrame == true) {
+                        pageError = "${error?.errorCode}: ${error?.description}"
+                        pageLoading = false
+                        navigationResult?.completeExceptionally(IllegalStateException(pageError))
+                    }
+                }
+
+                override fun onReceivedHttpError(view: WebView?, request: android.webkit.WebResourceRequest?, response: android.webkit.WebResourceResponse?) {
+                    if (request?.isForMainFrame == true) {
+                        pageError = "HTTP ${response?.statusCode}: ${response?.reasonPhrase}"
+                        navigationResult?.completeExceptionally(IllegalStateException(pageError))
+                    }
                 }
             }
+            // onPageFinished delivers the location, but the page TITLE only
+            // arrives via the WebChromeClient — that is the canonical place
+            // to observe it.
+            webChromeClient = object : WebChromeClient() {
+                override fun onReceivedTitle(view: WebView?, title: String?) {
+                    currentTitle = title ?: ""
+                }
+            }
+        }
+
+        // Compact collapsible chat strip — GONE until the chat button opens it.
+        chatTranscript = TextView(ctx).apply {
+            setTextColor(0xFFcdd1e0.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 9f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            setPadding((6 * density).toInt(), (4 * density).toInt(), (6 * density).toInt(), (4 * density).toInt())
+            maxLines = 4
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        chatInput = EditText(ctx).apply {
+            hint = "ask about this page…"
+            setHintTextColor(0xFF6a6878.toInt())
+            setTextColor(0xFFe8eaf2.toInt())
+            setBackgroundColor(0xFF0d0d18.toInt())
+            setPadding((6 * density).toInt(), (4 * density).toInt(), (6 * density).toInt(), (4 * density).toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            isSingleLine = true
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND
+            setOnEditorActionListener { _, _, _ -> onChatSend(); true }
+        }
+        chatSend = Button(ctx).apply {
+            text = "→"
+            setTextColor(0xFF11111c.toInt())
+            setBackgroundColor(0xFF7d3cff.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            contentDescription = "Send chat message"
+            setPadding(0, 0, 0, 0)
+            layoutParams = LinearLayout.LayoutParams(32.dp(), 28.dp())
+            isAllCaps = false
+            setOnClickListener { onChatSend() }
+        }
+        chatPanel = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+            val inputRow = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                addView(chatInput, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(chatSend)
+            }
+            addView(chatTranscript, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(sessionPanel)
+            addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
         root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             background = bg
-            addView(dragHandle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 18.dp()))
+            addView(dragHandle, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 8.dp()))
             addView(titleRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(chatPanel, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(addressRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // WebView + resize grip in a FrameLayout so the grip can
             // sit in the bottom-right corner without being part of
@@ -186,12 +308,18 @@ class Fr3kMiniBrowserOverlay(
             addView(webContainer)
         }
 
-        params = OverlayParams.forBrowser(360.dp(), 420.dp())
+        params = OverlayParams.forBrowser(300.dp(), 380.dp())
         params.x = viewX
         params.y = viewY
 
         installTouch()
         installResizeTouch()
+    }
+
+    private val sessionObserver = scope.launch(Dispatchers.Main.immediate) {
+        session.lines.collect { lines ->
+            chatTranscript.text = lines.takeLast(4).joinToString("\n") { "${it.speaker}: ${it.text}" }
+        }
     }
 
     override fun show() {
@@ -268,13 +396,99 @@ class Fr3kMiniBrowserOverlay(
         return scheme + t
     }
 
-    /** Public entry — auto-scheme the URL, then load. */
-    fun openUrl(rawUrl: String) {
+    /** Public entry — auto-scheme the URL, then load; returns the loaded page. */
+    fun openUrl(rawUrl: String): String {
         val normalised = normaliseUrl(rawUrl)
         urlField.setText(normalised)
         webView.loadUrl(normalised)
         show()
+        return normalised
     }
+
+    /** §3 agent API — drives the REAL overlay; results read back from WebView state. */
+    fun agentOpenUrl(rawUrl: String): String = openUrl(rawUrl)
+
+    fun agentGoBack(): Boolean {
+        if (!webView.canGoBack()) return false
+        webView.goBack()
+        return true
+    }
+
+    fun agentGoForward(): Boolean {
+        if (!webView.canGoForward()) return false
+        webView.goForward()
+        return true
+    }
+
+    fun agentReload(): String {
+        webView.reload()
+        return currentUrl
+    }
+
+    fun agentGetUrl(): String = currentUrl
+
+    fun agentGetTitle(): String = currentTitle
+
+    /** All tool calls are serialized and WebView access stays on the UI thread. */
+    suspend fun performAgentAction(args: com.mcpintelligence.fr3k.core.tools.ToolArgs): com.mcpintelligence.fr3k.core.tools.ToolResult =
+        kotlinx.coroutines.withContext(Dispatchers.Main.immediate) {
+            agentMutex.lock()
+            try {
+                val action = args.get("action") ?: "open"
+                when (action) {
+                    "open", "navigate", "back", "forward", "reload" -> {
+                        val pending = kotlinx.coroutines.CompletableDeferred<String>()
+                        navigationResult = pending
+                        pageError = null
+                        try {
+                            when (action) {
+                                "open", "navigate" -> {
+                                    val url = normaliseUrl(args.require("url"))
+                                    require(Uri.parse(url).scheme in listOf("http", "https")) { "Agent navigation requires an HTTP or HTTPS URL" }
+                                    openUrl(url)
+                                }
+                                "back" -> check(agentGoBack()) { "No back history" }
+                                "forward" -> check(agentGoForward()) { "No forward history" }
+                                else -> { check(currentUrl.isNotBlank()) { "No page to reload" }; agentReload() }
+                            }
+                            val loaded = kotlinx.coroutines.withTimeout(20_000) { pending.await() }
+                            com.mcpintelligence.fr3k.core.tools.ToolResult.Success("$action completed: $loaded", mapOf("url" to loaded))
+                        } finally {
+                            navigationResult = null
+                        }
+                    }
+                    "getUrl" -> com.mcpintelligence.fr3k.core.tools.ToolResult.Success(currentUrl)
+                    "getTitle" -> com.mcpintelligence.fr3k.core.tools.ToolResult.Success(currentTitle)
+                    "inspect", "text", "click", "scroll", "type", "submit" -> {
+                        val script = com.mcpintelligence.fr3k.integrations.browser.BrowserPageScript.build(action, args.values)
+                        val raw = kotlinx.coroutines.withTimeout(5_000) {
+                            kotlinx.coroutines.suspendCancellableCoroutine<String> { continuation ->
+                                webView.evaluateJavascript(script) { value ->
+                                    if (continuation.isActive) continuation.resumeWith(Result.success(value ?: "null"))
+                                }
+                            }
+                        }
+                        val result = org.json.JSONObject(raw)
+                        if (!result.optBoolean("ok")) {
+                            com.mcpintelligence.fr3k.core.tools.ToolResult.Failure(result.optString("error", "Page action failed"), "browser.page")
+                        } else {
+                            result.put("loading", pageLoading)
+                            pageError?.let { result.put("lastError", it) }
+                            com.mcpintelligence.fr3k.core.tools.ToolResult.Success(result.toString())
+                        }
+                    }
+                    else -> com.mcpintelligence.fr3k.core.tools.ToolResult.Failure("Unknown browser action: $action", "browser.action")
+                }
+            } catch (t: kotlinx.coroutines.TimeoutCancellationException) {
+                com.mcpintelligence.fr3k.core.tools.ToolResult.Failure("Browser action timed out; current URL: $currentUrl", "browser.timeout")
+            } catch (t: kotlinx.coroutines.CancellationException) {
+                throw t
+            } catch (t: Exception) {
+                com.mcpintelligence.fr3k.core.tools.ToolResult.Failure(t.message ?: "Browser action failed", "browser.action")
+            } finally {
+                agentMutex.unlock()
+            }
+        }
 
     private fun onGo() {
         val text = urlField.text?.toString()?.trim().orEmpty()
@@ -282,6 +496,24 @@ class Fr3kMiniBrowserOverlay(
         val normalised = normaliseUrl(text)
         urlField.setText(normalised)
         webView.loadUrl(normalised)
+    }
+
+    private fun toggleChat() {
+        chatPanel.visibility = if (chatPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+    }
+
+    private fun onChatSend() {
+        val prompt = chatInput.text?.toString()?.trim().orEmpty()
+        if (prompt.isEmpty() || session.busy.value) return
+        chatInput.setText("")
+        session.submit(prompt)
+    }
+
+    private fun appendChatLine(line: String) {
+        host.context.mainExecutor.execute {
+            val prev = chatTranscript.text?.toString().orEmpty()
+            chatTranscript.text = if (prev.isBlank()) line else prev + "\n" + line
+        }
     }
 
     private fun installTouch() {
@@ -328,12 +560,12 @@ class Fr3kMiniBrowserOverlay(
     /** Shared min/max bounds for both pinch-zoom and the resize grip. */
     private data class ResizeBounds(val minW: Int, val maxW: Int, val minH: Int, val maxH: Int)
 
-    private fun resizeBounds(): ResizeBounds = ResizeBounds(
-        minW = (240 * density).toInt(),
-        maxW = (720 * density).toInt(),
-        minH = (160 * density).toInt(),
-        maxH = (960 * density).toInt(),
-    )
+    private fun resizeBounds(): ResizeBounds {
+        val bounds = (ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager).currentWindowMetrics.bounds
+        val maxW = bounds.width()
+        val maxH = (bounds.height() - 48.dp()).coerceAtLeast(160.dp())
+        return ResizeBounds(minOf(240.dp(), maxW), maxW, minOf(200.dp(), maxH), maxH)
+    }
 
     /**
      * Resize grip touch handler. 16dp square in the bottom-right of
@@ -341,7 +573,6 @@ class Fr3kMiniBrowserOverlay(
      * (clamped 240..720 x 320..960 dp) and updates the root.
      */
     private fun installResizeTouch() {
-        val b = resizeBounds()
         var startW = 0
         var startH = 0
         var startX = 0
@@ -360,11 +591,9 @@ class Fr3kMiniBrowserOverlay(
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX.toInt() - startX
                     val dy = event.rawY.toInt() - startY
-                    val baseH = if (params.height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        root.height.takeIf { it > 0 } ?: b.minH
-                    } else params.height
+                    val b = resizeBounds()
                     val newW = (startW + dx).coerceIn(b.minW, b.maxW)
-                    val newH = (baseH + dy).coerceIn(b.minH, b.maxH)
+                    val newH = (startH + dy).coerceIn(b.minH, b.maxH)
                     params.width = newW
                     params.height = newH
                     host.update(root, params)
@@ -382,5 +611,11 @@ class Fr3kMiniBrowserOverlay(
     fun rootView(): View = root
     fun currentPosition(): Pair<Int, Int> = params.x to params.y
 
-    fun shutdown() { hide() }
+    fun shutdown() {
+        hide()
+        sessionPanel.shutdown()
+        scope.cancel()
+        navigationResult?.cancel()
+        webView.destroy()
+    }
 }

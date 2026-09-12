@@ -1,0 +1,67 @@
+{
+  "image": "/home/parrot/repos/fr3k-blackwave/devices/tdisplay-k230/dist/fr3k-spectre-k230-v1.3-overlay.img",
+  "image_sha256": "9c58eb5d9ae2cf9aa5d1d5627e3ab1161bf3b7ecbd39341a2d302551055d87cb",
+  "app_bytes": 30422840,
+  "app_sha256": "28e1620ad717ebed4d3a542250203840a6ae9384ff1e36c46b16e2d01e38bc8e",
+  "elf_magic": "7f454c46",
+  "elf_class": 2,
+  "elf_machine": 243,
+  "overlay": [
+    {
+      "path": "spectre/HOW_TO_USE.md",
+      "source_sha256": "f8bafd440a5f04216a91e96ae52db592eaaa8d05c36d0c8fa0d9b164f7cd68ba",
+      "image_sha256": "f8bafd440a5f04216a91e96ae52db592eaaa8d05c36d0c8fa0d9b164f7cd68ba",
+      "matches": true
+    },
+    {
+      "path": "spectre/__init__.py",
+      "source_sha256": "1becec66ce195079a7b868b9f3eb05bef77d0858580902b0f26e8e3dc158c245",
+      "image_sha256": "1becec66ce195079a7b868b9f3eb05bef77d0858580902b0f26e8e3dc158c245",
+      "matches": true
+    },
+    {
+      "path": "spectre/manifest.json",
+      "source_sha256": "71b09e308cf93bef844e07917b5418dd79b857118a8a1ea9298cf40f0baaa3fb",
+      "image_sha256": "71b09e308cf93bef844e07917b5418dd79b857118a8a1ea9298cf40f0baaa3fb",
+      "matches": true
+    },
+    {
+      "path": "spectre/runtime.py",
+      "source_sha256": "c963016193da5285366a5f14e6188bebf9c546b4fb42d37ecc5a899fb9323f60",
+      "image_sha256": "c963016193da5285366a5f14e6188bebf9c546b4fb42d37ecc5a899fb9323f60",
+      "matches": true
+    },
+    {
+      "path": "spectre/spectre_server.py",
+      "source_sha256": "0cfd8680fd8abfe122d3c5f1c1dc365557ab83749f8966aee618df5ed761d22e",
+      "image_sha256": "0cfd8680fd8abfe122d3c5f1c1dc365557ab83749f8966aee618df5ed761d22e",
+      "matches": true
+    },
+    {
+      "path": "spectre/start_spectre.sh",
+      "source_sha256": "47a3adf6a98c89c515a0382dd4c82088427cd17ed54bebddf42401b5664ca9d4",
+      "image_sha256": "47a3adf6a98c89c515a0382dd4c82088427cd17ed54bebddf42401b5664ca9d4",
+      "matches": true
+    },
+    {
+      "path": "spectre/wifi.conf.example",
+      "source_sha256": "7900c978e5209270b349bf94e76a3b167927d6959ffff314cb02c6f8203d63bf",
+      "image_sha256": "7900c978e5209270b349bf94e76a3b167927d6959ffff314cb02c6f8203d63bf",
+      "matches": true
+    },
+    {
+      "path": "spectre/wifi_fr3k.py",
+      "source_sha256": "386537b2f0b2158310abe9b0780ce544db73d88f170250b656009b3384099637",
+      "image_sha256": "386537b2f0b2158310abe9b0780ce544db73d88f170250b656009b3384099637",
+      "matches": true
+    },
+    {
+      "path": "spectre/www/index.html",
+      "source_sha256": "62fa2b4942c91b0d17af33441edbe1433b239d07ee84465d8cfc0b941a77ebc8",
+      "image_sha256": "62fa2b4942c91b0d17af33441edbe1433b239d07ee84465d8cfc0b941a77ebc8",
+      "matches": true
+    }
+  ],
+  "physical_validated": false,
+  "m5_launcher_compatible": false
+}

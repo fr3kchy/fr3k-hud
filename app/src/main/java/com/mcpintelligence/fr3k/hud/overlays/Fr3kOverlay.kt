@@ -109,7 +109,7 @@ class OverlayHost(val context: Context, val windowManager: WindowManager) {
         if (params.height == WindowManager.LayoutParams.WRAP_CONTENT) {
             params.height = view.measuredHeight.coerceAtLeast(1)
         }
-        runCatching { windowManager.addView(view, params) }
+        windowManager.addView(view, params)
     }
     fun update(view: View, params: WindowManager.LayoutParams) =
         runCatching { windowManager.updateViewLayout(view, params) }

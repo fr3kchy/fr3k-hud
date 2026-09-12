@@ -187,11 +187,7 @@ class TermuxResultParserTest {
 
     // ---------- helpers ----------
 
-    private fun readBridgeSource(): String {
-        val path = "/home/parrot/repos/fr3k-hud/app/src/main/java/" +
-            "com/mcpintelligence/fr3k/integrations/termux/TermuxBridge.kt"
-        val f = java.io.File(path)
-        if (!f.exists()) error("TermuxBridge.kt not found at $path")
-        return f.readText()
-    }
+    private fun readBridgeSource(): String = com.mcpintelligence.fr3k.testing.RepoFiles.read(
+        "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxBridge.kt",
+    )
 }

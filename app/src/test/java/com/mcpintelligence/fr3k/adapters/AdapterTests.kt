@@ -6,6 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/** Tests the app-owned Morphe adapter without introducing a core -> app dependency. */
 class AdapterTests {
 
     @Test

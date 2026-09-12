@@ -13,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Blackwave plugin — replaces the generic MeshPlugin.
@@ -52,7 +55,7 @@ class BlackwavePlugin(
 
     override fun capabilities(): List<Capability> {
         val role = cachedRole
-        if (role != null) {
+        if (role != null && !role.isExpired) {
             return role.allowed_scopes.mapNotNull { scope ->
                 val capId = scopeToCapability[scope] ?: return@mapNotNull null
                 Capability(
@@ -83,23 +86,23 @@ class BlackwavePlugin(
         Log.i(TAG, "BlackwavePlugin stopping")
         pollJob?.cancel()
         pollJob = null
-        scope?.let {
-            it.coroutineContext[Job]?.children?.forEach { child -> child.cancel() }
-        }
+        scope?.cancel()
         scope = null
         cachedRole = null
     }
 
     private suspend fun pollRole() {
         if (!bridgeClient.isAvailable()) {
+            cachedRole = null
             Log.w(TAG, "bridge not available, skipping role poll")
             return
         }
         val result = bridgeClient.fetchRole()
         result.onSuccess { manifest ->
-            cachedRole = manifest
+            cachedRole = manifest.takeUnless { it.isExpired }
             Log.i(TAG, "role fetched: ${manifest.role_id} tier=${manifest.trust_tier}")
         }.onFailure { e ->
+            cachedRole = null
             Log.w(TAG, "role fetch failed: ${e.message}")
         }
     }
@@ -144,7 +147,7 @@ class BlackwaveFleetStatusCommand(
 
     override suspend fun execute(context: Fr3kContext, args: Map<String, String>): CommandResult {
         val role = roleProvider()
-        if (role == null) {
+        if (role == null || role.isExpired) {
             return CommandResult.Failed("no role manifest — bridge unreachable")
         }
         val result = bridgeClient.fetchFleetStatus()
@@ -154,7 +157,7 @@ class BlackwaveFleetStatusCommand(
                     "${device.display_name} (${device.model_id}) — ${device.online}"
                 }
                 CommandResult.Ok(
-                    message = "Fleet: ${fleet.accounted} devices, ${fleet.online} online\n$summary",
+                    message = "Fleet (${fleet.observation_status}): ${fleet.accounted} devices, ${fleet.online} online\n$summary",
                     data = mapOf(
                         "accounted" to fleet.accounted.toString(),
                         "online" to fleet.online,
@@ -187,7 +190,11 @@ class BlackwaveDeviceStatusCommand(
             onSuccess = { status ->
                 CommandResult.Ok(
                     message = "Device $deviceId: software=${status.software} connectivity=${status.connectivity}",
-                    data = status.software + status.connectivity + status.battery,
+                    data = status.software + status.connectivity + status.battery +
+                        status.power.mapValues { (_, value) ->
+                            if (value is JsonNull) "UNKNOWN"
+                            else if (value is JsonPrimitive) value.content else value.toString()
+                        },
                 )
             },
             onFailure = { CommandResult.Failed("device status failed: ${it.message}") },

@@ -18,21 +18,24 @@ data class BlackwaveRoleManifest(
     val delegation_depth: Int = 0,
     val max_session_ttl_s: Int = 300,
     val issued_at: String = "",
-    val expires_at: String = "",
+    val expires_at: String? = null,
     val issuer: String = "",
     val revocation_epoch: Int = 0,
     val capabilities_map: Map<String, String> = emptyMap(),
 ) {
     val isExpired: Boolean
-        get() = expires_at.isNotEmpty() && System.currentTimeMillis() > parseIso8601(expires_at)
+        get() = isExpiredAt(System.currentTimeMillis())
+
+    /** Gateway roles permit null expiry; malformed non-null dates fail closed. */
+    fun isExpiredAt(nowMillis: Long): Boolean {
+        val expiry = expires_at ?: return false
+        return try {
+            nowMillis >= java.time.Instant.parse(expiry).toEpochMilli()
+        } catch (_: Exception) {
+            true
+        }
+    }
 
     fun capabilityIdForScope(scope: String): String? = capabilities_map[scope]
 
-    private fun parseIso8601(iso: String): Long {
-        return try {
-            java.time.Instant.parse(iso).toEpochMilli()
-        } catch (_: Exception) {
-            Long.MAX_VALUE
-        }
-    }
 }

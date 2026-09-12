@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mcpintelligence.fr3k.Fr3kApplication
 import com.mcpintelligence.fr3k.hud.R
+import com.mcpintelligence.fr3k.integrations.IntegrationState
+import com.mcpintelligence.fr3k.integrations.termux.TermuxHealth
 import com.mcpintelligence.fr3k.protocol.DeviceStatus as ProtoDeviceStatus
 import com.mcpintelligence.fr3k.ui.Fr3kPalette
 import com.mcpintelligence.fr3k.ui.Fr3kTheme
@@ -68,6 +72,13 @@ private fun QuickHudScreen(onClose: () -> Unit) {
     val app = Fr3kApplication.get()
     val caps by app.capabilityRegistry.snapshot.collectAsState()
     val profile by remember { mutableStateOf(app.fr3kCore.profileForCurrent()) }
+    val hudCtx = LocalContext.current
+    // §4: Termux is probed for REAL (package → permission → echo-ok round-trip),
+    // never inferred from capability strings. Green only when operational.
+    var termuxState by remember { mutableStateOf(TermuxHealth.lastKnown()) }
+    LaunchedEffect(app) {
+        termuxState = TermuxHealth.probe(hudCtx.applicationContext, app.termuxBridge)
+    }
 
     Box(
         modifier = Modifier
@@ -100,7 +111,7 @@ private fun QuickHudScreen(onClose: () -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     HorizontalDivider(color = Fr3kPalette.Border)
                     Spacer(Modifier.height(8.dp))
-                    AdapterRows(caps = caps.keys)
+                    AdapterRows(caps = caps.keys, termuxState = termuxState)
                 }
             }
 
@@ -132,44 +143,66 @@ private fun QuickHudScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun AdapterRows(caps: Set<String>) {
-    val ordered = listOf(
+private fun AdapterRows(caps: Set<String>, termuxState: IntegrationState) {
+    val registry = listOf(
         "Hermes" to caps.any { it.startsWith("agent.") },
         "MeshCore" to caps.any { it.startsWith("meshcore.") },
         "Meshtastic" to caps.any { it.startsWith("meshtastic.") },
         "GPS" to caps.any { it.startsWith("location.") },
-        "Termux" to caps.any { it.startsWith("termux.") },
-        "Local AI" to caps.any { it.startsWith("ai.local.") },
     )
-    ordered.forEach { (name, online) ->
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        ) {
+    registry.forEach { (name, online) ->
+        AdapterStatusRow(
+            name = name,
+            statusText = if (online) "ONLINE" else "OFFLINE",
+            color = if (online) Fr3kPalette.Ok else Fr3kPalette.Err,
+            status = if (online) ProtoDeviceStatus.ONLINE else ProtoDeviceStatus.OFFLINE,
+        )
+    }
+    // Termux uses the REAL probed state (§4), green only when operational.
+    val termux = TermuxHealth.statusLabel(termuxState)
+    AdapterStatusRow(
+        name = "Termux",
+        statusText = termux.label,
+        color = termux.level.asColor(),
+        status = if (termuxState.operational) ProtoDeviceStatus.ONLINE else ProtoDeviceStatus.OFFLINE,
+    )
+}
+
+@Composable
+private fun AdapterStatusRow(name: String, statusText: String, color: GraphicsColor, status: ProtoDeviceStatus) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+    ) {
+        Text(
+            text = name,
+            color = Fr3kPalette.Text,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 12.sp,
+        )
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Text(
-                text = name,
-                color = Fr3kPalette.Text,
+                text = statusText,
+                color = color,
                 fontFamily = FontFamily.Monospace,
-                fontSize = 12.sp,
+                fontSize = 10.sp,
             )
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text(
-                    text = if (online) "ONLINE" else "OFFLINE",
-                    color = if (online) Fr3kPalette.Ok else Fr3kPalette.Err,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 10.sp,
-                )
-                Spacer(Modifier.width(8.dp))
-                StatusDot(
-                    status = if (online) ProtoDeviceStatus.ONLINE else ProtoDeviceStatus.OFFLINE,
-                    size = 6.dp,
-                )
-            }
+            Spacer(Modifier.width(8.dp))
+            StatusDot(
+                status = status,
+                size = 6.dp,
+            )
         }
     }
+}
+
+private fun TermuxHealth.TermuxStatusLevel.asColor(): GraphicsColor = when (this) {
+    TermuxHealth.TermuxStatusLevel.OK -> Fr3kPalette.Ok
+    TermuxHealth.TermuxStatusLevel.WARN -> Fr3kPalette.Warn
+    TermuxHealth.TermuxStatusLevel.ERR -> Fr3kPalette.Err
 }
 
 @Composable

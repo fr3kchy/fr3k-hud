@@ -37,7 +37,13 @@ class Fr3kApplication : Application() {
     private val capabilityRegistryImpl by lazy { CapabilityRegistry() }
     private val commandRegistryImpl by lazy { CommandRegistry() }
     private val deviceRegistryImpl by lazy { DeviceRegistry() }
-    private val settingsImpl by lazy { AppSettings() }
+    private val settingsImpl by lazy {
+        val preferences = getSharedPreferences("fr3k.settings", MODE_PRIVATE)
+        AppSettings.open(
+            read = { preferences.getString("settings.v1", null) },
+            write = { encoded -> preferences.edit().putString("settings.v1", encoded).apply() },
+        )
+    }
     private val contextEngineImpl by lazy { ContextEngine() }
     private val automationEngineImpl by lazy { AutomationEngine() }
 
@@ -45,6 +51,27 @@ class Fr3kApplication : Application() {
     val secureStore by lazy { SecureStore(this) }
     val aiProviders by lazy { AiProviderRegistry() }
     val termuxBridge by lazy { com.mcpintelligence.fr3k.integrations.termux.TermuxBridge(this) }
+    val agentToolBus by lazy { com.mcpintelligence.fr3k.core.tools.AgentToolBus() }
+    val openRouterProvider by lazy {
+        com.mcpintelligence.fr3k.integrations.openrouter.OpenRouterProvider(
+            apiKeyProvider = { secureStore.get(settingsImpl.settings.value.openrouterApiKeyKey) },
+            defaultModel = settingsImpl.settings.value.openrouterModel,
+        )
+    }
+
+    val agentSession by lazy {
+        agentToolBus.register(com.mcpintelligence.fr3k.integrations.blackwave.BlackwaveAgentTool(blackwaveBridgeClient))
+        com.mcpintelligence.fr3k.core.tools.SharedAgentSession(agentToolBus, openRouterProvider, identity.deviceId)
+    }
+
+    /** Hoisted like [openRouterProvider] so the §10 diagnostics panel can probe it directly. */
+    val blackwaveBridgeClient by lazy {
+        BlackwaveBridgeClient(
+            endpointProvider = { settingsImpl.settings.value.blackwaveEndpoint },
+            credentialProvider = { secureStore.get(settingsImpl.settings.value.blackwaveCredentialKey) },
+            clientIdProvider = { settingsImpl.settings.value.blackwaveClientId },
+        )
+    }
 
     val fr3kCore: Fr3kCore by lazy {
         val pluginManager = PluginManager(
@@ -91,6 +118,7 @@ class Fr3kApplication : Application() {
         Log.i(TAG, "FR3K booting on deviceId=${identity.deviceId} android=${identity.androidId} v${identity.appVersion}")
         registerHermes()
         registerOpenCode()
+        registerOpenRouter()
         registerBlackwave()
         fr3kCore.pluginManager.register(GpsPlugin())
         fr3kCore.pluginManager.register(ShareCommandsPlugin(
@@ -138,14 +166,22 @@ class Fr3kApplication : Application() {
         )
     }
 
-    private fun registerBlackwave() {
-        val bridgeClient = BlackwaveBridgeClient(
-            endpointProvider = { settingsImpl.settings.value.blackwaveEndpoint },
-            credentialProvider = { secureStore.get(settingsImpl.settings.value.blackwaveCredentialKey) },
-            clientIdProvider = { settingsImpl.settings.value.blackwaveClientId },
+    private fun registerOpenRouter() {
+        val askCommand = com.mcpintelligence.fr3k.integrations.openrouter.AskOpenRouterCommand(
+            provider = { openRouterProvider },
         )
         fr3kCore.pluginManager.register(
-            BlackwavePlugin(bridgeClient = bridgeClient)
+            com.mcpintelligence.fr3k.integrations.openrouter.OpenRouterPlugin(
+                provider = openRouterProvider,
+                aiProviderRegistry = aiProviders,
+                commandFactory = { askCommand },
+            )
+        )
+    }
+
+    private fun registerBlackwave() {
+        fr3kCore.pluginManager.register(
+            BlackwavePlugin(bridgeClient = blackwaveBridgeClient)
         )
     }
 

@@ -45,6 +45,7 @@ class TermuxBridge(private val context: Context) {
 
         val firstResult: Result? get() = delivered
 
+        @Synchronized
         fun complete(result: Result): Boolean {
             val prior = delivered
             if (prior != null) {
@@ -182,7 +183,7 @@ class TermuxBridge(private val context: Context) {
             val timed = withTimeoutOrNull(timeoutMs) {
                 executeAsync(command)
             }
-            timed ?: Result("", "timeout after ${timeoutMs}ms", 124)
+            timed ?: Result("", "No result after ${timeoutMs}ms; the command may still be running in Termux", 124)
         }
     }
 
@@ -238,25 +239,21 @@ class TermuxBridge(private val context: Context) {
             putExtra(TermuxCommandContract.EXTRA_PENDING_INTENT, callbackIntent)
         }
         try {
-            context.startService(run)
-        } catch (t: Throwable) {
+            try {
+                context.startService(run)
+            } catch (t: Exception) {
+                return Result("", "startService failed: ${t.message}", 1)
+            }
+            // Suspend between observations. Cancellation/timeout always releases
+            // both the callback and slot; it does not claim to kill the shell.
+            while (true) {
+                slot.firstResult?.let { return it }
+                kotlinx.coroutines.delay(25)
+            }
+        } finally {
             cleanup(requestId)
-            return Result("", "startService failed: ${t.message}", 1)
+            callbackIntent.cancel()
         }
-
-        // Wait cooperatively for the receiver to fill the slot. We poll
-        // rather than suspendCancellableCoroutine + invokeOnCancellation
-        // here because the receiver path is a separate BroadcastReceiver
-        // callback that does not own a coroutine continuation; a small
-        // busy-wait under Dispatchers.IO is acceptable for an integration
-        // adapter and never touches the main thread.
-        val deadline = System.currentTimeMillis() + 60_000
-        while (System.currentTimeMillis() < deadline) {
-            slot.firstResult?.let { return it }
-            kotlinx.coroutines.yield()
-        }
-        cleanup(requestId)
-        return Result("", "no result delivered", 124)
     }
 
     /**

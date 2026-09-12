@@ -1,0 +1,129 @@
+> Q: Assess three independent products (HUD Android, BLACKWAVE fleet authority, Cardputer local firmware) for security, architecture, and pairing soundness — evidence-backed, adversarial, no runtime claims.
+
+**🛡️ Security/Android/Distributed-Systems Adversarial Panel**
+
+---
+
+## SCAN
+
+### Product 1 — HUD Android (`BlackwaveBridgeClient.kt`, `BlackwavePlugin.kt`, `Fr3kPlugin.kt`)
+
+| # | Severity | Evidence (line:excerpt) | Concern |
+|---|----------|------------------------|---------|
+| H1 | **High** | `BlackwaveBridgeClient.kt:90-101` — `URL.openConnection()` with no TrustManager/hostname verifier shown; comment says "trust-on-first-use for LAN certs" but no TOFU implementation visible | If endpoint is `http://` (likely for LAN), Bearer credential transmits cleartext. If `https://` with self-signed cert, default `HttpsURLConnection` validation rejects it — no custom trust store wired. Either path is broken or insecure. |
+| H2 | **High** | `BlackwaveBridgeClient.kt:30,46,62` — `suspend fun fetchRole()` calls synchronous `get()` directly, no `withContext(Dispatchers.IO)` | Blocks an IO dispatcher thread per call. `isAvailable()` (line 76) is fully synchronous and called from `pollRole()` coroutine. Under network degradation, 5s connect + 10s read timeout × 4 endpoints starves the IO pool. |
+| H3 | **Medium** | `BlackwaveBridgeClient.kt:22-24` — `endpointProvider: () -> String` is a lambda from settings | If endpoint is user-configurable, `get()` sends the Bearer credential to any URL. This is SSRF + credential exfiltration. No allowlist or scheme validation visible. |
+| H4 | **Medium** | `BlackwavePlugin.kt:39` — `cachedRole` read/written across coroutines with no `@Volatile`, `AtomicReference`, or mutex | `pollRole()` writes from IO coroutine; `capabilities()` may read from main thread. JVM memory model permits stale reads. Role could appear non-expired when it is, or vice versa. |
+| H5 | **Medium** | `BlackwavePlugin.kt:41-54` vs `BlackwavePlugin.kt:73-76` — 12 scope-to-capability mappings, only 2 commands registered | `radio.configure`, `device.reboot`, `ota.apply`, `profile.apply` are advertised as capabilities when the role grants them, but no commands implement them. UI shows "you can" when you can't. A user who enables BLACKWAVE HUD mode and sees `device.reboot` in capabilities has no action path. Capability ≠ commandability gap is unsurfaced. |
+| H6 | **Low** | `BlackwavePlugin.kt:124` — `BLackwaveBASE_CAPABILITIES` | Inconsistent casing (mixed `BL` and `ackwave`). Indicates rushed or copy-pasted code. Not a bug, but a quality signal. |
+| H7 | **Low** | `BlackwaveBridgeClient.kt:39,55,71` — `response.body.take(200)` in error message | Partial server error bodies propagate into exceptions → logcat → potential UI. If server leaks stack traces or internal paths in error responses, they're exposed. |
+| H8 | **Low** | `BlackwaveBridgeClient.kt:96` — `credentialProvider()?.let { setRequestProperty("Authorization", "Bearer $it") }` | Silent omission when credential is null. Server returns 401, user sees "HTTP 401" with no indication that the credential is missing (vs wrong). |
+| H9 | **Low** | `Fr3kPlugin.kt:64` — `CoroutineScope(SupervisorJob() + Dispatchers.IO + parentScope.coroutineContext)` | The `SupervisorJob()` overrides the parent's `Job` in the merged context. If `parentScope` is cancelled, child scopes survive. Structured-concurrency leak — plugins escape the parent lifecycle. |
+| H10 | **Low** | `Fr3kPlugin.kt:72-77` — failure path unregisters capabilities/commands but doesn't cancel `reg.scope` | On `plugin.start()` exception, the scope leaks (only `startJob` is tracked, scope cancellation only happens in `unregister`). |
+
+### Product 2 — BLACKWAVE Fleet Authority (`mobile.py`)
+
+| # | Severity | Evidence (line:excerpt) | Concern |
+|---|----------|------------------------|---------|
+| B1 | **High** | `mobile.py:125-141` — `/mobile/v1/pairing/complete` has no `Depends(authorize)`, accepts raw `dict`, returns `credential` + `gateway_spki_sha256` | Unauthenticated endpoint returning credentials. Security depends entirely on `pairing.complete()` validating `request_id` + `nonce`. The body is untyped `dict` — `str(body.get("request_id", ""))` coerces anything to string. If pairing logic expects UUID and gets `"../../etc/passwd"`, string coercion accepts it. No schema enforcement. |
+| B2 | **High** | `mobile.py:91-101` — `authorize()` validates Bearer token via `pairing.authenticate()` but no nonce, timestamp, or replay protection | Captured token is replayable until expiry. No rate limiting on 401s. Brute-force or token harvesting over LAN is unthrottled. |
+| B3 | **Medium** | `mobile.py:350-370` — `inbox_ingest` accepts client-provided `sha256` | Server stores client-asserted hash without recomputing. A malicious paired client can upload garbage with a valid-looking hash. Integrity check is theatrical. |
+| B4 | **Medium** | `mobile.py:372-380` — `inbox_get` returns any entry to any authenticated client | No per-device or per-owner authorization on inbox reads. Any paired companion can read any device's captures/logs. |
+| B5 | **Medium** | `mobile.py:71-77` — `LoopbackPairingGuard` checks query params only | Catches `?token=` and `?credential=` but not path-embedded or fragment-embedded credentials. Defense is narrow. |
+| B6 | **Medium** | `mobile.py:256-267` — `/mobile/v1/ota/request` echoes `idempotency_key` from body without validation | Accepts arbitrary string. If key is meant to be UUID or server-minted, client-controlled keys enable collision/tracking. |
+| B7 | **Low** | `mobile.py:60-68` — `observed()` raises `ValueError` if `live == cached` | Programming invariant surfaces as HTTP 500 to clients. Should be an assertion caught internally. |
+| B8 | **Low** | `mobile.py:148-182` — `/mobile/v1/fleet` always returns `online: "UNKNOWN"`, `battery: "NOT REPORTED"`, `live=False, cached=True` | All fleet data is catalog projection, not live. The Android `FleetStatusResponse.online` defaults to `"0/0"` but server sends `"UNKNOWN"` — semantic mismatch. Deserialization succeeds (both strings) but UI logic expecting `x/y` format may misparse. |
+| B9 | **Low** | `mobile.py:309-321` — `/mobile/v1/devices/{model_id}/radio` imports `.radio_policy` at request time | Deferred import means import errors surface as 500 at runtime, not at startup. If module is missing, the radio endpoint crashes for every request. |
+| B10 | **Info** | `mobile.py:262-266` — OTA endpoint returns `accepted: False`, `success: False` | Correct posture: HUD can request, authority says no. This is the right pattern — read-only projection surface. |
+| B11 | **Info** | `mobile.py:319,330-336` — radio `armed: False`, GNSS `state: "BLOCKED"`, `precise_coordinates: None` | Default-deny on RF and location. Correct. |
+| B12 | **Info** | `mobile.py:405-438` — `pathfinder_projection` returns `blackwave_authority: False` | Projection explicitly disclaims authority. Architecture is honest about what it is. |
+
+### Product 3 — Cardputer Local Firmware
+
+**No code excerpts provided.** Cannot assess. Noting from context only: memory says it runs fR3k 4.0.0 DEMON//SIGNAL (not BLACKWAVE), has TCA8418 keyboard controller, LoRa radio, GPS UART. Per instructions, I do not infer RF capabilities. The firmware's interaction with BLACKWAVE authority — whether it enrolls, reports, or accepts commands — is unassessable without code.
+
+---
+
+## SYNTHESIZE
+
+### Pairing: HUD ↔ BLACKWAVE
+
+The trust model is sound in principle: BLACKWAVE owns all device authority, signing, and radio configuration. HUD is a capability-aware consumer surface that fetches a role manifest and displays fleet status. The role manifest gates which capabilities the HUD advertises, not what it can execute.
+
+**But the gap between advertised capabilities and implementable commands (H5) is the central architectural risk.** The `scopeToCapability` map projects 12 scopes into capabilities, but only 2 commands exist. A user who enables BLACKWAVE HUD mode sees `radio.configure`, `device.reboot`, `ota.apply` in their capability list — these appear as permissions they hold. The distinction between "the bridge says I'm allowed to" and "the HUD can actually do it" is not surfaced anywhere. This is not an authorization bypass (the commands don't exist, so they can't be invoked), but it is a **trust-display integrity problem**: the capability list is a lie of omission. A security-conscious user reading their capability list would reasonably conclude they have reboot authority when they don't.
+
+**The blocking-I/O-on-coroutine pattern (H2) is the central operational risk.** `isAvailable()` + `fetchRole()` are synchronous HTTP calls executed on `Dispatchers.IO`. The polling loop runs every 30s with no backoff. If the bridge is unreachable, each cycle burns 5s (connect timeout) × 2 calls = 10s of blocked IO thread time. With 4 endpoints and retry behavior, a single poll cycle can block for 20-40s. Android's IO dispatcher default pool is small (64 threads on most devices, but shared with all coroutines). Under concurrent load (other plugins, UI coroutines), this causes thread starvation and UI jank.
+
+### Pairing: BLACKWAVE ↔ Cardputer
+
+Unassessable from provided excerpts. The BLACKWAVE catalog (`load_catalog()`) determines which devices are supported. If the Cardputer's model ID isn't in the catalog, `/mobile/v1/devices/{model_id}` returns 404 — correct rejection. If it is enrolled, the fleet endpoint shows `enrollment: "enrolled"` but all telemetry is `"NOT REPORTED"` — the bridge projects catalog metadata, not live device state. This means the Cardputer's actual firmware state (running DEMON//SIGNAL, not BLACKWAVE) is invisible to the HUD through this path. The HUD would see a catalog card, not a live device.
+
+The mobile gateway's `pathfinder_projection` function (line 405) demonstrates the intended architecture: "Reticulum routes. BLACKWAVE authorizes. BLE pairing is not enrollment." If a similar projection exists for the Cardputer, it should explicitly state that the device runs non-BLACKWAVE firmware and that BLACKWAVE authority is limited to enrollment/catalog metadata, not runtime control.
+
+### Pairing: HUD ↔ Cardputer (direct)
+
+No direct path exists in the provided code. The HUD communicates only with the BLACKWAVE bridge. The Cardputer would need to report to the bridge (or a Reticulum instance on the bridge host) for the HUD to see it. There is no BLE-direct or USB-direct path from HUD to Cardputer in this architecture. This is the correct separation — the HUD should not bypass the authority layer.
+
+### All Three Together
+
+The intended trust flow is:
+
+```
+Cardputer (local firmware, no BLACKWAVE authority)
+    ↓ enrollment/catalog only (no live telemetry path shown)
+BLACKWAVE bridge (authority, signing, radio policy)
+    ↓ role manifest + cached projections (HTTPS, Bearer auth)
+HUD Android (display surface, capability-aware, no write authority)
+```
+
+**The architecture is correct: authority is centralized, display is delegated, enable ≠ authorize.** The role manifest is the enforcement boundary — the HUD can only show what the manifest permits. But:
+
+1. **Transport security is the weakest link.** (H1) No visible TLS trust management for LAN certs. If HTTP is used, Bearer tokens are cleartext on the wire. If HTTPS with self-signed certs, no TOFU implementation is visible. This is the single most likely exploitable path: credential interception on the LAN.
+
+2. **Pairing is an unauthenticated credential-return endpoint.** (B1) `/mobile/v1/pairing/complete` returns credentials with no `authorize` dependency. The security of the entire system rests on `pairing.complete()` correctly validating the request_id and nonce. Without seeing that code, this is an unverified trust root.
+
+3. **Replay attacks are unmitigated.** (B2) No nonce/timestamp in the auth flow beyond the initial pairing. A captured Bearer token is valid until expiry with no revocation signal visible.
+
+4. **The capability/command gap undermines trust display.** (H5) 10 of 12 advertised capabilities have no command implementation. This doesn't create a security hole but it creates a false sense of authority that could mislead an operator during an incident.
+
+---
+
+## REFLECT
+
+### What's Right
+
+- **Default-deny posture on RF and location** (B11, B12): radio disarmed, GNSS blocked, precise coordinates null. Correct.
+- **Authority separation**: HUD never signs, never configures radios, never applies OTA. The bridge owns all write authority.
+- **OTA is a no-op from the HUD side** (B10): `accepted: False`, `success: False`. The HUD can request but cannot commit.
+- **Redirect-following disabled** (H1 comment): prevents silent HTTP→HTTPS upgrade hijacking. Good defense.
+- **URL-encoding device IDs** (`URLEncoder.encode` in `fetchDeviceStatus`): prevents path injection.
+- **Server validates model IDs against catalog**: unknown models return 404/422. Defense in depth.
+- **`observed()` invariant**: forces explicit live/cached labeling. Honest about what's real vs projected.
+
+### What's Missing
+
+1. **TLS trust management** — The #1 gap. No TrustManager, no certificate pinning, no TOFU store visible on the Android side. The server side has no TLS configuration (delegated to uvicorn/proxy, invisible). This needs an explicit, documented trust model: either (a) pin the gateway's SPKI hash from `pairing.complete()` response (the field exists: `gateway_spki_sha256`), or (b) use a local CA with the cert installed in the Android trust store. The `gateway_spki_sha256` field is returned at pairing but never consumed by the client in the provided code.
+
+2. **Replay protection** — Bearer tokens are stateless on the client. The server should implement either short TTLs with refresh, or a nonce-based challenge-response. Without seeing the pairing module, I can't confirm TTL is enforced.
+
+3. **Per-entry inbox authorization** — Any paired client reads any inbox entry. If the inbox contains device-specific logs or captures, this is an over-broad read. The `model_id` in the ingest payload isn't checked against the authenticated client's authorized devices.
+
+4. **Cardputer assessment** — Not possible without firmware excerpts. The architecture assumes the Cardputer is a catalog-only entry with no live telemetry. If the firmware has any network surface (LoRa mesh, BLE, serial), its interaction with BLACKWAVE authority needs its own review.
+
+5. **Structured concurrency in PluginManager** — (H9) Child scopes escape parent lifecycle. On app shutdown, if `parentScope.cancel()` is called, plugin scopes survive because `SupervisorJob()` replaces the parent `Job`. Plugins must be individually stopped via `unregisterAll()`. If the app crashes, plugin coroutines may outlive the expected shutdown.
+
+### Minimal Architecture Recommendation
+
+The existing architecture is close to correct. Three concrete changes would close the main gaps:
+
+1. **Wire `gateway_spki_sha256` into the client.** The pairing response already returns it. Store it after pairing and use it to pin the TLS certificate in `BlackwaveBridgeClient.get()` via a custom `TrustManager` that compares the server cert's SPKI against the stored hash. This gives TOFU without a CA and prevents MITM after first pairing.
+
+2. **Add `withContext(Dispatchers.IO)` to all `get()` calls** (or migrate to OkHttp with async callbacks). This stops blocking the coroutine dispatcher and makes the suspend functions actually suspending. Add exponential backoff to the polling loop: start at 30s, back off to 5min on consecutive failures, reset on success.
+
+3. **Collapse the capability list to match implemented commands.** Either implement the 10 missing commands (with server-side enforcement) or remove them from `scopeToCapability`. If they're future placeholders, gate them behind a `CapabilityTier.TIER_2` or `CapabilityTier.EXPERIMENTAL` flag so the UI can distinguish "available" from "actionable."
+
+---
+
+**History**: Read-only assessment of 3 provided excerpts (HUD Android client/plugin/manager, BLACKWAVE mobile gateway). Cardputer firmware not provided — gap noted. 12 HUD concerns, 12 BLACKWAVE concerns, 0 Cardputer concerns. Key findings: TLS trust management absent (H1), blocking I/O on coroutines (H2), unauthenticated pairing endpoint (B1), replay-vulnerable auth (B2), capability/command mismatch (H5), inbox over-broad read (B4), structured concurrency leak (H9). Architecture is sound in principle — authority separation, default-deny RF/GNSS, OTA no-op from HUD. Three recommended fixes: SPKI pinning, async I/O with backoff, capability/command alignment.
+
+**Next Task**: Provide Cardputer firmware excerpts for the third product assessment. Provide `pairing.py` to verify pairing-complete validation and token TTL. Provide `radio_policy.py` to confirm default-disarm enforcement.

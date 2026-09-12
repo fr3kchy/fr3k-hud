@@ -1,6 +1,7 @@
 package com.mcpintelligence.fr3k.hud.quickhud
 
 import android.content.ComponentName
+import android.app.PendingIntent
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
@@ -27,6 +28,21 @@ class Fr3kHudTileService : TileService() {
         super.onClick()
         val intent = android.content.Intent(this, QuickHudActivity::class.java)
             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startActivityAndCollapse(PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ))
+        } else {
+            startLegacyTileActivity(intent)
+        }
+    }
+
+    // API 31–33 do not have the PendingIntent overload. The caller guards this
+    // compatibility path; API 34+ always uses the overload above.
+    @android.annotation.SuppressLint("StartActivityAndCollapseDeprecated")
+    @Suppress("DEPRECATION")
+    private fun startLegacyTileActivity(intent: android.content.Intent) {
         startActivityAndCollapse(intent)
     }
 

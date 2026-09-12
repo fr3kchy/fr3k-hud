@@ -71,6 +71,7 @@ class HudOverlayService : Service() {
         orb.installTouchHandler()
         orb.setGestureListener(gestureListener)
         orb.setLifecycleListener(lifecycleListener)
+        wireAgentTools()
         Log.i("FR3K", "HudOverlayService onCreate done; orb attached")
     }
 
@@ -96,6 +97,9 @@ class HudOverlayService : Service() {
         try { unregisterReceiver(overlayReceiver) } catch (_: Exception) {}
         scope.cancel()
         orb.detach()
+        Fr3kApplication.get().agentSession.cancel()
+        Fr3kApplication.get().agentToolBus.unregister("browser.navigate")
+        Fr3kApplication.get().agentToolBus.unregister("termux.exec")
         overlays.shutdown()
     }
 
@@ -127,8 +131,8 @@ class HudOverlayService : Service() {
         } else {
             startForeground(NID, notif)
         }
-        // Register an internal receiver so external adb broadcasts (or
-        // extension packages) can drive overlay state.
+        // Same-signature extensions may control overlays after requesting this
+        // permission. Untrusted apps must not inject URLs into an existing browser.
         val filter = android.content.IntentFilter().apply {
             addAction(ACTION_OPEN_CHAT)
             addAction(ACTION_OPEN_BROWSER)
@@ -139,11 +143,11 @@ class HudOverlayService : Service() {
             addAction(ACTION_HIDE_ALL)
             addAction(ACTION_STOP)
         }
-        if (Build.VERSION.SDK_INT >= 33) {
-            registerReceiver(overlayReceiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(overlayReceiver, filter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            this, overlayReceiver, filter,
+            "com.mcpintelligence.fr3k.hud.permission.CONTROL_OVERLAY", null,
+            androidx.core.content.ContextCompat.RECEIVER_EXPORTED,
+        )
     }
 
     private val overlayReceiver = object : android.content.BroadcastReceiver() {
@@ -255,6 +259,26 @@ class HudOverlayService : Service() {
         edgeHidden = false
         overlays.edgeArc.hide()
         orb.attach()
+    }
+
+    /** §3 — populates the app-wide AgentToolBus with the real overlay tools. */
+    private fun wireAgentTools() {
+        val app = Fr3kApplication.get()
+        val bus = app.agentToolBus
+        bus.register(
+            com.mcpintelligence.fr3k.integrations.browser.BrowserAgentTool(overlays.miniBrowser)
+        )
+        bus.register(
+            com.mcpintelligence.fr3k.integrations.termux.TermuxAgentTool(
+                bridge = app.termuxBridge,
+                onExecuted = { cmd, cwd ->
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+                        overlays.terminal.showAgentExecution(cmd, cwd)
+                    }
+                },
+                onOutput = { output -> overlays.terminal.appendLine(output) },
+            )
+        )
     }
 
     companion object {

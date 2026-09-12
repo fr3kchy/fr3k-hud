@@ -1,0 +1,1082 @@
+[
+  {
+    "path": ".gitignore",
+    "class": "first-party-or-project-metadata",
+    "bytes": 206,
+    "sha256": "a1b7fb14d8c64fb11b51f1a426a35aba9f5e1325ff42339d426ce47cf9c7fdfd"
+  },
+  {
+    "path": "README.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8301,
+    "sha256": "d56623eb8d8af4ec957c383943fb186fdfcd31b23cbca06025fc5d049cad71d7"
+  },
+  {
+    "path": "app/build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3357,
+    "sha256": "0dcccff2f8bad11f7f8921e77bf5ba0bbf7604d9a8f9ce0162ed05f8b8a5be90"
+  },
+  {
+    "path": "app/proguard-rules.pro",
+    "class": "first-party-or-project-metadata",
+    "bytes": 197,
+    "sha256": "8526c98a7d291d42417466c8cfd06e0e860a9540df1cfa9512b607a3267c8ef8"
+  },
+  {
+    "path": "app/src/main/AndroidManifest.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 17155,
+    "sha256": "0570162002936cc45b8b8e731cc28ede4181fa35ba4808ada71f79c2fd373f67"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/Fr3kApplication.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8697,
+    "sha256": "025b5e4f08e20502cba1fd631c99efb471fd31d56da3d7ed84d9978f1adc3302"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/adapters/lspatch/LspatchAdapter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8914,
+    "sha256": "bb8025e9c6c555593a76d8f3eaf39d333326d862d31f1ec8ee76cccdc862077d"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/adapters/morphe/MorphePatchRepository.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5356,
+    "sha256": "b004c65c6a620c509c139d027e99e8b4e57156534423ac47eac35051b05b9201"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCoreService.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2309,
+    "sha256": "a9642601565a995fde4c9995302538853440c66002b1f7e43a98fa585ee45f2f"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/AutomationActionExecutor.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3631,
+    "sha256": "6405ceecccb4221a48aa2c057ddbed1eb88c2daaa773bd56acfc6ab41a097415"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/Fr3kHudOrb.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 12060,
+    "sha256": "a0afe88d07fb530df1c7668e0ca41ca5a579f7160f9658c4bda24692ecd354ce"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/HudOverlayService.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 11361,
+    "sha256": "85b1de60b08cdd98b2967fc94ae9179613ed88b1f66adbdb077d62a7055434f4"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/LongPressRadialActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6268,
+    "sha256": "d70b1f77c1207598d3c226d0d3f125bdf2b53817cce28fa4a230112f12911a95"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kChatBubble.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 29799,
+    "sha256": "5d526c916efcef6178c936d9d8bf928d8f5f078d89e3ddcf65125d719ca42442"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kMiniBrowserOverlay.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 16636,
+    "sha256": "366ad68807dc1eb0b271128e555ff60613d9c5d06e15380afbafaa4c016a37a8"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kOverlay.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5239,
+    "sha256": "7a00ccf2b428c86c119f7f434241f1055f1d9089e7b4300d55b6be740b3fa9fa"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kOverlayHelpers.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 10081,
+    "sha256": "065ab3c5bb3d9beb0fc5def8aeada4f4b4fb152b0043a77c8f9c0ee2f295d27e"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/Fr3kTerminalOverlay.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 15533,
+    "sha256": "da392e569a8653d6c6871ccf83a678186d2a05ab9d0d41a3bce0bacd658e1055"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/OverlayManager.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3455,
+    "sha256": "1f378e45b7cb213f0871b2bd7141fe81448eb1b93ec19debe578b7c9c437f80f"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/RadialMenuOverlay.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8110,
+    "sha256": "de2a2fd19098c4a97c5402a08da08d46be07ff9640d4a449dfa3fac6b79bef57"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/overlays/TtsPreference.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2445,
+    "sha256": "1e1aaaf9fa9fc439e8ceb8ab66606f367a140f13aab3fd50ff96b217a9357a5f"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/quickhud/Fr3kHudTileService.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1530,
+    "sha256": "17478b9693a885de2c7bf8781ad31a15e52d9e36764f16178a046a528e62f4b2"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/quickhud/QuickHudActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7652,
+    "sha256": "6212ad1d5bc73cacfb4fe43dd1804b6393aaed4173ca500d34ae808f91d56355"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/receivers/InstallStateProbe.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7456,
+    "sha256": "22ccdac449cbb66014353447b82ee569204fafd9b76150ae69bdee9e50d07e4d"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/hud/receivers/Receivers.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6596,
+    "sha256": "6a1920db3fb4efb52511b8f1340a906c84788ad0d39ac954ef22e1b0fd982b93"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuAdapter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 13115,
+    "sha256": "63fd439c8066d4bcc9cb0a6448f5a34d09410b593604defaa32e984ca650a674"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuBridge.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6839,
+    "sha256": "a58a5f925bafea55ee20571ab4b717d0dcf69b8d9f741a52d62ded8eec8dd07b"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuCommandExecutor.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7004,
+    "sha256": "b14f67b4d14089b0be0e27d24eb74953ed4c4e18a56bc6b60c2d8853232212fe"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuState.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7424,
+    "sha256": "ee2f2dfc4ea1d601b70a715e884be4868913f916dd9b2b4fc8e494bd0f9d10c5"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxBridge.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 13288,
+    "sha256": "405aecdd14134084679770d6a9a24e5a8df89034287a9130079223a053c18c77"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxCommandContract.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3982,
+    "sha256": "3ff33ce72a1c2b7262e50cfbe8ebb2f47cd53526b642bd2648a4da73238fb5e7"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultParser.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5740,
+    "sha256": "16f9134057cce0314151591a6349212fd79d0750c89b46cf72f9813a8cf5628f"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultReceiver.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2840,
+    "sha256": "7643e3e18c0c06eac10e924eb07e5a1288d5cd258459568ee8beaf69bb2ea530"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/integrations/vector/VectorAdapter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5145,
+    "sha256": "933b4826623cd6afdc3354122eb38e3b6e076a507bb64c56d2489efe3b4e2639"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/location/LocationService.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2187,
+    "sha256": "dd8b2fc375f4c1fa2b2898fc02a5d9945beb3b1f1d59b44b35f534eefc38c457"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/mesh/MeshService.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2150,
+    "sha256": "404ffe01b249559ac699b30635108b67d19230701250f51737eaa72434bdd226"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/permissions/PermissionRegistry.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5953,
+    "sha256": "aadf0199110a7ea75150c75db424f1f4cd10ceaa5e8bb57fa38a0f2a5db49516"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/permissions/SpecialPermissionLauncher.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1455,
+    "sha256": "c417931d7a582be654fe8062f3592fd95f884d150c12b7825ea45c100aa38db3"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/share/ShareReceiverActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 9580,
+    "sha256": "af05149ae3b6462fb14be971fb93616d44a93c56e83c249d0b8752c5732ae78d"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/MainActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 24241,
+    "sha256": "979dcd7d86f7fc691e1f736be581e936ce7b0c16390edda3881d3f7c7523a8f6"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/ask/AskAboutThisActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 10619,
+    "sha256": "b60be84d72b765e5cc84347fec07d7a28b23bc81c607474c357ca59e721f6b7a"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/automation/AutomationActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7646,
+    "sha256": "cff32cf795b490bf5365467b383fb1a6f8f81c6cabd2b16cf2f5ad81bb61d35a"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/clipboard/SmartClipboardActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7927,
+    "sha256": "f8f0f3dbeaea8f583abaa8d3ab53acb18593bcfbef5319120314a6233287fda4"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/devoverlay/DeveloperOverlayActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6587,
+    "sha256": "bf6ce925cb2b888567af382a7f14e365b1a3b89d7145e2c62d3e6bc24c69e294"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/diagnostics/DiagnosticsActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 11553,
+    "sha256": "b3efd1dc822f0757d23b3b06dc0f757956e9c357b1b14b87f1fe4737a55fc5b0"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/handoff/DeviceHandoffActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8823,
+    "sha256": "c54162e1fa806fc3f81638257ed3994533b0f14ac3b7e9350237dfb251a405f3"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/integrations/IntegrationsActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 31103,
+    "sha256": "b0cabe0b02eb77a125272ef86c91eefd60b2a4a603ef34646afaa6108408169d"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/palette/CommandPaletteActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 9896,
+    "sha256": "8bf64c29d2a0687d8dbb2dfbe7b1601c7b0036e4bea5e4b7bfe39a4811aab603"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/screenshot/ScreenshotActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7929,
+    "sha256": "a5a735ef5f822264789da62dea6a5490725171ddc2c2f9c22875916ac54e002f"
+  },
+  {
+    "path": "app/src/main/java/com/mcpintelligence/fr3k/ui/settings/SettingsActivity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 9124,
+    "sha256": "76922ee48236a4428e3b5252ff3c445d9f929e17077b57e4a5fcaac83794a899"
+  },
+  {
+    "path": "app/src/main/res/drawable/fr3k_orb.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 236,
+    "sha256": "b7594340c19e8f0db25b711efd731f744b5e56fd104f981646a8c25af94e026e"
+  },
+  {
+    "path": "app/src/main/res/drawable/ic_fr3k_notification.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 454,
+    "sha256": "9b73c4ecdb4f6e599549350698d7bad9f0cf67838f3835cf6ba603cc881f655b"
+  },
+  {
+    "path": "app/src/main/res/drawable/ic_launcher_foreground.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 552,
+    "sha256": "69cc71591ac39795683c36d46840044fb32e6db9cb41a97b6c67c86f92fe82ef"
+  },
+  {
+    "path": "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 254,
+    "sha256": "e3e815d8b771f88542096d6f9ffbf39d06c70483e51e02d6668316a578498676"
+  },
+  {
+    "path": "app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 254,
+    "sha256": "e3e815d8b771f88542096d6f9ffbf39d06c70483e51e02d6668316a578498676"
+  },
+  {
+    "path": "app/src/main/res/values/colors.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 535,
+    "sha256": "bd5cdea06bf3e93ee66f30af6f658600399f023f63bd2dde3245848cd41ae224"
+  },
+  {
+    "path": "app/src/main/res/values/strings.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1404,
+    "sha256": "9527661b87b9c62b869fb90fc1c8b4f8b84ae959503b6907223c2debe98b888a"
+  },
+  {
+    "path": "app/src/main/res/values/themes.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 787,
+    "sha256": "0126768be6c9ef1868035c6e6761c760239d4cedbb09a5b8d50aba5a321b4086"
+  },
+  {
+    "path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 395,
+    "sha256": "9b183d0f7b08f43633d97e98bc6c0d58169d2d71de977dfc7086540ceadc8d3a"
+  },
+  {
+    "path": "app/src/main/res/xml/file_paths.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 227,
+    "sha256": "3726e59294832a676f902efe4a2ed97ef62cb8a4fcd27c65c1d7d565fa53cf0e"
+  },
+  {
+    "path": "app/src/main/res/xml/network_security_config.xml",
+    "class": "first-party-or-project-metadata",
+    "bytes": 764,
+    "sha256": "a4f99ed25611e880d7440afef569cc3645124f9a97ffd9516e69be547f3108d0"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/BuildMetadataContractTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5701,
+    "sha256": "c3a0b1260fbf7fb253629556f02f7d182c9d7f9c09408407e7b070306714c940"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/NoBlockingUiContractTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5579,
+    "sha256": "ea849dbb3c3e10b3ebcaac5ac98b349103b0410b0dfcf403b82781c1326d7fa6"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuCommandPolicyTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 4713,
+    "sha256": "0c600767917e2702f0c223b0285cc0d146640b11f003afd8a84d5fd68add5fb6"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/shizuku/ShizukuStateReducerTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7827,
+    "sha256": "38963425f04fdba31c62750209dee98c26a5ed708cfdefde9ac9f82da5f746c8"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/termux/TermuxCommandContractTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5904,
+    "sha256": "1c0cc573848cbdbb99c384f3e55156bef1080fffbcd69185040a5878cb480d4a"
+  },
+  {
+    "path": "app/src/test/java/com/mcpintelligence/fr3k/integrations/termux/TermuxResultParserTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7744,
+    "sha256": "7c49748d070f89eefb4a25e827c5212499a6d1bccdf997fd9d3a099506ac913b"
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.1.0.apk.sha256",
+    "class": "release-or-media-evidence",
+    "bytes": 108,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.4.15.apk.meta.json",
+    "class": "release-or-media-evidence",
+    "bytes": 191,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/FR3K-HUD-0.4.15.apk.sha256",
+    "class": "release-or-media-evidence",
+    "bytes": 86,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/01-dashboard.png",
+    "class": "release-or-media-evidence",
+    "bytes": 135033,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/02-command-palette.png",
+    "class": "release-or-media-evidence",
+    "bytes": 159946,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/03-ask-about-this.png",
+    "class": "release-or-media-evidence",
+    "bytes": 85798,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/04-share-target.png",
+    "class": "release-or-media-evidence",
+    "bytes": 51576,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/integrations-panel.png",
+    "class": "release-or-media-evidence",
+    "bytes": 79606,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/01_dashboard.png",
+    "class": "release-or-media-evidence",
+    "bytes": 157944,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/02_palette.png",
+    "class": "release-or-media-evidence",
+    "bytes": 192479,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/03_ask.png",
+    "class": "release-or-media-evidence",
+    "bytes": 92518,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/04_clipboard.png",
+    "class": "release-or-media-evidence",
+    "bytes": 66888,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/05_screenshot.png",
+    "class": "release-or-media-evidence",
+    "bytes": 128433,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/06_quickhud.png",
+    "class": "release-or-media-evidence",
+    "bytes": 138123,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/07_automation.png",
+    "class": "release-or-media-evidence",
+    "bytes": 111445,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/08_handoff.png",
+    "class": "release-or-media-evidence",
+    "bytes": 51258,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/09_devoverlay.png",
+    "class": "release-or-media-evidence",
+    "bytes": 87479,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/10_diagnostics.png",
+    "class": "release-or-media-evidence",
+    "bytes": 239489,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/11_settings.png",
+    "class": "release-or-media-evidence",
+    "bytes": 116113,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/12_hud_orb.png",
+    "class": "release-or-media-evidence",
+    "bytes": 176277,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v2/13_share_receiver.png",
+    "class": "release-or-media-evidence",
+    "bytes": 58163,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v3/01_after_start.png",
+    "class": "release-or-media-evidence",
+    "bytes": 1199623,
+    "sha256": null
+  },
+  {
+    "path": "artifacts/screenshots/v3/02_orb_running.png",
+    "class": "release-or-media-evidence",
+    "bytes": 1199281,
+    "sha256": null
+  },
+  {
+    "path": "build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 355,
+    "sha256": "58914c440dc4e48f8915eddc2b2f5bcc7b380ad63f8a78982182f73e6ad03012"
+  },
+  {
+    "path": "build.sh",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2415,
+    "sha256": "4fdce4c444e1e7ee26ea478fe85c3e1bdcde5b12b4fa168c0b22f7b4fabfe9f5"
+  },
+  {
+    "path": "core/build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1079,
+    "sha256": "86eec01b5bbe1fcc0db82b8fc6281ba20591ad73ef08870555c669cbf42e23d3"
+  },
+  {
+    "path": "core/consumer-rules.pro",
+    "class": "first-party-or-project-metadata",
+    "bytes": 55,
+    "sha256": "9a90a816bbc2cd868cd18e08a2f316a1d243b65ba88b33b85f1450043bab923a"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AiRouter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2317,
+    "sha256": "dd034c62d9dc28f3e9dfc4625403dbfc3c33131b594c2740a6a10e9b1f71f746"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AppSettings.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2089,
+    "sha256": "fba0fe1208a8487038c8dfdb9e11505f218e77b37b9c549297abc021e5951bef"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ApplicationProfiles.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 15111,
+    "sha256": "76a255e508b441453fcc00351270ff381d6bbd6417ec28dd2941f0e09f0cc66b"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/AutomationEngine.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6158,
+    "sha256": "92033400cdc87f663716b6f7441834de4506e9262ab8a960f0d9b44e2b839045"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/CapabilityRegistry.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3003,
+    "sha256": "61709f4aba40996dfe21cf410aba501a15f75e3ca647be9d26c143ba166bb895"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/CommandRegistry.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2493,
+    "sha256": "47ddbfadd622d2e890d164afe595f0a2feec9818dd50cc617651f1e36922c35e"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ContextEngine.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 4910,
+    "sha256": "92c544c0ba5acc5f566ed1c1edfa03b41dc3a4b6d4a0009bd680de1a6a6f373d"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceHandoffAdapter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2764,
+    "sha256": "2a1a3e25d62d23bb8b9d0ce4a732851e9f8624f7fe30e4e94f9e2010470c7b84"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceIdentity.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2292,
+    "sha256": "cff43ef17efbcc77a4a3598e3b0108b7b88939432cae906b6e451608dda963f4"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DeviceRegistry.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1990,
+    "sha256": "a6cb8540f5df7b90c6e34a94d569e5d2396aa69c7d69930d5d1bf3a1d2271d6a"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/DiagnosticsExporter.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8591,
+    "sha256": "39011f240e3e7982d5fc641262698ac077997f7bff4febe33e2136e4542b8307"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCommand.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2363,
+    "sha256": "925b1b83497e50e86d3b987fc953466be79480a4bbac19c7ac2c1476bb9436f0"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kContext.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1495,
+    "sha256": "b2b7a5d66d1379880723aca8b1d62751845e8b9e5ac681fc23b8425eeeb5043b"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kCore.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2067,
+    "sha256": "fd385f138105022fdbe6229e6ed27abae3c0d7bb375ccc57283180fb1f0ac240"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kPlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3825,
+    "sha256": "50f94a169452c4e95fc7b9db22eeb6fd87a8f11e4d4b980ddf313f832b044f51"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/Screenshots.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 923,
+    "sha256": "724be5c6b9d2a63cad2b21e300980d671654f7176bc2505fb251acf36d058370"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/SecureStore.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1261,
+    "sha256": "2b911681007deb7d8448a15ef82832231f11e88bdf943666f0c028502d94ba2f"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/ShareCommandsPlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7905,
+    "sha256": "94866c2071f375c907a34ceb9ee55387353275369915a9b95bcde86b62f2fc14"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/UrlSanitiser.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3779,
+    "sha256": "2927f4c81b365bc93a9f8d31a962770745f109a895e530dc5b97d682a651ccd9"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/core/VoiceIntentPlanner.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3386,
+    "sha256": "e7a297e5aef47b2fbc5991d738724f4bf2224ac1f087089defff1fc51ed81753"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/IntegrationState.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5160,
+    "sha256": "3f256abfc19cf786401824c71b17adab1bb6dfe6dd35ef75e5137a6125ebad93"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveBridgeClient.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6123,
+    "sha256": "cb0067bf4a106594084d3df687d1d4fce65e47cbd6cea0741fae5305920215b6"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwavePlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7674,
+    "sha256": "809b9a9b7b0b670d652f39054706f64907fd36a9f5e50d1abb91a09fed6fab3b"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveRoleManifest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1260,
+    "sha256": "c873f5dae9b78d061e4009203f94a428f48388709482f33fb839d8979c0d4ffa"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/gps/GpsPlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3829,
+    "sha256": "f4bfdd4ae213d213e07154dae705e644269f7c4dd95674d8e4ecd3a6b491187f"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesAskCommand.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1741,
+    "sha256": "830355d84efd40ef8054994fc7e45add906f606b7706d83db4de446c04f39447"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesPlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2029,
+    "sha256": "b267f1b1b66d77fbd3e8819e1fc5df557dd9d2731eb84ba02febac3eced8d48c"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/hermes/HermesProvider.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3912,
+    "sha256": "f44f701f4d630baa5634316cab53eb76af25405a5736c2ff311992e52a057c57"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/AskOpenCodeCommand.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2032,
+    "sha256": "8b5848657f4869ab009f4efa6c179aa5ae47963ea1e5dcda2fba0b5bfb6795a1"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodePlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1719,
+    "sha256": "b1255db2c359ae4fb3552d2a73cce48e2d056e0fb22d951d5d52c29e3632ec43"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodeZenModelRegistry.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3538,
+    "sha256": "b65a3417b6667585c5e5e8bf3e76f7bbe34fbe15b7a0d57bdc8a63391dd4c69e"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/opencode/OpenCodeZenProvider.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 6701,
+    "sha256": "b7db39b503896cb0f2be0e32d0f528133f9ad74b4a7ca3b1310ebd055137c72a"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/share/CleanUrlCommand.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1454,
+    "sha256": "a66d4bf1cf4d96d321286c18a04030c8e04bcecd519d8a69801568190c3b2c45"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/share/OpenOnDeviceCommand.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2444,
+    "sha256": "2895d34c9b58c4cffd7d72082f1d9a50c2f9b7a57a01c252a6fcdae9ac3848ae"
+  },
+  {
+    "path": "core/src/main/java/com/mcpintelligence/fr3k/integrations/system/SystemPlugin.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3637,
+    "sha256": "8a6665bad12ba6645cf3584c92664acbe9503de5d1ed5697b5fb7f57065de639"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/adapters/AdapterTests.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 895,
+    "sha256": "9f80ca7e90e08d2dd6b2b7bd083a09b039ee0a826ebc7b2655b0a72b6a9b89de"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/CapabilityRegistryTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1831,
+    "sha256": "9a394f8ca5d1d4beea51e8a10895c3571e4e41a36c48bfddc09d95491359be74"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/CommandRegistryTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1836,
+    "sha256": "b168000e9243a002250338f8edd14b083c8dda72de92cfd561142ab654decfe5"
+  },
+  {
+    "path": "core/src/test/java/com/mcpintelligence/fr3k/core/UrlSanitiserTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1413,
+    "sha256": "6036520f9f2c6f14ecd34f00894fde7c988a47532cb1b4a605c69f8c9d0feec8"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 7061,
+    "sha256": "5775e251a0b4de42069dfd857e20a272da4ae13d4f6d035401e519dccc82295e"
+  },
+  {
+    "path": "docs/CAPABILITIES.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2123,
+    "sha256": "17e0c6d78ccd61fd8e8b2edb03bd363c38748818d2afb81bc91f1cacd5891034"
+  },
+  {
+    "path": "docs/DEVELOPMENT.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2149,
+    "sha256": "918a21527cf042e130a85653ce38931f4b5f5fe8537e731b574e54102388a821"
+  },
+  {
+    "path": "docs/DEVICE_PAIRING.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1354,
+    "sha256": "1f2c881be05e9990b2da7e0f40bbab971fb603844bad5af7128acb5515595d1c"
+  },
+  {
+    "path": "docs/HERMES.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1742,
+    "sha256": "5b59240e2c6171b320c4b8be4c42a7bff3dad651ece6238f1e4080dc12101f16"
+  },
+  {
+    "path": "docs/MESH.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3507,
+    "sha256": "4142aa3fca1e3cd05c7073e9f2e8ed58d6731eecd2bce315e9e00a87eef5053f"
+  },
+  {
+    "path": "docs/PROTOCOL.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 4166,
+    "sha256": "769a437442a99033f79b8d082a6d64f1ca6a04a7bd6ca1e223b37760976ad6cf"
+  },
+  {
+    "path": "docs/RELEASE.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1452,
+    "sha256": "84b7075f05d8776edb6dd7c68e99753cfdaacd0aaa25ab81119bb00448bea3f3"
+  },
+  {
+    "path": "docs/SECURITY.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3514,
+    "sha256": "5c3733d597a525cd518c33ab2f700d28eab19e96645f9160cfc81931f7bac54c"
+  },
+  {
+    "path": "docs/TERMUX.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1540,
+    "sha256": "ac2e083a7dd2ce6e8af32b8cb8a15b08d468695ade78c4da5691209b7518c085"
+  },
+  {
+    "path": "docs/TESTING.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2553,
+    "sha256": "a1745d77e131dbafe52da3cc9290cc7425d5e89fc4decbf03c007a9d95f9ec54"
+  },
+  {
+    "path": "docs/test-audit-2026-09-07.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 12970,
+    "sha256": "01e1066e8b023e841f118bfd23793e33df3060407c5f69979b4bff6713cd58d2"
+  },
+  {
+    "path": "docs/verification/PHONE_BASELINE.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 4375,
+    "sha256": "ed7f1e32e07b4c07ebdad53398875df96ef5d010df59651c55f70f370ca25632"
+  },
+  {
+    "path": "docs/verification/PHONE_HERMES_MANIFEST.schema.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5336,
+    "sha256": "417d06b1ad794988cd22ad0842f40010445a282b1481c09329fc26734cacd03a"
+  },
+  {
+    "path": "examples/device-manifest.example.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 919,
+    "sha256": "08dc241ca5f105ef014a8f3212f14cd8d7b3faab4de8baf47a8e58c63ab12407"
+  },
+  {
+    "path": "examples/patches/fr3k-browser-sendto.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 466,
+    "sha256": "121943cd2cdb85da2e03a2aff772cb095d408a26c2919e82954b70fcbe7b7f2a"
+  },
+  {
+    "path": "gradle.properties",
+    "class": "first-party-or-project-metadata",
+    "bytes": 406,
+    "sha256": "4671f563a8674ff24d3c0db527eab0b26b31c7c9848174de2f2b9801fa258016"
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.jar",
+    "class": "generated-or-binary-asset",
+    "bytes": 43583,
+    "sha256": null
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.properties",
+    "class": "first-party-or-project-metadata",
+    "bytes": 253,
+    "sha256": "d7010368a34c1c06df2bae1a85d8b24c39b2499c74ac892fc7e66d005dbd7b8a"
+  },
+  {
+    "path": "gradlew",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8762,
+    "sha256": "a3648413b47ef77af21d5ebc36c687c7d103aaef3e17f33de7d4f080a6f300a3"
+  },
+  {
+    "path": "gradlew.bat",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2966,
+    "sha256": "57931b17dd228e5c24dac90e815d0bf82477e831a4618dfab4136f5446b42a9f"
+  },
+  {
+    "path": "plans/001-total-blackwave-hud-integration.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 23679,
+    "sha256": "cc29a5f383422763194b458ddf5f11a72099bc7eef6149a27bfec3c867652142"
+  },
+  {
+    "path": "plans/FR3K_HUD_FULL_VALIDATION_PROMPT.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 12488,
+    "sha256": "4c9933a4ea9812974ce00eae0117c9518adf92677013b3725c3a88397f31908b"
+  },
+  {
+    "path": "plans/README.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 551,
+    "sha256": "a964ab2556166526b3483e398e6a61bd9accbc643d394447b22c47e4ef4b9f94"
+  },
+  {
+    "path": "protocol/build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 670,
+    "sha256": "698a7ab58d62016d427343935cefe33ab63baa10be97489227a4ff09af624965"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Agent.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2814,
+    "sha256": "e8fac9753667e6e37c483feffce23c562cf38c26dfd13740db005dcdbbc0bf64"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Capability.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 5003,
+    "sha256": "bdf73eb694e09e4c0e1314505e6908bbb40eac03df041e54bc50f45248742a0c"
+  },
+  {
+    "path": "protocol/src/main/java/com/mcpintelligence/fr3k/protocol/Fr3kEnvelope.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2876,
+    "sha256": "b4e5772131910b528c95f104b5658b604db637dc5a9509d5d59fd05166d36d8b"
+  },
+  {
+    "path": "protocol/src/test/java/com/mcpintelligence/fr3k/protocol/Fr3kEnvelopeTest.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1230,
+    "sha256": "8b353a5ed2e8e562f244d2316833025ca26c97031fccb2f3dbe1dc2121937a10"
+  },
+  {
+    "path": "review/CHAT-BUBBLE-THOROUGH-REVIEW.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 27803,
+    "sha256": "618cb3f3e2a63320df204e2986c23074a2e31fb4edaf19387c7b5e1ef851883b"
+  },
+  {
+    "path": "review/FR3K-HUD-FULL-AUDIT.md",
+    "class": "first-party-or-project-metadata",
+    "bytes": 63622,
+    "sha256": "b706d062f24a774fe5b42c4497effc1b6f3500da869ad3414f5ed55627302d3b"
+  },
+  {
+    "path": "schemas/agent-ask.schema.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2039,
+    "sha256": "bae732a8d695ca0c906565b12434e02afd61fe0d0752e18e0592c3a4f9535b65"
+  },
+  {
+    "path": "schemas/device-manifest.schema.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1482,
+    "sha256": "6f84c22e9464f7480a03cc958a9c9a0498814d63bd3c906cf988cfe8e4140cb2"
+  },
+  {
+    "path": "schemas/envelope.schema.json",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1114,
+    "sha256": "75c30513d6c7071a4c5ce8678422cbaaecaf330b2a8e58a9d0757b77c6d6c59a"
+  },
+  {
+    "path": "scripts/device/collect_phone_baseline.sh",
+    "class": "first-party-or-project-metadata",
+    "bytes": 10903,
+    "sha256": "0268fa62171a55af6b227c2a08e989107227c03b98294ecbfdcff34785d31d39"
+  },
+  {
+    "path": "scripts/device/test_collect_phone_baseline.sh",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8097,
+    "sha256": "e3fafa029f8e9a194fcf243b08f13c3b1b1a49952f64ff53f2a016f3552bcbdd"
+  },
+  {
+    "path": "scripts/device/test_validate_phone_hermes_manifest.py",
+    "class": "first-party-or-project-metadata",
+    "bytes": 8140,
+    "sha256": "dd6087dbeca5511d994992fa562d8e4377a52532f80bc1a6c84962d434b7d461"
+  },
+  {
+    "path": "scripts/device/validate_phone_hermes_manifest.py",
+    "class": "first-party-or-project-metadata",
+    "bytes": 13383,
+    "sha256": "daee9d423815a834850a7932467e73519139e058c6945ff040edaee8fc84fb11"
+  },
+  {
+    "path": "settings.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 369,
+    "sha256": "15dc798f7fbb4e00b355728cf721628a3a36299a140d20aa6dd80aa4e272e859"
+  },
+  {
+    "path": "test.sh",
+    "class": "first-party-or-project-metadata",
+    "bytes": 295,
+    "sha256": "327b5204947fc50ff634e74d7b64f1f853057c545adf90a8d008b70fbe56ae01"
+  },
+  {
+    "path": "transport/build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 704,
+    "sha256": "b325ad92281363c8e227631d4405ba942d96d9a21635e3ca3813d08798c1cdbf"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/Fr3kTransport.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 1074,
+    "sha256": "f608491d502f6979efe2cf105e03b738d93e94fecf4ee6a656c5a0bab00d5add"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/HttpsTransport.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3359,
+    "sha256": "9d86b6f1a01cde1b8bf43b5f0bd488b43d6514103ab974366e1f04d2b0beb6c1"
+  },
+  {
+    "path": "transport/src/main/java/com/mcpintelligence/fr3k/transport/TransportHub.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2461,
+    "sha256": "ba834a9e92cf99765bcedc4b1e359b29dc22a4e82bface4430005170c5527fcb"
+  },
+  {
+    "path": "ui/build.gradle.kts",
+    "class": "first-party-or-project-metadata",
+    "bytes": 842,
+    "sha256": "b2289539a37b27f5a16d4a83c1f395d684d6cab393d7826a23127f73424b33d6"
+  },
+  {
+    "path": "ui/src/main/java/com/mcpintelligence/fr3k/ui/Components.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 3585,
+    "sha256": "714241b18f6d50a525f0c21f1f571eafe2944c5dfae93736b5a0ad8f7fb9666c"
+  },
+  {
+    "path": "ui/src/main/java/com/mcpintelligence/fr3k/ui/Fr3kTheme.kt",
+    "class": "first-party-or-project-metadata",
+    "bytes": 2807,
+    "sha256": "b0028bbdd8c15ee616aeb394e4d71d33028aede820014f4fb10e34e69f0c79d0"
+  }
+]

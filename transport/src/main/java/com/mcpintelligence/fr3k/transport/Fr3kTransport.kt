@@ -2,6 +2,9 @@ package com.mcpintelligence.fr3k.transport
 
 import com.mcpintelligence.fr3k.protocol.Fr3kEnvelope
 
+/** An adapter may use this only when no request bytes or side effect were submitted. */
+class DeliveryNotAttemptedException(message: String) : Exception(message)
+
 /**
  * Transport abstraction (§45). Concrete adapters (HttpsTransport, WebSocketTransport,
  * MeshTransport, BleTransport, MqttTransport) implement this. The orchestrator

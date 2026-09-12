@@ -1,0 +1,58 @@
+ M assets/manifests/assets.json
+ M assets/source/sprites/demon_idle.png
+ M build/assets/report.json
+ M src/game/assets/indexed_blitter.cpp
+ M src/game/assets/indexed_blitter.h
+ M src/generated/assets.cpp
+ M src/generated/assets.h
+ M src/modes/fruit_run.cpp
+ M src/piglet/avatar.cpp
+ M src/piglet/demon_renderer.cpp
+ M src/piglet/demon_renderer.h
+ M tools/asset_compiler.py
+?? .hermes/
+?? assets/source/sprites/demon_angry.png
+?? assets/source/sprites/demon_attack.png
+?? assets/source/sprites/demon_blink.png
+?? assets/source/sprites/demon_dash.png
+?? assets/source/sprites/demon_death_stun.png
+?? assets/source/sprites/demon_eat.png
+?? assets/source/sprites/demon_excited.png
+?? assets/source/sprites/demon_fall.png
+?? assets/source/sprites/demon_happy.png
+?? assets/source/sprites/demon_hide.png
+?? assets/source/sprites/demon_hungry.png
+?? assets/source/sprites/demon_hurt.png
+?? assets/source/sprites/demon_idle_alt.png
+?? assets/source/sprites/demon_jump_anticipation.png
+?? assets/source/sprites/demon_jump_rise.png
+?? assets/source/sprites/demon_knockback.png
+?? assets/source/sprites/demon_land.png
+?? assets/source/sprites/demon_level_up.png
+?? assets/source/sprites/demon_look.png
+?? assets/source/sprites/demon_play_dead.png
+?? assets/source/sprites/demon_recovery.png
+?? assets/source/sprites/demon_run.png
+?? assets/source/sprites/demon_sad.png
+?? assets/source/sprites/demon_signal_attack.png
+?? assets/source/sprites/demon_sit.png
+?? assets/source/sprites/demon_sleep.png
+?? assets/source/sprites/demon_sniff.png
+?? assets/source/sprites/demon_talk.png
+?? assets/source/sprites/demon_wake.png
+?? assets/source/sprites/demon_walk.png
+?? src/game/actors/
+?? src/game/combat/
+?? src/game/events/service_event_adapter.cpp
+?? src/game/events/service_event_adapter.h
+?? src/game/minigames/fruit_run_entities.cpp
+?? src/game/minigames/fruit_run_entities.h
+?? tests/host/test_complete_demon_atlas.py
+?? tests/host/test_demon_renderer_cutover.py
+?? tests/host/test_fruit_run_complete.py
+?? tests/native/test_combat_brain_events.cpp
+?? tests/native/test_fruit_run_complete.cpp
+?? tools/generate_demon_atlas.py
+
+COMMIT 27eb704083cba8ef15ac5f975b759c2b2839fb20
+BRANCH feature/demon-signal-v4

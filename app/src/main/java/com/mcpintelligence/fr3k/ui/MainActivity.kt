@@ -49,11 +49,13 @@ import com.mcpintelligence.fr3k.protocol.DeviceManifest
 import com.mcpintelligence.fr3k.protocol.DeviceStatus
 import com.mcpintelligence.fr3k.ui.ask.AskAboutThisActivity
 import com.mcpintelligence.fr3k.ui.automation.AutomationActivity
+import com.mcpintelligence.fr3k.ui.blackwave.BlackwaveActivity
 import com.mcpintelligence.fr3k.ui.clipboard.SmartClipboardActivity
 import com.mcpintelligence.fr3k.ui.devoverlay.DeveloperOverlayActivity
 import com.mcpintelligence.fr3k.ui.diagnostics.DiagnosticsActivity
 import com.mcpintelligence.fr3k.ui.handoff.DeviceHandoffActivity
 import com.mcpintelligence.fr3k.ui.integrations.IntegrationsActivity
+import com.mcpintelligence.fr3k.ui.onboarding.OnboardingActivity
 import com.mcpintelligence.fr3k.ui.palette.CommandPaletteActivity
 import com.mcpintelligence.fr3k.ui.screenshot.ScreenshotActivity
 import com.mcpintelligence.fr3k.ui.settings.SettingsActivity
@@ -71,6 +73,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // §9 first-run gate: a fresh install (onboardingDone = false) is sent
+        // to the setup wizard. We deliberately DON'T finish(): the dashboard
+        // inflates underneath and is revealed the moment setup completes.
+        if (!Fr3kApplication.get().settings.settings.value.onboardingDone) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+        }
         val activity = this
         setContent {
             Fr3kTheme {
@@ -407,6 +415,9 @@ private fun SecondaryActions(activity: ComponentActivity) {
             SecondaryRow("QUICK HUD PANEL") { activity.startActivity(Intent(activity, QuickHudActivity::class.java)) }
             SecondaryRow("INTEGRATIONS · TERMUX/SHIZUKU/LSPATCH/MORPHE/ROOT") {
                 activity.startActivity(Intent(activity, IntegrationsActivity::class.java))
+            }
+            SecondaryRow("BLACKWAVE · SETUP/DEVICES") {
+                activity.startActivity(Intent(activity, BlackwaveActivity::class.java))
             }
             SecondaryRow("AUTOMATION") { activity.startActivity(Intent(activity, AutomationActivity::class.java)) }
             SecondaryRow("OPEN ON…") { activity.startActivity(Intent(activity, DeviceHandoffActivity::class.java)) }

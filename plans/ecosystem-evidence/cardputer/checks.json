@@ -1,0 +1,105 @@
+[
+  {
+    "name": "asset_before",
+    "command": [
+      "python3",
+      "tools/asset_compiler.py",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.13
+  },
+  {
+    "name": "host",
+    "command": [
+      "python3",
+      "-m",
+      "pytest",
+      "tests/host/",
+      "-q"
+    ],
+    "exit": 0,
+    "seconds": 1.17
+  },
+  {
+    "name": "aggregate",
+    "command": [
+      "python3",
+      "tools/run_host_tests.py"
+    ],
+    "exit": 0,
+    "seconds": 1.31
+  },
+  {
+    "name": "verify_fr3k",
+    "command": [
+      "python3",
+      "scripts/verify_fr3k.py"
+    ],
+    "exit": 1,
+    "seconds": 0.04
+  },
+  {
+    "name": "wigle_check",
+    "command": [
+      "python3",
+      "tools/wigle_check.py"
+    ],
+    "exit": 0,
+    "seconds": 0.04
+  },
+  {
+    "name": "loot_speed_check",
+    "command": [
+      "python3",
+      "tools/loot_speed_check.py"
+    ],
+    "exit": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "stability_sweep_check",
+    "command": [
+      "python3",
+      "tools/stability_sweep_check.py"
+    ],
+    "exit": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "aus_ir_codes_test",
+    "command": [
+      "python3",
+      "tools/aus_ir_codes_test.py"
+    ],
+    "exit": 0,
+    "seconds": 0.02
+  },
+  {
+    "name": "lab_unlock_check",
+    "command": [
+      "python3",
+      "tools/lab_unlock_check.py"
+    ],
+    "exit": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "audit_nvs_keys",
+    "command": [
+      "python3",
+      "tools/audit_nvs_keys.py"
+    ],
+    "exit": 0,
+    "seconds": 0.04
+  },
+  {
+    "name": "check_frame_allocations",
+    "command": [
+      "python3",
+      "tools/check_frame_allocations.py"
+    ],
+    "exit": 0,
+    "seconds": 0.09
+  }
+]

@@ -1,0 +1,13 @@
+ assets/manifests/assets.json         | 721 ++++++++++++++++++++++++++++++++++-
+ assets/source/sprites/demon_idle.png | Bin 991 -> 1279 bytes
+ build/assets/report.json             | 220 ++++++++++-
+ src/game/assets/indexed_blitter.cpp  |  73 ++--
+ src/game/assets/indexed_blitter.h    |   4 +-
+ src/generated/assets.cpp             |  64 +++-
+ src/generated/assets.h               |  30 ++
+ src/modes/fruit_run.cpp              | 108 +++---
+ src/piglet/avatar.cpp                |   4 +
+ src/piglet/demon_renderer.cpp        | 221 +++++------
+ src/piglet/demon_renderer.h          |  15 +-
+ tools/asset_compiler.py              |  29 +-
+ 12 files changed, 1243 insertions(+), 246 deletions(-)

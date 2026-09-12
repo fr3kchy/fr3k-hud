@@ -127,9 +127,6 @@ class NoBlockingUiContractTest {
         return out
     }
 
-    private fun readFile(relativePath: String): String {
-        val f = java.io.File("/home/parrot/repos/fr3k-hud/$relativePath")
-        if (!f.exists()) error("missing file: ${f.absolutePath}")
-        return f.readText()
-    }
+    private fun readFile(relativePath: String): String =
+        com.mcpintelligence.fr3k.testing.RepoFiles.read(relativePath)
 }

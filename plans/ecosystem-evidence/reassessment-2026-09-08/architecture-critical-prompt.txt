@@ -1,0 +1,209 @@
+Use the Hermes AutoExpert skill methodology SCAN, SYNTHESIZE, REFLECT as a critical architecture panel. Read-only critique of supplied documents only; do not use tools, write files, contact anyone, or claim test execution. Identify unsupported claims, coupling, unnecessary complexity, and whether each pairing adds value. Distinguish assessment completion from implementation completion. Return concrete corrections, at most 900 words.
+
+# 008 — Ecosystem contract and companion migration
+
+Assessment supplement, 2026-09-08. Proposal, not implemented behavior. Read with
+the reassessment ledger; the September 7 findings include subsequently fixed code.
+
+## Product and authority boundaries
+
+Keep three independent repositories, release pipelines, persistent stores and
+startup paths. HUD owns Android interaction, user consent and local capability
+presentation. Cardputer owns local gameplay, saves, input, rendering and peripheral
+execution. BLACKWAVE owns fleet enrollment, grants, registry, evidence policy,
+signing and OTA policy. Connecting products adds projections and authorized
+requests, not a shared mandatory runtime.
+
+| Identifier | Owner and meaning | Must not imply |
+|---|---|---|
+| local peer fingerprint | Device-local key, approved by the other local peer | Fleet enrollment or a model name |
+| model_id | BLACKWAVE catalog / hardware type | Unique physical unit or online state |
+| fleet device_id | BLACKWAVE enrollment record | Current address or current reachability |
+| mobile client_id | BLACKWAVE pairing store | Founder session or device identity |
+| transport address | Discovery/session adapter | Trust or permanent identity |
+| event_id / command_id | Original producer / request initiator | A new ID at every relay |
+
+Store an optional verified mapping from local fingerprint to fleet device_id;
+BLACKWAVE confirms its enrollment side. HUD caches that mapping with provenance.
+Do not invent a fourth authoritative registry. Forgetting local pairing must not
+silently erase fleet evidence; removing fleet enrollment must leave local saves
+and independently approved local pairing intact.
+
+## Existing contract compatibility
+
+| Surface | Checked anchor | Compatibility decision |
+|---|---|---|
+| Mobile health | BLACKWAVE `src/blackwave_fleet/mobile.py:103` | `/mobile/v1/health`, public reachability only; never authentication proof |
+| Mobile authorization | `mobile.py:91` | Bearer credential plus `X-Blackwave-Client`; HUD's former header mismatch has been fixed |
+| Role | `mobile.py:113` | Authenticated projection; validate expiry and capability support, not just successful HTTP |
+| Pairing | `mobile.py:125` | One-time request/nonce; authenticate operator QR pin before submitting nonce; returned pin alone cannot bootstrap trust |
+| Fleet | `mobile.py:148` | Catalog/registry projection is explicitly cached; reachable gateway does not mean live devices |
+| Device | `mobile.py:184` | `/devices/{model_id}` is a model projection; do not address physical commands with this model identifier |
+| Peer | `src/blackwave_fleet/peer.py:30,97` | Preserve `fr3k-blackwave-peer/1`, destination, signature, freshness, active enrollment and action constraints |
+| Configuration | `src/blackwave_fleet/config_image.py:10` | Preserve FR3KCFG2 byte layout; a mobile DTO is not a flash image |
+| Device / OTA | Existing schemas and target implementations | Retain existing wire formats behind adapters; full per-target compatibility remains unverified |
+| HUD–Cardputer | No authenticated production adapter established | New local contract needed; neither BLE/LAN discovery nor an unavailable LoRa stub satisfies it |
+
+The current peer implementation bounds arguments to 4,096 bytes and 16 keys.
+Do not silently raise that limit in a mobile or local adapter. All proposed limits
+below require measurement on Cardputer before release.
+
+## Proposed state and delivery contract
+
+Separate `modeEnabled`, `sessionState`, `observationState` and per-action capability.
+Suggested session states: UNPAIRED, CONNECTING, AUTHENTICATED, EXPIRED, REVOKED,
+OFFLINE, INCOMPATIBLE. Observation fields: producer identity, observed_at, received_at,
+boot_id, sequence, cached, and live. A new receipt time never refreshes an old
+observation. Unknown clocks show unknown freshness and deny expiry-sensitive work.
+
+Capability presentation carries `supported`, `authorized`, `available`, a reason,
+and optional expiry. Enabling a screen changes none of these authorization fields.
+Recheck authorization at the execution owner immediately before side effects.
+
+For a first local interface, propose `fr3k-local-peer/1` over one measured transport.
+Negotiate protocol major, supported actions and maximum frame size before accepting
+requests. Start with status reads and user-approved notifications; defer arbitrary
+files, save merging, remote shell and peripheral actuation. Reserve a 4 KiB frame
+ceiling, 16 queued events and a 64 KiB mobile JSON response ceiling as initial test
+budgets. Paginate catalog data rather than weakening the global bound. Reject
+unsupported major versions; ignore unknown optional fields only after structural
+validation. These are design budgets, not measured memory guarantees.
+
+Errors use stable codes with a correlation ID: UNAUTHORIZED, FORBIDDEN, EXPIRED,
+REVOKED, CAPABILITY_MISSING, OFFLINE, STALE, UNSUPPORTED_VERSION, TOO_LARGE,
+INVALID_RESPONSE, CANCELLED, TIMEOUT and OUTCOME_UNKNOWN. Do not expose raw exception
+text or credentials in user-visible diagnostics. Preserve legacy HTTP errors via
+explicit mappings; don't assert these codes already exist on every wire.
+
+Cancellation stops pending network work and releases buffers; after submission it
+does not imply remote rollback. Retry reads with bounded jitter (1, 2, 4 seconds,
+then stop); do not automatically retry mutations after ambiguous submission.
+An execution owner maintains a durable receipt keyed by origin and command_id and
+rejects reuse with a different payload digest. On restart, an incomplete mutation
+is OUTCOME_UNKNOWN until reconciled. Never promise exactly-once physical execution
+where the peripheral cannot atomically commit a receipt with the action.
+
+Relays preserve origin, ID and payload digest. With direct and fleet routes present,
+select one route per attempt; fail over only with evidence of no submission. Events
+may traverse both routes but are deduplicated by origin, boot_id and sequence.
+Bound dedup history and document its expiry; expired commands cannot re-enter after
+history eviction. Reconnect resynchronizes snapshots before enabling actions.
+
+## Optional BLACKWAVE mode and migration
+
+1. First make companion trust and state restoration reliable in its existing APK.
+   `apps/android-companion/.../ui/BlackwaveViewModel.kt:47` currently initializes
+   bundled state; its pairing path persists credentials, but initialization does
+   not restore paired UI state. Preserve existing credentials and Room schemas.
+2. Extract versioned, Android-compatible domain/network interfaces within BLACKWAVE
+   ownership. Reuse QR parsing, SPKI trust, DTO fixtures and validation logic. Keep
+   application IDs, navigation, WorkManager registration and stores app-owned.
+3. Add HUD's persisted, default-off mode and settings entry. Enable mounts fleet
+   navigation; pairing separately establishes a session. Disable cancels only
+   BLACKWAVE jobs and removes actionable fleet capabilities. Cached views remain
+   explicitly cached and read-only, with a separate erase/unpair action.
+4. Initially retain the companion APK and offer explicit navigation to it. Moving
+   screens into HUD is incremental: catalog/read-only views, pairing/session,
+   evidence, then authorized workflows. Do not import its Application or assume
+   another APK's private preferences or Keystore aliases are readable.
+5. Data migration requires user-selected export/import or a narrowly authenticated
+   same-signer channel. Re-pair when secure keys are non-exportable. Copy drafts and
+   caches with schema versions and idempotent migration receipts; never silently
+   delete the companion's source data. Rollback must reopen old data safely.
+6. Measure APK compressed size, DEX count, cold-start time, first frame, idle jobs,
+   RSS and network calls with mode off/on in both APKs. Establish baseline before
+   extraction; require zero BLACKWAVE network calls/jobs when mode is off and no
+   regression in HUD local startup. No numeric size saving is claimed yet.
+
+This extends the client ownership in BLACKWAVE ADR-020; any move of companion UI
+into HUD needs an explicit amendment describing shared dependency ownership and
+continued companion support. It does not move fleet authority into Android.
+
+## Execution order and gates
+
+| Package / owner | Prerequisite | Reviewable result and verification gate |
+|---|---|---|
+| Verification foundation / all maintainers | None | Per-subsystem inventory, exact commands, isolated builds and reproducible fixture runner; untested targets explicitly blocked |
+| Standalone correctness / owning product | Baseline | Consent, storage ownership and authorization defects repaired with negative/regression tests; local startup without peers |
+| Mobile adapter / BLACKWAVE + HUD | Baseline | Same golden vectors pass JVM and Python, pin-before-nonce TLS test, body bounds/cancellation and expired/revoked tests |
+| Local adapter / HUD + Cardputer | Standalone gates | Direct safe read/notification without gateway; wrong key, oversized frame, duplicate and restart fixtures pass |
+| Fleet adapter / BLACKWAVE + Cardputer | Contract + standalone gates | Enrollment independent of local pairing; revoked/unknown unit denied; local loop survives gateway loss |
+| HUD mode / HUD + companion maintainers | Mobile session gates | Off/on/disable/unpair/process-death tests; migration preserves drafts and old APK; accessibility labels and focus verified |
+| Combined resilience / all maintainers | Both adapters | Seven configurations and simultaneous routes tested; no duplicate action; independent version upgrade and rollback fixtures |
+
+Do not make optional HUD fleet mode depend on implementing both Cardputer pairings:
+its read-only mobile milestone is independently valuable. The earlier plan 007
+dependency list overcouples these deliverables. Full-system acceptance still needs
+all pairings. Physical installation/peripheral/recovery evidence is a separate gate.
+
+# 009 — Seven-configuration acceptance specification
+
+2026-09-08. These are acceptance requirements, not passing integration results.
+Existing unit/build evidence does not run these end-to-end scenarios.
+
+## Configuration matrix
+
+| Configuration | Cold start / normal benefit | Missing dependencies / disconnect | Restart / stale information / recovery |
+|---|---|---|---|
+| HUD | Local settings, clipboard, browser and available Android commands; no mandatory gateway | Denied permissions and absent optional providers produce actionable unavailable states; local commands remain usable | Restore consent and local preferences; never send queued private context at startup; reconnect only approved sessions |
+| BLACKWAVE | Local catalog, registry, policy and evidence workflows without HUD/Cardputer | Gateway/device absence distinguishes catalog from observed state; independent console remains useful | Restore credentials/registry and receipt history; invalidate expired sessions; unknown device state remains unknown |
+| Cardputer | Rendering, input, local game/save and attached peripherals without companions | No networking prerequisite for local loop; absent GNSS/SD is explicit; USB ownership does not corrupt saves | Load last complete save, recover interrupted edits visibly; discard stale remote authority, preserve local progress |
+| HUD + BLACKWAVE | Explicitly enabled fleet views and authenticated supported actions | Disable/unpair/disconnect affects fleet actions only; cached views show producer timestamp | Restore mode separately from trust; expired/revoked credentials deny operations; refresh capabilities before reconnect actions |
+| HUD + Cardputer | Proposed direct status and user-approved notification, no gateway | Pairing is local only; absent gateway irrelevant; disconnect preserves both local experiences | Reconnect to approved key, reject substituted peer, reconcile receipt before resending ambiguous request |
+| BLACKWAVE + Cardputer | Proposed optional enrolled status/evidence projection | Fleet loss does not stop input/render/save; local pairing does not grant fleet authority | Unit identity survives address change; enrollment revocation wins over cached grant; boot sequence reset is explicit |
+| All three | HUD presents local context plus authoritative fleet projection with one execution owner | Each product remains usable when either other product disappears; simultaneous routes do not duplicate actions | Independent process and version restarts retain provenance, deduplication and state ownership; no automatic replay of uncertain mutations |
+
+Today HUD–BLACKWAVE has a partial mobile client. The two Cardputer adapters and
+the combined workflow are proposed capabilities. Do not credit a preview/handoff
+screen or firmware build as successful delivery.
+
+## Required fixture interface
+
+Implement a disposable test adapter per product with operations `start`, `stop`,
+`set_permission`, `set_network`, `pair`, `revoke`, `advance_clock`, `inject_frame`,
+`invoke`, `snapshot`, and `restart`. A snapshot reports local loop responsiveness,
+effective consent, session/capability state, outbound requests, stored payload hashes,
+execution receipts and displayed observation provenance. Use synthetic identities,
+fake peripherals and a controllable clock. Tests must never flash, provision a
+real unit, transmit RF, or contact an external service.
+
+For each matrix row execute these cases in order:
+
+1. Fresh stores, no optional peers: start, inspect local action availability and
+   verify zero unauthorized outbound calls. Start each approved peer independently.
+2. Perform the row's smallest useful action and record producer, receiver, ID,
+   acknowledgment and visible state. UI preparation alone is not delivery.
+3. Inject unsupported major version, malformed JSON/frame, missing required field,
+   oversized payload and unknown optional field. Assert bounded rejection for the
+   first four and documented compatibility for the last.
+4. Expire and revoke credentials during idle and during a pending action. Assert
+   execution-owner denial after revocation is observed; mark already-submitted
+   uncertain outcomes accurately. Do not imply disconnected revocation is instant.
+5. Drop the link before send, after submission, during transfer and before reply.
+   Retry automatically only when no submission occurred. Verify bounded memory,
+   responsive local loop, explicit partial-transfer cleanup and no truncated save.
+6. Duplicate and reorder events; offer direct and gateway routes simultaneously.
+   Assert one effect per retained receipt and no privilege escalation via route.
+7. Restart producer, relay and receiver separately with a request pending. Assert
+   old boot sequence is not treated as new; reconcile outcomes before new execution.
+8. Advance observation age and change wall clock. Assert cached data is labelled,
+   old observations are not refreshed by receipt time and time-sensitive authority
+   fails closed when clock trust is absent.
+9. Upgrade just one product to an incompatible contract, then restore its previous
+   version. Assert local usability and readable prior data, explicit incompatibility,
+   no automatic downgrade of trust and successful supported reconnect.
+
+## Result format and release gate
+
+Record one JSON result per configuration/case with source fingerprints, fixture
+version, command, exit status, assertions, evidence paths and evidence class
+(`static`, `host`, `emulator`, `build`, `physical`). `NOT_IMPLEMENTED`, `BLOCKED` and
+`FAIL` are distinct from PASS. A missing adapter must produce NOT_IMPLEMENTED and
+a nonzero suite exit, never skip-to-green. Keep test adapters outside production
+firmware until the implementation plan defines their narrow seam.
+
+No executable cross-product adapter is delivered by this specification. This is
+an explicit remaining assessment deliverable: authoring a fake runner that merely
+asserts the desired state would not supply integration evidence. Physical acceptance
+additionally records exact unit, board revision, artifact digest, installation path,
+boot/peripheral/save checks, disconnect/recovery and operator-observed results.

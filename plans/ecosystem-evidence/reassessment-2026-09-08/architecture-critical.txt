@@ -1,0 +1,66 @@
+> Q: Critique documents 008 and 009 as an architecture panel — unsupported claims, coupling, needless complexity, pairing value, and the assessment-vs-implementation gap — and return concrete corrections.
+
+**🔧 Architecture Review Panel**: Three reviewers — a distributed-systems engineer, an Android platform lead, and a contracts/test architect — read both documents as read-only artefacts.
+
+---
+
+## SCAN
+
+**008** is a boundary-and-contract proposal with a compatibility table, a state/error design, a six-step companion migration, and a gated execution order. It repeatedly self-labels as "proposed, not implemented" and warns that September-7 anchors cite "subsequently fixed code."
+
+**009** is a seven-row acceptance matrix with a twelve-operation fixture interface, nine ordered cases per row, and a JSON result/release gate. It states explicitly that no cross-product adapter is delivered and that existing unit/build evidence does not exercise these scenarios.
+
+## SYNTHESIZE
+
+**Unsupported claims**
+
+1. The compatibility table anchors line numbers (`mobile.py:103`, `peer.py:30`) while admitting nearby code was fixed post-September-7. Every anchor is therefore potentially stale. The "Device / OTA" row is self-described as "full per-target compatibility remains unverified," yet it sits in a column headed "Compatibility decision" — presenting an unverified item as a resolved decision.
+2. Step 1 of migration asserts `BlackwaveViewModel.kt:47` "does not restore paired UI state" as a present defect, but the "subsequently fixed code" caveat leaves it unclear whether this still holds. The claim needs re-validation against current HEAD or removal.
+3. The "zero BLACKWAVE network calls/jobs when mode is off" gate is asserted as a requirement before anyone has measured whether WorkManager registration can be fully suppressed in an extracted module. It is an aspiration framed as a gate.
+
+**Coupling**
+
+4. The execution gate table re-introduces the overcoupling the prose warns against. The Fleet-adapter row's prerequisite is "Contract + standalone gates," and the Local-adapter row's is "Standalone gates" — so fleet transitively depends on the local adapter passing. That bundles the two Cardputer pairings, which the text explicitly says plan 007 did wrongly. The table contradicts its own guidance.
+5. HUD-mode gate depends on "Mobile session gates," tying companion migration to the mobile adapter. Defensible, but the dependency direction (companion extraction gated on a new mobile adapter) inverts the migration's step 1 ("first make the existing APK reliable"), creating a circular-feeling ordering: fix companion → build mobile adapter → migrate companion.
+6. Introducing `fr3k-local-peer/1` alongside `fr3k-blackwave-peer/1` doubles the peer-protocol surface. The document never argues why a distinct local major version is needed rather than a constrained profile of the existing peer contract.
+
+**Unnecessary complexity**
+
+7. Seven session states mix transport and auth: OFFLINE is connectivity; UNPAIRED/AUTHENTICATED/EXPIRED/REVOKED/INCOMPATIBLE are auth. A single enum forces impossible combinations (can you be OFFLINE and AUTHENTICATED?) and loses orthogonality.
+8. Twelve error codes with semantic overlap: CANCELLED, TIMEOUT, and OUTCOME_UNKNOWN collide post-submission. The text says cancellation after submission "does not imply remote rollback" and an incomplete mutation is OUTCOME_UNKNOWN — leaving CANCELLED's post-submission meaning undefined.
+9. Dedup by origin/boot_id/sequence with bounded history creates an eviction-replay window: once history evicts, a genuinely delayed command re-enters as new and can double-execute. "One effect per retained receipt" is only as strong as the retention window, and the window's relationship to command TTL is unspecified.
+10. Observation fields `observed_at`, `received_at`, `cached`, and `live` are partly redundant: `live` is derivable from `received_at` freshness and `cached` from presence of a cached flag. Four fields encode two degrees of freedom.
+
+**Pairing value**
+
+11. **HUD↔Cardputer direct route**: the contract then must solve multi-route selection and dedup ("select one route per attempt; fail over only with evidence of no submission; events may traverse both routes"). This dedup machinery exists solely because the direct route coexists with the fleet route. The panel finds the direct route's marginal value unproven: if gateway failover requires proof of no-submission anyway, the direct link adds a second path whose main benefit is gateway-absence — a scenario whose frequency is unstated. Either justify it with a concrete unavailable-gateway case or defer it until the gateway path is proven.
+12. **All-three config**: "one execution owner" is named but never assigned. Which product owns the receipt for a HUD-triggered, Cardputer-actuated, BLACKWAVE-evidenced action? Without per-action-class ownership, the durable-receipt guarantee is unenforceable.
+
+**Assessment vs implementation completion**
+
+13. 008 is assessment-complete (boundaries and contracts specified) but implementation-incomplete (no adapter, no measured budgets). It mostly maintains this distinction, except the compatibility table and the step-1 defect claim blur into asserted fact.
+14. 009 is honestly framed — "acceptance requirements, not passing results"; "no executable adapter delivered." Correct. But the fixture interface is itself unimplemented and the production test-seam it requires is undefined ("keep adapters outside production firmware until the implementation plan defines their narrow seam"). Without a seam design (e.g., a test-only DI boundary or a host-mode dispatcher), the twelve operations cannot be built without invasive hooks, so the "release gate" is currently unconstructible — a spec for a spec.
+
+## REFLECT
+
+Concrete corrections:
+
+1. **De-couple the gate table**: make the Fleet-adapter row depend on its own contract + Cardputer-standalone only, not on the Local-adapter gate. Drop the transitive "Standalone gates" bundling.
+2. **Split the session enum**: connectivity `{OFFLINE, CONNECTING, ONLINE}` × auth `{UNPAIRED, AUTHENTICATED, EXPIRED, REVOKED, INCOMPATIBLE}`. Eliminates impossible states.
+3. **Disambiguate post-submission errors**: OUTCOME_UNKNOWN is the terminal post-submission state; CANCELLED is pre-submission-only. Delete the undefined overlap.
+4. **Assign execution ownership per action class** in the all-three config; "one execution owner" without an ownership table is unenforceable.
+5. **Re-anchor or remove stale citations**: tag each line anchor with a commit SHA, or strip the "subsequently fixed code" caveat that undermines them. Re-verify the `BlackwaveViewModel.kt:47` defect against current HEAD.
+6. **Close the dedup eviction gap**: bound command TTL ≤ dedup-history TTL, or enforce monotonic floor rejection so evicted-below-floor sequences are refused, not re-admitted.
+7. **Mark the Device/OTA row UNVERIFIED**, not a "decision," consistent with its own text.
+8. **Justify or defer the direct HUD↔Cardputer route**: provide one concrete scenario where gateway-failover-with-no-submission-proof is insufficient, or ship gateway-only first and add the direct path only if measured demand exists — which removes the multi-route dedup surface entirely.
+9. **Specify the test seam** before claiming a release gate: define the DI/host-mode boundary the fixture hooks, or the 63 scenarios are unbuildable.
+10. **Demote the "zero network calls when off" line** to an aspirational target until WorkManager suppression is measured; do not gate on an unmeasured capability.
+
+The documents show strong assessment discipline (explicit "proposed," "not measured," "not delivered" labels) but still slip assertions into decision-shaped cells and gate on unmeasured capabilities. The clearest risk is architectural: the direct-route + multi-route-dedup design is complexity purchased for an unquantified benefit, and the "one execution owner" concept is asserted without an ownership assignment that would make it real.
+
+---
+
+- A) Ask the **distributed-systems engineer** to draft the monotonic-floor dedup rule and the command-TTL/history-TTL invariant formally.
+- B) Ask the **Android platform lead** to specify the test-only DI seam the fixture interface needs.
+- C) Ask the **contracts architect** to re-anchor every compatibility-table citation to a commit SHA and re-grade each row verified/unverified.
+- D) Ask all three to produce a per-action-class execution-ownership table for the all-three configuration.

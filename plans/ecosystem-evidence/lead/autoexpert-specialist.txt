@@ -1,0 +1,69 @@
+## Assessment: fr3k-hud BLACKWAVE plugin + fr3k-blackwave mobile gateway
+
+### CHECKED DEFECTS (physical evidence in code)
+
+**D1. Route mismatch — device status (blocks all device queries)**
+Client calls `/mobile/v1/device/$deviceId` (BlackwaveBridgeClient.kt:63). Server defines `/mobile/v1/devices/{model_id}` (mobile.py:184). Singular vs plural. Every `fetchDeviceStatus` call 404s.
+
+**D2. Route mismatch — availability check (blocks all role fetches)**
+Client calls `/mobile/v1/ping` (BlackwaveBridgeClient.kt:78). Server defines `/mobile/v1/health` (mobile.py:103). No `/ping` endpoint exists. `isAvailable()` always returns false, so `pollRole()` (BlackwavePlugin.kt:94) always early-returns. The plugin never obtains a role manifest, never exposes capabilities beyond base discover, and all role-gated commands fail with "no role manifest." This is the highest-impact defect — the entire integration is non-functional.
+
+**D3. Header mismatch — client identity (blocks all authorized endpoints)**
+Client sends `X-Client-Id` (BlackwaveBridgeClient.kt:97). Server reads `x_blackwave_client` (mobile.py:93) and requires it non-empty (mobile.py:95). The `authorize` dependency will reject every call with 401. Even if D2 were fixed, role/fleet/device fetches would still fail.
+
+**D4. Shape mismatch — device status response fields**
+Client `DeviceStatusResponse` expects `battery` and `verification` (BlackwaveBridgeClient.kt:150-151). Server returns `power` and `validation` (mobile.py:204,213). Client always gets empty maps for both. Deserialization won't fail (defaults), but the data is silently lost.
+
+**D5. Potential type mismatch — software map**
+Client expects `software: Map<String, String>` (BlackwaveBridgeClient.kt:147). Server's `software` dict (mobile.py:192-197) includes `ota_strategy` sourced from the model definition. If `ota_strategy` is non-string (enum, int, null), kotlinx.serialization will throw at runtime. `isLenient` does not coerce non-string JSON values into strings.
+
+**D6. Fail-open expiry parsing**
+`BlackwaveRoleManifest.parseIso8601` returns `Long.MAX_VALUE` on parse failure (BlackwaveRoleManifest.kt:36), so `isExpired` returns false for any malformed `expires_at`. A corrupted or tampered expiry string makes the manifest never-expiring. Should fail-closed (return 0 or treat as expired).
+
+**D7. Stale role used without expiry check**
+`BlackwavePlugin` caches `cachedRole` (line 36) and never calls `isExpired` anywhere (BlackwavePlugin.kt:93-105). An expired role continues to drive `capabilities()` and pass the role-null check in `BlackwaveFleetStatusCommand` (line 147) until the next 30s poll. The `isExpired` property exists but is dead code on the client side.
+
+**D8. Inconsistent role guard across commands**
+`BlackwaveFleetStatusCommand.execute` checks `role == null` (BlackwavePlugin.kt:147). `BlackwaveDeviceStatusCommand.execute` does not (BlackwavePlugin.kt:183-195). If the Fr3kCommand framework doesn't enforce `requiredCapabilities` server-side-of-the-command, device status can be attempted without a valid cached role. Defense-in-depth is asymmetric.
+
+**D9. TLS/TOFU not implemented**
+Comment claims "trust-on-first-use for LAN certs" (BlackwaveBridgeClient.kt:98-99) but no custom `TrustManager` or `HostnameVerifier` is configured. With default system trust, a self-signed LAN bridge cert will fail TLS handshake. The client cannot connect to the intended deployment. Either the comment is aspirational or TLS handling is incomplete.
+
+**D10. CoroutineScope not cancelled on stop**
+`stop()` cancels children but not the scope (BlackwavePlugin.kt:86-89). Should call `scope?.cancel()` before nulling. Minor leak — the scope's Job remains active.
+
+**D11. Dead field — capabilities_map**
+`BlackwaveRoleManifest.capabilities_map` (line 24) and `capabilityIdForScope()` (line 29) are unused. The plugin uses its own hardcoded `scopeToCapability` map (BlackwavePlugin.kt:38-51) and ignores the server-provided map. Either remove the field or wire it. Having both invites divergence and confusion about which is authoritative.
+
+**D12. Naming — BLackwaveBASE_CAPABILITIES**
+Mixed casing at BlackwavePlugin.kt:67 and :121. Cosmetic, not functional, but indicates the constant may have been auto-renamed partially.
+
+### ARCHITECTURE ASSESSMENT (design observations, not defects)
+
+**A1. Capabilities vs authorization separation is correct.**
+The plugin derives its capability surface from server-granted role scopes (BlackwavePlugin.kt:56-64). Enabling the BLACKWAVE interface in HUD registers only the base discover capability (BlackwavePlugin.kt:121-127). The bridge owns all device authority, signing, registry, OTA, and revocation (BlackwavePlugin.kt:22-24, ADR-020:36). This matches the product principle: enabling the interface grants no authority.
+
+**A2. No HUD-Cardputer fleet authority leak.**
+The excerpts show no path where a local HUD-Cardputer pairing could grant fleet authority. `BlackwaveBridgeClient` communicates only with the bridge over authenticated HTTP. Cardputer pairing is not referenced in any of these files. The separation is clean as implemented.
+
+**A3. No unnecessary new protocols or registries.**
+The code uses the existing JSON HTTP contract. ADR-020 explicitly rejects immediate protobuf migration (ADR-020:42-44), new repo creation (ADR-020:39-41), and repo consolidation (ADR-020:45-47). No new registry is introduced. The `capabilities_map` field (D11) is the closest thing to a redundant mechanism, and it's unused.
+
+**A4. Migration gap — companion storage.**
+ADR-020 says to upgrade the existing companion in controlled slices within the same monorepo (ADR-020:52-53), preserving package identity. But none of the excerpts show storage migration code. If the HUD's BLACKWAVE plugin is intended to replace or supersede the existing `apps/android-companion/`, the companion's pairing credentials and cached data (stored in its private app directory) need an explicit import/migration path. As written, the HUD plugin uses provider lambdas for endpoint/credential/clientId (BlackwaveBridgeClient.kt:22-24) — these would need to be wired to either fresh pairing or imported credentials. No migration path is shown. This is the biggest open question for the "migrate existing companion without losing storage" requirement.
+
+**A5. Scope mapping is client-owned — defensible but should be documented.**
+The plugin's hardcoded `scopeToCapability` (BlackwavePlugin.kt:38-51) means the client controls which server scopes it recognizes. This is actually the right call for the product principle: the server can't force capabilities the client doesn't acknowledge. But it should be documented as intentional, and the unused `capabilities_map` (D11) should be removed to avoid implying the server is the capability authority.
+
+**A6. Polling freshness is acceptable but brittle.**
+30s poll interval (BlackwavePlugin.kt:119) is reasonable for a LAN fleet projection. But with no revocation push and no `isExpired` check (D7), the worst-case staleness window is 30s plus the time until the next successful poll. If the bridge is down, the client retains the last known role indefinitely. Consider treating bridge-unreachable as a reason to clear or degrade `cachedRole` rather than continuing to serve stale capabilities.
+
+### PRIORITY ORDER FOR FIXES
+
+1. D2 + D3 (route + header mismatch) — integration is completely non-functional without these.
+2. D1 (device route) — second most blocking.
+3. D4 + D5 (response shape) — data silently lost or runtime crash.
+4. D9 (TLS) — blocks actual LAN deployment.
+5. D6 + D7 + D8 (expiry/ staleness / guard asymmetry) — security correctness.
+6. D10 + D11 + D12 — cleanup.
+7. A4 — design the companion storage migration path before any cutover.

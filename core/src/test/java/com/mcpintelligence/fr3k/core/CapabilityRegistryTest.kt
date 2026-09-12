@@ -45,4 +45,30 @@ class CapabilityRegistryTest {
             r.missingFor(listOf(Capabilities.AGENT_ASK, Capabilities.LOCATION_CURRENT)),
         )
     }
+
+    @Test fun removingEitherProviderPreservesTheOtherClaim() {
+        for (removed in listOf("hermes", "opencode")) {
+            val r = CapabilityRegistry()
+            r.register("hermes", Capability(Capabilities.AI_LOCAL_CHAT, "Hermes"))
+            r.registerAll("opencode", listOf(Capability(Capabilities.AI_LOCAL_CHAT, "OpenCode")))
+            r.unregisterAllByOwner(removed)
+            val remaining = if (removed == "hermes") "opencode" else "hermes"
+            assertTrue(r.has(Capabilities.AI_LOCAL_CHAT))
+            assertEquals(remaining, r.ownerOf(Capabilities.AI_LOCAL_CHAT))
+            assertEquals(if (remaining == "hermes") "Hermes" else "OpenCode",
+                r.snapshot.value.getValue(Capabilities.AI_LOCAL_CHAT).displayName)
+            r.unregisterAllByOwner(remaining)
+            assertFalse(r.has(Capabilities.AI_LOCAL_CHAT))
+        }
+    }
+
+    @Test fun explicitRemovalAndClearCannotResurrectOldClaims() {
+        val r = CapabilityRegistry()
+        r.register("a", cap("shared")); r.register("b", cap("shared"))
+        r.unregister("shared"); r.unregisterAllByOwner("b")
+        assertFalse(r.has("shared"))
+        r.register("a", cap("shared")); r.clear()
+        r.register("b", cap("shared")); r.unregisterAllByOwner("b")
+        assertFalse(r.has("shared"))
+    }
 }

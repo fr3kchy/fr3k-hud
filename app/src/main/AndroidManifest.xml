@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <permission
+        android:name="com.mcpintelligence.fr3k.hud.permission.CONTROL_OVERLAY"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="com.mcpintelligence.fr3k.hud.permission.CONTROL_OVERLAY" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- ============================================================== -->
     <!-- Tier-0: always-on, non-root Android APIs                        -->
     <!-- ============================================================== -->
@@ -242,6 +248,12 @@
             android:name="com.mcpintelligence.fr3k.ui.handoff.DeviceHandoffActivity"
             android:exported="false" />
 
+        <!-- §9 first-run onboarding: launched by MainActivity when the flag is unset -->
+        <activity
+            android:name="com.mcpintelligence.fr3k.ui.onboarding.OnboardingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Fr3kHud" />
+
         <activity
             android:name="com.mcpintelligence.fr3k.hud.LongPressRadialActivity"
             android:exported="false"
@@ -251,6 +263,23 @@
             android:name="com.mcpintelligence.fr3k.ui.integrations.IntegrationsActivity"
             android:exported="false"
             android:label="FR3K · Integrations"
+            android:theme="@style/Theme.Fr3kHud" />
+
+        <!-- §6/§7 BLACKWAVE: main screen, §6 setup wizard, §7 add-device -->
+        <activity
+            android:name="com.mcpintelligence.fr3k.ui.blackwave.BlackwaveActivity"
+            android:exported="false"
+            android:label="FR3K · BLACKWAVE"
+            android:theme="@style/Theme.Fr3kHud" />
+        <activity
+            android:name="com.mcpintelligence.fr3k.ui.blackwave.BlackwaveSetupActivity"
+            android:exported="false"
+            android:label="FR3K · BLACKWAVE SETUP"
+            android:theme="@style/Theme.Fr3kHud" />
+        <activity
+            android:name="com.mcpintelligence.fr3k.ui.blackwave.BlackwaveAddDeviceActivity"
+            android:exported="false"
+            android:label="FR3K · ADD DEVICE"
             android:theme="@style/Theme.Fr3kHud" />
 
         <!-- HUD overlay service (Tier 1 — overlay permission)   -->

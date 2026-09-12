@@ -89,9 +89,14 @@ dependencies {
     // pops the SUI grant dialog and our package gets registered.
     implementation("dev.rikka.shizuku:api:13.1.5")
 
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+
     // JVM unit tests — file-parsing and pure-Kotlin contract tests.
     // Instrumented tests are NOT wired here; physical-device assertions
     // live in scripts/device/.
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }

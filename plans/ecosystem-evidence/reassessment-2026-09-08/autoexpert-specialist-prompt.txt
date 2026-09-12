@@ -1,0 +1,953 @@
+Read-only AutoExpert specialist assessment. Use SCAN, SYNTHESIZE, REFLECT and an adversarial security/Android/distributed-systems panel. Do not execute tools, edit files, contact people, or claim runtime evidence. Critique only excerpts below. Task: three independent products HUD Android, BLACKWAVE fleet authority, Cardputer local firmware, useful each pairing and all three. Target optional user-enabled BLACKWAVE HUD mode, enable is not authorization. Give concrete evidence-backed concerns and minimal architecture. Do not infer RF capabilities. Current route/header mismatches already fixed. Prior reports may be stale. No secret values included.
+
+/home/parrot/repos/fr3k-hud/core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwaveBridgeClient.kt
+
+1: package com.mcpintelligence.fr3k.integrations.blackwave
+2: 
+3: import android.util.Log
+4: import kotlinx.serialization.Serializable
+5: import kotlinx.serialization.json.Json
+6: import kotlinx.serialization.json.JsonElement
+7: import java.io.BufferedReader
+8: import java.io.InputStreamReader
+9: import java.net.HttpURLConnection
+10: import java.net.URL
+11: import javax.net.ssl.HttpsURLConnection
+12: 
+13: /**
+14:  * HTTP client that talks to the blackwave fleet bridge.
+15:  *
+16:  * Maintains three provider lambdas so the caller can supply endpoint,
+17:  * credential, and client ID reactively (from settings / secure store /
+18:  * identity). Each call to [fetchRole], [fetchFleetStatus], and
+19:  * [fetchDeviceStatus] constructs the request from the current provider values.
+20:  */
+21: class BlackwaveBridgeClient(
+22:     private val endpointProvider: () -> String,
+23:     private val credentialProvider: () -> String?,
+24:     private val clientIdProvider: () -> String,
+25: ) {
+26:     /**
+27:      * Fetch the role manifest for this client identity.
+28:      * @return Result with [BlackwaveRoleManifest] on success, failure on error/status <200..
+29:      */
+30:     suspend fun fetchRole(): Result<BlackwaveRoleManifest> {
+31:         val response = get("${endpointProvider()}/mobile/v1/role")
+32:         return if (response.code in 200..299) {
+33:             try {
+34:                 Result.success(json.decodeFromString(response.body))
+35:             } catch (e: Exception) {
+36:                 Result.failure(e)
+37:             }
+38:         } else {
+39:             Result.failure(RuntimeException("HTTP ${response.code}: ${response.body.take(200)}"))
+40:         }
+41:     }
+42: 
+43:     /**
+44:      * Fetch fleet status: list of all devices in the fleet.
+45:      */
+46:     suspend fun fetchFleetStatus(): Result<FleetStatusResponse> {
+47:         val response = get("${endpointProvider()}/mobile/v1/fleet")
+48:         return if (response.code in 200..299) {
+49:             try {
+50:                 Result.success(json.decodeFromString(response.body))
+51:             } catch (e: Exception) {
+52:                 Result.failure(e)
+53:             }
+54:         } else {
+55:             Result.failure(RuntimeException("HTTP ${response.code}: ${response.body.take(200)}"))
+56:         }
+57:     }
+58: 
+59:     /**
+60:      * Fetch detailed status for a specific device by model_id.
+61:      */
+62:     suspend fun fetchDeviceStatus(deviceId: String): Result<DeviceStatusResponse> {
+63:         val response = get("${endpointProvider()}/mobile/v1/devices/${java.net.URLEncoder.encode(deviceId, "UTF-8")}")
+64:         return if (response.code in 200..299) {
+65:             try {
+66:                 Result.success(json.decodeFromString(response.body))
+67:             } catch (e: Exception) {
+68:                 Result.failure(e)
+69:             }
+70:         } else {
+71:             Result.failure(RuntimeException("HTTP ${response.code}: ${response.body.take(200)}"))
+72:         }
+73:     }
+74: 
+75:     /** True if the endpoint resolves and returns a valid response. */
+76:     fun isAvailable(): Boolean {
+77:         return try {
+78:             val response = get("${endpointProvider()}/mobile/v1/health")
+79:             response.code in 200..299
+80:         } catch (_: Exception) {
+81:             false
+82:         }
+83:     }
+84: 
+85:     /**
+86:      * Synchronous GET request. Uses [HttpURLConnection] with no
+87:      * third-party dependencies. Sets auth and client-id headers.
+88:      */
+89:     private fun get(urlString: String): HttpResponse {
+90:         val url = URL(urlString)
+91:         val conn = (url.openConnection() as HttpURLConnection).apply {
+92:             connectTimeout = CONNECT_TIMEOUT_MS
+93:             readTimeout = READ_TIMEOUT_MS
+94:             requestMethod = "GET"
+95:             setRequestProperty("Accept", "application/json")
+96:             credentialProvider()?.let { setRequestProperty("Authorization", "Bearer $it") }
+97:             setRequestProperty("X-Blackwave-Client", clientIdProvider())
+98:             // Disable redirect-following so we don't follow an HTTP→HTTPS
+99:             // upgrade we can't verify (trust-on-first-use for LAN certs).
+100:             instanceFollowRedirects = false
+101:         }
+102:         return try {
+103:             val code = conn.responseCode
+104:             val body = if (code in 200..299) {
+105:                 readStream(conn.inputStream)
+106:             } else {
+107:                 readStream(conn.errorStream)
+108:             }
+109:             HttpResponse(code, body)
+110:         } catch (e: Exception) {
+111:             Log.w(TAG, "GET $urlString failed: ${e.message}")
+112:             HttpResponse(0, e.message ?: "unknown error")
+113:         } finally {
+114:             conn.disconnect()
+115:         }
+116:     }
+117: 
+118:     private fun readStream(stream: java.io.InputStream?): String {
+119:         if (stream == null) return ""
+120:         return try {
+121:             BufferedReader(InputStreamReader(stream)).use { it.readText() }
+122:         } catch (_: Exception) { "" }
+123:     }
+124: 
+125:     companion object {
+126:         private const val TAG = "FR3K.blackwave"
+127:         private const val CONNECT_TIMEOUT_MS = 5_000
+128:         private const val READ_TIMEOUT_MS = 10_000
+129: 
+130:         val json = Json {
+131:             ignoreUnknownKeys = true
+132:             isLenient = true
+133:             encodeDefaults = true
+134:         }
+135: 
+136:         // Keep for integration tests / DI
+137:         val serializer = { json }
+138:     }
+139: }
+140: 
+141: /**
+142:  * Response from /mobile/v1/devices/{model_id}.
+143:  */
+144: @Serializable
+145: data class DeviceStatusResponse(
+146:     val identity: Map<String, JsonElement> = emptyMap(),
+147:     val software: Map<String, String> = emptyMap(),
+148:     val connectivity: Map<String, String> = emptyMap(),
+149:     val hardware: List<String> = emptyList(),
+150:     val battery: Map<String, String> = emptyMap(),
+151:     val verification: Map<String, String> = emptyMap(),
+152:     val power: Map<String, JsonElement> = emptyMap(),
+153:     val validation: Map<String, JsonElement> = emptyMap(),
+154:     val observed_at: String? = null,
+155:     val observation_status: String = "unknown",
+156:     val live: Boolean = false,
+157:     val cached: Boolean = true,
+158: )
+159: 
+160: /**
+161:  * Response from /mobile/v1/fleet.
+162:  */
+163: @Serializable
+164: data class FleetStatusResponse(
+165:     val accounted: Int = 0,
+166:     val online: String = "0/0",
+167:     val devices: List<FleetDeviceCard> = emptyList(),
+168:     val stale: Boolean = false,
+169:     val observed_at: String? = null,
+170:     val observation_status: String = "unknown",
+171:     val live: Boolean = false,
+172:     val cached: Boolean = true,
+173: )
+174: 
+175: /**
+176:  * Single device card in the fleet list.
+177:  */
+178: @Serializable
+179: data class FleetDeviceCard(
+180:     val model_id: String = "",
+181:     val display_name: String = "",
+182:     val online: String = "unknown",
+183:     val firmware_version: String = "",
+184:     val enrollment: String = "",
+185:     val device_class: String = "",
+186:     val blackwave_authority: Boolean = false,
+187: )
+188: 
+189: /**
+190:  * Minimal HTTP response wrapper.
+191:  */
+192: internal data class HttpResponse(
+193:     val code: Int,
+194:     val body: String,
+195: )
+
+/home/parrot/repos/fr3k-hud/core/src/main/java/com/mcpintelligence/fr3k/integrations/blackwave/BlackwavePlugin.kt
+
+1: package com.mcpintelligence.fr3k.integrations.blackwave
+2: 
+3: import android.util.Log
+4: import com.mcpintelligence.fr3k.core.CommandResult
+5: import com.mcpintelligence.fr3k.core.Fr3kCommand
+6: import com.mcpintelligence.fr3k.core.Fr3kContext
+7: import com.mcpintelligence.fr3k.core.Fr3kPlugin
+8: import com.mcpintelligence.fr3k.protocol.Capabilities
+9: import com.mcpintelligence.fr3k.protocol.Capability
+10: import com.mcpintelligence.fr3k.protocol.CapabilityTier
+11: import kotlinx.coroutines.CoroutineScope
+12: import kotlinx.coroutines.Dispatchers
+13: import kotlinx.coroutines.Job
+14: import kotlinx.coroutines.delay
+15: import kotlinx.coroutines.launch
+16: import kotlinx.coroutines.cancel
+17: import kotlinx.serialization.json.JsonNull
+18: import kotlinx.serialization.json.JsonPrimitive
+19: 
+20: /**
+21:  * Blackwave plugin — replaces the generic MeshPlugin.
+22:  *
+23:  * Instead of a generic mesh transport abstraction, this plugin connects to
+24:  * the blackwave fleet bridge (LAN HTTPS) and fetches a role manifest that
+25:  * defines the capabilities this identity is allowed to use. The bridge
+26:  * owns all device authority, radio configuration, and signing; HUD is just
+27:  * a capability-aware consumer surface.
+28:  */
+29: class BlackwavePlugin(
+30:     private val bridgeClient: BlackwaveBridgeClient,
+31: ) : Fr3kPlugin {
+32: 
+33:     override val pluginId: String = "fr3k.integrations.blackwave"
+34:     override val displayName: String = "BLACKWAVE"
+35:     override val version: String = "0.1.0"
+36: 
+37:     private var scope: CoroutineScope? = null
+38:     private var pollJob: Job? = null
+39:     private var cachedRole: BlackwaveRoleManifest? = null
+40: 
+41:     private val scopeToCapability: Map<String, String> = mapOf(
+42:         "fleet.discover" to Capabilities.BLACKWAVE_FLEET_DISCOVER,
+43:         "profile.apply" to Capabilities.BLACKWAVE_PROFILE_APPLY,
+44:         "ota.apply" to Capabilities.BLACKWAVE_OTA_APPLY,
+45:         "radio.status" to Capabilities.BLACKWAVE_RADIO_STATUS,
+46:         "radio.configure" to Capabilities.BLACKWAVE_RADIO_CONFIGURE,
+47:         "reticulum.status" to Capabilities.BLACKWAVE_RETICULUM_STATUS,
+48:         "reticulum.link_test" to Capabilities.BLACKWAVE_RETICULUM_LINK_TEST,
+49:         "epaper.status" to Capabilities.BLACKWAVE_EPAPER_STATUS,
+50:         "battery.telemetry" to Capabilities.BLACKWAVE_BATTERY_TELEMETRY,
+51:         "location.read" to Capabilities.BLACKWAVE_LOCATION_READ,
+52:         "device.reboot" to Capabilities.BLACKWAVE_DEVICE_REBOOT,
+53:         "device.describe" to Capabilities.BLACKWAVE_DEVICE_DESCRIBE,
+54:     )
+55: 
+56:     override fun capabilities(): List<Capability> {
+57:         val role = cachedRole
+58:         if (role != null && !role.isExpired) {
+59:             return role.allowed_scopes.mapNotNull { scope ->
+60:                 val capId = scopeToCapability[scope] ?: return@mapNotNull null
+61:                 Capability(
+62:                     id = capId,
+63:                     displayName = scope.replace('.', ' ').replaceFirstChar { it.uppercase() },
+64:                     description = "BLACKWAVE: $scope",
+65:                     tier = CapabilityTier.TIER_1,
+66:                 )
+67:             }
+68:         }
+69:         // No role yet — register only the base discover capability
+70:         return BLackwaveBASE_CAPABILITIES
+71:     }
+72: 
+73:     override fun commands(): List<Fr3kCommand> = listOf(
+74:         BlackwaveFleetStatusCommand(bridgeClient, { cachedRole }),
+75:         BlackwaveDeviceStatusCommand(bridgeClient),
+76:     )
+77: 
+78:     override suspend fun start() {
+79:         Log.i(TAG, "BlackwavePlugin starting")
+80:         scope = CoroutineScope(Dispatchers.IO)
+81:         pollRole()
+82:         startPolling()
+83:     }
+84: 
+85:     override suspend fun stop() {
+86:         Log.i(TAG, "BlackwavePlugin stopping")
+87:         pollJob?.cancel()
+88:         pollJob = null
+89:         scope?.cancel()
+90:         scope = null
+91:         cachedRole = null
+92:     }
+93: 
+94:     private suspend fun pollRole() {
+95:         if (!bridgeClient.isAvailable()) {
+96:             cachedRole = null
+97:             Log.w(TAG, "bridge not available, skipping role poll")
+98:             return
+99:         }
+100:         val result = bridgeClient.fetchRole()
+101:         result.onSuccess { manifest ->
+102:             cachedRole = manifest.takeUnless { it.isExpired }
+103:             Log.i(TAG, "role fetched: ${manifest.role_id} tier=${manifest.trust_tier}")
+104:         }.onFailure { e ->
+105:             cachedRole = null
+106:             Log.w(TAG, "role fetch failed: ${e.message}")
+107:         }
+108:     }
+109: 
+110:     private fun startPolling() {
+111:         pollJob?.cancel()
+112:         pollJob = scope?.launch {
+113:             while (true) {
+114:                 delay(POLL_INTERVAL_MS)
+115:                 pollRole()
+116:             }
+117:         }
+118:     }
+119: 
+120:     companion object {
+121:         private const val TAG = "FR3K.blackwave"
+122:         private const val POLL_INTERVAL_MS = 30_000L
+123: 
+124:         private val BLackwaveBASE_CAPABILITIES = listOf(
+125:             Capability(
+126:                 id = Capabilities.BLACKWAVE_FLEET_DISCOVER,
+127:                 displayName = "BLACKWAVE fleet discover",
+128:                 tier = CapabilityTier.TIER_1,
+129:             ),
+130:         )
+131:     }
+132: }
+133: 
+134: /**
+135:  * Command: show fleet status from the blackwave bridge.
+136:  */
+137: class BlackwaveFleetStatusCommand(
+138:     private val bridgeClient: BlackwaveBridgeClient,
+139:     private val roleProvider: () -> BlackwaveRoleManifest?,
+140: ) : Fr3kCommand {
+141:     override val id = "blackwave.fleet.status"
+142:     override val title = "BLACKWAVE fleet status"
+143:     override val description = "List all devices in the fleet"
+144:     override val requiredCapabilities = setOf(Capabilities.BLACKWAVE_FLEET_DISCOVER)
+145:     override val keywords = setOf("blackwave", "fleet", "devices", "status")
+146:     override val pluginId = "fr3k.integrations.blackwave"
+147: 
+148:     override suspend fun execute(context: Fr3kContext, args: Map<String, String>): CommandResult {
+149:         val role = roleProvider()
+150:         if (role == null || role.isExpired) {
+151:             return CommandResult.Failed("no role manifest — bridge unreachable")
+152:         }
+153:         val result = bridgeClient.fetchFleetStatus()
+154:         return result.fold(
+155:             onSuccess = { fleet ->
+156:                 val summary = fleet.devices.joinToString("\n") { device ->
+157:                     "${device.display_name} (${device.model_id}) — ${device.online}"
+158:                 }
+159:                 CommandResult.Ok(
+160:                     message = "Fleet (${fleet.observation_status}): ${fleet.accounted} devices, ${fleet.online} online\n$summary",
+161:                     data = mapOf(
+162:                         "accounted" to fleet.accounted.toString(),
+163:                         "online" to fleet.online,
+164:                         "device_count" to fleet.devices.size.toString(),
+165:                     ),
+166:                 )
+167:             },
+168:             onFailure = { CommandResult.Failed("fleet status failed: ${it.message}") },
+169:         )
+170:     }
+171: }
+172: 
+173: /**
+174:  * Command: show device status for a specific device.
+175:  */
+176: class BlackwaveDeviceStatusCommand(
+177:     private val bridgeClient: BlackwaveBridgeClient,
+178: ) : Fr3kCommand {
+179:     override val id = "blackwave.device.status"
+180:     override val title = "BLACKWAVE device status"
+181:     override val description = "Show detailed status for a fleet device"
+182:     override val requiredCapabilities = setOf(Capabilities.BLACKWAVE_DEVICE_DESCRIBE)
+183:     override val keywords = setOf("blackwave", "device", "status", "telemetry")
+184:     override val pluginId = "fr3k.integrations.blackwave"
+185: 
+186:     override suspend fun execute(context: Fr3kContext, args: Map<String, String>): CommandResult {
+187:         val deviceId = args["device_id"] ?: return CommandResult.Failed("missing device_id")
+188:         val result = bridgeClient.fetchDeviceStatus(deviceId)
+189:         return result.fold(
+190:             onSuccess = { status ->
+191:                 CommandResult.Ok(
+192:                     message = "Device $deviceId: software=${status.software} connectivity=${status.connectivity}",
+193:                     data = status.software + status.connectivity + status.battery +
+194:                         status.power.mapValues { (_, value) ->
+195:                             if (value is JsonNull) "UNKNOWN"
+196:                             else if (value is JsonPrimitive) value.content else value.toString()
+197:                         },
+198:                 )
+199:             },
+200:             onFailure = { CommandResult.Failed("device status failed: ${it.message}") },
+201:         )
+202:     }
+203: }
+
+/home/parrot/repos/fr3k-hud/core/src/main/java/com/mcpintelligence/fr3k/core/Fr3kPlugin.kt
+
+1: package com.mcpintelligence.fr3k.core
+2: 
+3: import android.util.Log
+4: import com.mcpintelligence.fr3k.protocol.Capability
+5: import kotlinx.coroutines.CoroutineScope
+6: import kotlinx.coroutines.Dispatchers
+7: import kotlinx.coroutines.Job
+8: import kotlinx.coroutines.SupervisorJob
+9: import kotlinx.coroutines.cancel
+10: import kotlinx.coroutines.launch
+11: import java.util.concurrent.ConcurrentHashMap
+12: 
+13: /**
+14:  * FR3K plugin contract.
+15:  *
+16:  * A plugin owns capabilities and commands. Plugin failure must be isolated —
+17:  * one plugin crashing must not affect others (§48). The [PluginManager]
+18:  * wraps each plugin in its own supervisor scope and tracks lifecycle.
+19:  */
+20: interface Fr3kPlugin {
+21:     val pluginId: String
+22:     val displayName: String
+23:     val version: String
+24: 
+25:     fun capabilities(): List<Capability>
+26:     fun commands(): List<Fr3kCommand>
+27: 
+28:     /** Called once after registration. May suspend for setup. */
+29:     suspend fun start() {}
+30:     /** Called before unregistration. Must release resources. */
+31:     suspend fun stop() {}
+32: }
+33: 
+34: /**
+35:  * Owns the plugin lifecycle. Failure isolation, hot reload, debug-friendly
+36:  * plugin enumeration.
+37:  */
+38: class PluginManager(
+39:     private val capabilityRegistry: CapabilityRegistry,
+40:     private val commandRegistry: CommandRegistry,
+41:     private val parentScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+42: ) {
+43:     private val plugins = ConcurrentHashMap<String, RegisteredPlugin>()
+44:     private val statusByPlugin = ConcurrentHashMap<String, PluginStatus>()
+45:     private val logTag = "FR3K.plugin"
+46: 
+47:     val pluginList: List<Fr3kPlugin> get() = plugins.values.map { it.plugin }
+48:     val statuses: Map<String, PluginStatus> get() = statusByPlugin.toMap()
+49: 
+50:     fun register(plugin: Fr3kPlugin) {
+51:         if (plugins.containsKey(plugin.pluginId)) {
+52:             Log.w(logTag, "plugin ${plugin.pluginId} already registered; replacing")
+53:             unregister(plugin.pluginId)
+54:         }
+55:         plugins[plugin.pluginId] = RegisteredPlugin(plugin)
+56:         statusByPlugin[plugin.pluginId] = PluginStatus.REGISTERED
+57:     }
+58: 
+59:     fun start(pluginId: String) {
+60:         val reg = plugins[pluginId] ?: run {
+61:             Log.w(logTag, "no such plugin: $pluginId"); return
+62:         }
+63:         val plugin = reg.plugin
+64:         reg.scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + parentScope.coroutineContext)
+65:         reg.startJob = reg.scope!!.launch {
+66:             runCatching {
+67:                 statusByPlugin[pluginId] = PluginStatus.STARTING
+68:                 capabilityRegistry.registerAll(pluginId, plugin.capabilities())
+69:                 plugin.commands().forEach { commandRegistry.register(it) }
+70:                 plugin.start()
+71:                 statusByPlugin[pluginId] = PluginStatus.RUNNING
+72:             }.onFailure {
+73:                 Log.e(logTag, "plugin $pluginId start failed", it)
+74:                 statusByPlugin[pluginId] = PluginStatus.FAILED
+75:                 capabilityRegistry.unregisterAllByOwner(pluginId)
+76:                 commandRegistry.unregisterByPlugin(pluginId)
+77:             }
+78:         }
+79:     }
+80: 
+81:     fun unregister(pluginId: String) {
+82:         val reg = plugins.remove(pluginId) ?: return
+83:         reg.startJob?.cancel()
+84:         reg.scope?.cancel()
+85:         capabilityRegistry.unregisterAllByOwner(pluginId)
+86:         commandRegistry.unregisterByPlugin(pluginId)
+87:         statusByPlugin[pluginId] = PluginStatus.UNREGISTERED
+88:     }
+89: 
+90:     fun startAll() = plugins.keys.toList().forEach { start(it) }
+91:     fun unregisterAll() = plugins.keys.toList().forEach { unregister(it) }
+92: 
+93:     fun statusOf(pluginId: String): PluginStatus = statusByPlugin[pluginId] ?: PluginStatus.UNREGISTERED
+94: 
+95:     private class RegisteredPlugin(val plugin: Fr3kPlugin) {
+96:         var scope: CoroutineScope? = null
+97:         var startJob: Job? = null
+98:     }
+99: }
+100: 
+101: enum class PluginStatus { REGISTERED, STARTING, RUNNING, FAILED, UNREGISTERED }
+
+/home/parrot/repos/fr3k-blackwave/src/blackwave_fleet/mobile.py
+
+1: from __future__ import annotations
+2: 
+3: import hashlib
+4: import json
+5: from datetime import datetime, timezone
+6: from pathlib import Path
+7: from uuid import UUID
+8: 
+9: from fastapi import Depends, FastAPI, Header, HTTPException, Request
+10: from fastapi.responses import JSONResponse
+11: from starlette.middleware.base import BaseHTTPMiddleware
+12: 
+13: from .catalog import REQUIRED_MODEL_IDS, load_catalog
+14: from .config_image import build_config_image
+15: from .inbox import CompanionInbox, InboxError
+16: from .models import DeviceProfile, RoleManifest
+17: from .pairing import MOBILE_API, PairingError, PairingStore
+18: from .registry import FleetRegistry
+19: from .risk import PolicyWeakenError, inherent_risk
+20: 
+21: DEFAULT_STORE = Path.home() / ".config" / "fr3k-blackwave" / "mobile"
+22: PROFILE_DIR = Path.home() / ".config" / "fr3k-blackwave" / "profiles"
+23: 
+24: OTA_STAGES = (
+25:     "Checking manifest",
+26:     "Authenticating",
+27:     "Downloading",
+28:     "Verifying hash",
+29:     "Preparing candidate",
+30:     "Booting candidate",
+31:     "Health checking",
+32:     "Committing",
+33:     "Complete",
+34: )
+35: OTA_FAILURES = (
+36:     "Rejected",
+37:     "Download failed",
+38:     "Verification failed",
+39:     "Candidate unhealthy",
+40:     "Rollback initiated",
+41:     "Rollback complete",
+42:     "Recovery required",
+43: )
+44: PEER_FIXTURES = (
+45:     "valid authorized command",
+46:     "invalid signature",
+47:     "unknown sender",
+48:     "revoked sender",
+49:     "wrong destination",
+50:     "stale command",
+51:     "duplicate nonce",
+52:     "replay",
+53:     "malformed payload",
+54:     "excessive risk",
+55:     "prohibited action",
+56: )
+57: 
+58: 
+59: def observed(data: dict, *, live: bool, cached: bool) -> dict:
+60:     if live == cached:
+61:         raise ValueError("state must be exactly one of live or cached")
+62:     return {
+63:         **data,
+64:         "observed_at": datetime.now(timezone.utc).isoformat(),
+65:         "observation_status": "live" if live else "cached",
+66:         "live": live,
+67:         "cached": cached,
+68:     }
+69: 
+70: 
+71: class LoopbackPairingGuard(BaseHTTPMiddleware):
+72:     """Desktop pairing mint stays on loopback. Mobile APIs are separate."""
+73: 
+74:     async def dispatch(self, request: Request, call_next):
+75:         if request.query_params.get("token") or request.query_params.get("credential"):
+76:             return JSONResponse({"detail": "tokens must not appear in query strings"}, status_code=400)
+77:         return await call_next(request)
+78: 
+79: 
+80: def build_mobile_app(
+81:     store: PairingStore | None = None,
+82:     registry: FleetRegistry | None = None,
+83:     inbox: CompanionInbox | None = None,
+84: ) -> FastAPI:
+85:     pairing = store or PairingStore(DEFAULT_STORE)
+86:     fleet_registry = registry
+87:     drop = inbox or CompanionInbox(DEFAULT_STORE / "inbox")
+88:     app = FastAPI(title="fR3k BLACKWAVE Mobile Gateway", version="0.1.0")
+89:     app.add_middleware(LoopbackPairingGuard)
+90: 
+91:     def authorize(
+92:         authorization: str | None = Header(default=None),
+93:         x_blackwave_client: str | None = Header(default=None),
+94:     ) -> None:
+95:         if not authorization or not authorization.startswith("Bearer ") or not x_blackwave_client:
+96:             raise HTTPException(status_code=401, detail="mobile credential required")
+97:         credential = authorization.removeprefix("Bearer ")
+98:         try:
+99:             pairing.authenticate(x_blackwave_client, credential)
+100:         except PairingError as exc:
+101:             raise HTTPException(status_code=401, detail=str(exc)) from exc
+102: 
+103:     @app.get("/mobile/v1/health")
+104:     def health() -> dict[str, object]:
+105:         return observed({
+106:             "status": "ok",
+107:             "product": "fR3k BLACKWAVE",
+108:             "api": MOBILE_API,
+109:             "role": "mobile-projection",
+110:             "authority": "blackwave-fleet-bridge",
+111:         }, live=True, cached=False)
+112: 
+113:     @app.get("/mobile/v1/role", dependencies=[Depends(authorize)])
+114:     def get_role() -> dict[str, object]:
+115:         role_path = Path.home() / ".config" / "fr3k-blackwave" / "role-manifest.json"
+116:         if not role_path.exists():
+117:             raise HTTPException(status_code=404, detail="no role manifest configured")
+118:         try:
+119:             raw = json.loads(role_path.read_text(encoding="utf-8"))
+120:             manifest = RoleManifest.model_validate(raw)
+121:         except Exception as exc:
+122:             raise HTTPException(status_code=500, detail=f"invalid role manifest: {exc}") from exc
+123:         return observed(manifest.model_dump(mode="json"), live=True, cached=False)
+124: 
+125:     @app.post("/mobile/v1/pairing/complete")
+126:     def pairing_complete(body: dict) -> dict[str, str]:
+127:         try:
+128:             client_id, credential, expires = pairing.complete(
+129:                 str(body.get("request_id", "")),
+130:                 str(body.get("nonce", "")),
+131:                 label=str(body.get("label", "android-companion")),
+132:             )
+133:         except PairingError as exc:
+134:             raise HTTPException(status_code=400, detail=str(exc)) from exc
+135:         return {
+136:             "client_id": client_id,
+137:             "credential": credential,
+138:             "expires_at": expires.isoformat(),
+139:             "api": MOBILE_API,
+140:             "gateway_spki_sha256": pairing.gateway_spki_sha256(),
+141:         }
+142: 
+143:     @app.get("/mobile/v1/catalog", dependencies=[Depends(authorize)])
+144:     def catalog() -> dict:
+145:         models = [item.model_dump(mode="json") for item in load_catalog().values()]
+146:         return observed({"product": "fR3k BLACKWAVE", "api": MOBILE_API, "models": models, "required_ids": list(REQUIRED_MODEL_IDS)}, live=False, cached=True)
+147: 
+148:     @app.get("/mobile/v1/fleet", dependencies=[Depends(authorize)])
+149:     def fleet() -> dict:
+150:         catalog_models = load_catalog()
+151:         enrolled = fleet_registry.list_devices() if fleet_registry is not None else []
+152:         cards = []
+153:         for model_id, model in catalog_models.items():
+154:             match = next((item for item in enrolled if item.model_id == model_id and item.active), None)
+155:             cards.append(
+156:                 {
+157:                     "model_id": model_id,
+158:                     "display_name": model.display_name,
+159:                     "architecture": model.architecture,
+160:                     "online": "UNKNOWN" if match is None else "NOT REPORTED",
+161:                     "firmware_version": match.firmware_version if match else "NOT REPORTED",
+162:                     "config_digest": match.config_digest if match else "NOT REPORTED",
+163:                     "battery": "NOT REPORTED",
+164:                     "update_state": "UNKNOWN",
+165:                     "verification": "N/P",
+166:                     "enrollment": "enrolled" if match else "catalog-only",
+167:                     "charger_mode": model.charger_mode,
+168:                     "browser_flash": model.browser_flash,
+169:                     "device_class": model.device_class,
+170:                     "role": model.role,
+171:                     "blackwave_authority": model.blackwave_authority,
+172:                     "current_blocker": None if match else "not enrolled",
+173:                 }
+174:             )
+175:         return observed({
+176:             "accounted": len(catalog_models),
+177:             "online": "UNKNOWN",
+178:             "physically_accepted": "UNKNOWN",
+179:             "gateway_reachable": True,
+180:             "devices": cards,
+181:             "stale": False,
+182:         }, live=False, cached=True)
+183: 
+184:     @app.get("/mobile/v1/devices/{model_id}", dependencies=[Depends(authorize)])
+185:     def device(model_id: str) -> dict:
+186:         catalog_models = load_catalog()
+187:         if model_id not in catalog_models:
+188:             raise HTTPException(status_code=404, detail="unknown model is not a supported BLACKWAVE device")
+189:         model = catalog_models[model_id]
+190:         return observed({
+191:             "identity": model.model_dump(mode="json"),
+192:             "software": {
+193:                 "installed_firmware": "NOT REPORTED",
+194:                 "config_version": "NOT REPORTED",
+195:                 "available_update": "UNKNOWN",
+196:                 "ota_strategy": model.ota_strategy,
+197:             },
+198:             "connectivity": {name: "NOT REPORTED" for name in model.transports},
+199:             "hardware": model.capabilities,
+200:             "device_class": model.device_class,
+201:             "role": model.role,
+202:             "blackwave_authority": model.blackwave_authority,
+203:             "reticulum_role": model.reticulum_role,
+204:             "power": {
+205:                 "battery": "NOT REPORTED",
+206:                 "charger": "NOT REPORTED",
+207:                 "external_power": "NOT REPORTED",
+208:                 "physical_charging_verified": False,
+209:                 "charger_mode": model.charger_mode,
+210:                 "charge_verification": model.charge_verification,
+211:                 "warning": k10_or_tab5_warning(model_id, model.charger_mode),
+212:             },
+213:             "validation": {
+214:                 "completion_percent": None,
+215:                 "state": "N/P",
+216:                 "last_verification": None,
+217:             },
+218:         }, live=False, cached=True)
+219: 
+220:     @app.post("/mobile/v1/profiles/validate", dependencies=[Depends(authorize)])
+221:     def validate_profile(profile: DeviceProfile) -> dict:
+222:         catalog_models = load_catalog()
+223:         if profile.model_id not in catalog_models:
+224:             raise HTTPException(status_code=422, detail="unknown model_id")
+225:         return {"state": "Server Validated", "profile_id": profile.profile_id, "model_id": profile.model_id}
+226: 
+227:     @app.post("/mobile/v1/config/render", dependencies=[Depends(authorize)])
+228:     def render_profile(profile: DeviceProfile) -> dict:
+229:         catalog_models = load_catalog()
+230:         if profile.model_id not in catalog_models:
+231:             raise HTTPException(status_code=422, detail="unknown model_id")
+232:         image = build_config_image(profile)
+233:         digest = hashlib.sha256(image).hexdigest()
+234:         PROFILE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+235:         return {
+236:             "state": "Rendered",
+237:             "profile_id": profile.profile_id,
+238:             "model_id": profile.model_id,
+239:             "config_digest": digest,
+240:             "size": len(image),
+241:             "format": "FR3KCFG2",
+242:             "applied": False,
+243:             "note": "canonical renderer produced the image; device apply is a separate authorized action",
+244:         }
+245: 
+246:     @app.get("/mobile/v1/releases", dependencies=[Depends(authorize)])
+247:     def releases() -> dict:
+248:         return observed({
+249:             "firmware": "NOT REPORTED",
+250:             "configuration": "NOT REPORTED",
+251:             "assets": "NOT REPORTED",
+252:             "stages": list(OTA_STAGES),
+253:             "failure_paths": list(OTA_FAILURES),
+254:         }, live=False, cached=True)
+255: 
+256:     @app.post("/mobile/v1/ota/request", dependencies=[Depends(authorize)])
+257:     def ota_request(body: dict) -> dict:
+258:         model_id = str(body.get("model_id", ""))
+259:         if model_id not in load_catalog():
+260:             raise HTTPException(status_code=422, detail="unknown model_id")
+261:         return {
+262:             "accepted": False,
+263:             "state": "Checking manifest",
+264:             "success": False,
+265:             "note": "Android may request an update; commit/rollback remain device+gateway authority",
+266:             "idempotency_key": body.get("idempotency_key"),
+267:         }
+268: 
+269:     @app.get("/mobile/v1/peer/fixtures", dependencies=[Depends(authorize)])
+270:     def peer_fixtures() -> dict:
+271:         return {
+272:             "fixtures": list(PEER_FIXTURES),
+273:             "note": "gateway supplies safe fixtures; Android must not mint production private keys",
+274:         }
+275: 
+276:     @app.get("/mobile/v1/tutorial-content-version", dependencies=[Depends(authorize)])
+277:     def tutorial_version() -> dict:
+278:         return {"api": MOBILE_API, "bundled_comparison": "use app diagnostics commit vs this gateway"}
+279: 
+280:     @app.get("/mobile/v1/risk/{action}", dependencies=[Depends(authorize)])
+281:     def risk(action: str) -> dict:
+282:         try:
+283:             level = inherent_risk(action)
+284:         except PolicyWeakenError as exc:
+285:             raise HTTPException(status_code=404, detail=str(exc)) from exc
+286:         return {"action": action, "inherent": int(level), "name": level.name}
+287: 
+288:     @app.get("/mobile/v1/verification", dependencies=[Depends(authorize)])
+289:     def verification() -> dict:
+290:         return {
+291:             "states": ["PASS", "FAIL", "BLOCKED", "N/P", "N/A"],
+292:             "rule": "Never infer PASS. Compile evidence is not physical evidence.",
+293:         }
+294: 
+295:     @app.get("/mobile/v1/devices/{model_id}/network", dependencies=[Depends(authorize)])
+296:     def device_network(model_id: str) -> dict:
+297:         model = _require_model(model_id)
+298:         return observed({
+299:             "model_id": model_id,
+300:             "transports": list(model.transports),
+301:             "note": "Live RF/path state is NOT REPORTED until a host Reticulum instance publishes it. Cached is not current.",
+302:         }, live=False, cached=True)
+303: 
+304:     @app.get("/mobile/v1/devices/{model_id}/reticulum", dependencies=[Depends(authorize)])
+305:     def device_reticulum(model_id: str) -> dict:
+306:         model = _require_model(model_id)
+307:         return pathfinder_projection(model)
+308: 
+309:     @app.get("/mobile/v1/devices/{model_id}/radio", dependencies=[Depends(authorize)])
+310:     def device_radio(model_id: str) -> dict:
+311:         model = _require_model(model_id)
+312:         from .radio_policy import default_settings
+313: 
+314:         settings = default_settings() if model.id == "techo-pathfinder" else None
+315:         return observed({
+316:             "model_id": model_id,
+317:             "radio": model.radio,
+318:             "settings": settings.model_dump() if settings else None,
+319:             "armed": False,
+320:             "note": "Radio remains disarmed until operator confirmation. No maximum-power default.",
+321:         }, live=False, cached=True)
+322: 
+323:     @app.get("/mobile/v1/devices/{model_id}/gnss", dependencies=[Depends(authorize)])
+324:     def device_gnss(model_id: str) -> dict:
+325:         model = _require_model(model_id)
+326:         from .pathfinder import gnss_policy
+327: 
+328:         if model.id != "techo-pathfinder":
+329:             return observed({"model_id": model_id, "gnss": "see device capabilities", "precise_coordinates": None}, live=False, cached=True)
+330:         policy = gnss_policy(share_precise=False, operator_policy=False)
+331:         return observed({
+332:             "model_id": model_id,
+333:             "state": "BLOCKED",
+334:             "precise_coordinates": None,
+335:             "policy": policy,
+336:         }, live=False, cached=True)
+337: 
+338:     @app.get("/mobile/v1/pathfinder", dependencies=[Depends(authorize)])
+339:     def pathfinder() -> dict:
+340:         model = _require_model("techo-pathfinder")
+341:         return pathfinder_projection(model)
+342: 
+343:     @app.get("/mobile/v1/inbox", dependencies=[Depends(authorize)])
+344:     def inbox_list() -> dict:
+345:         return observed({
+346:             "entries": drop.list_entries(),
+347:             "note": "Paired companion storage. Replaces SD card for captures/logs when auto-upload is enabled. Not fleet authority.",
+348:         }, live=False, cached=True)
+349: 
+350:     @app.post("/mobile/v1/inbox", dependencies=[Depends(authorize)])
+351:     def inbox_ingest(body: dict) -> dict:
+352:         import base64
+353: 
+354:         model_id = str(body.get("model_id", ""))
+355:         if model_id not in load_catalog():
+356:             raise HTTPException(status_code=422, detail="unknown model_id")
+357:         try:
+358:             payload = base64.b64decode(str(body.get("payload_b64", "")), validate=True)
+359:             record = drop.ingest(
+360:                 model_id=model_id,
+361:                 kind=str(body.get("kind", "")),
+362:                 filename=str(body.get("filename", "upload.bin")),
+363:                 payload=payload,
+364:                 device_id=body.get("device_id"),
+365:                 sha256=body.get("sha256"),
+366:                 auto=bool(body.get("auto", False)),
+367:             )
+368:         except (InboxError, ValueError) as exc:
+369:             raise HTTPException(status_code=422, detail=str(exc)) from exc
+370:         return record
+371: 
+372:     @app.get("/mobile/v1/inbox/{entry_id}", dependencies=[Depends(authorize)])
+373:     def inbox_get(entry_id: str) -> dict:
+374:         import base64
+375: 
+376:         try:
+377:             record, payload = drop.get_bytes(entry_id)
+378:         except InboxError as exc:
+379:             raise HTTPException(status_code=404, detail=str(exc)) from exc
+380:         return {**record, "payload_b64": base64.b64encode(payload).decode("ascii")}
+381: 
+382:     app.state.pairing = pairing
+383:     app.state.registry = fleet_registry
+384:     app.state.inbox = drop
+385:     return app
+386: 
+387: 
+388: def k10_or_tab5_warning(model_id: str, charger_mode: str) -> str | None:
+389:     if model_id == "unihiker-k10" or charger_mode == "battery_input_only":
+390:         return "K10 is battery-input-only. No onboard charger test. External charger required."
+391:     if model_id == "m5stack-tab5":
+392:         return "Charge-gate initialization PASS does not equal physical charging PASS."
+393:     if model_id == "techo-pathfinder":
+394:         return "USB powered is not a charging PASS. GNSS overlay still requires a real Gate B fix."
+395:     return None
+396: 
+397: 
+398: def _require_model(model_id: str):
+399:     catalog_models = load_catalog()
+400:     if model_id not in catalog_models:
+401:         raise HTTPException(status_code=404, detail="unknown model is not a supported BLACKWAVE device")
+402:     return catalog_models[model_id]
+403: 
+404: 
+405: def pathfinder_projection(model) -> dict:
+406:     from .pathfinder import stock_rnode_features
+407:     from .radio_policy import default_settings
+408: 
+409:     settings = default_settings()
+410:     return observed({
+411:         "model_id": model.id,
+412:         "role": model.role,
+413:         "device_class": model.device_class,
+414:         "blackwave_authority": False,
+415:         "architecture": "hybrid",
+416:         "architecture_note": (
+417:             "Android monitors PATHFINDER over BLE/USB when connected. "
+418:             "The Reticulum instance runs on the BLACKWAVE gateway/Linux host. "
+419:             "Android does not embed a Python RNS runtime."
+420:         ),
+421:         "reticulum_role": model.reticulum_role,
+422:         "hosted_transport": model.hosted_transport,
+423:         "features": stock_rnode_features(),
+424:         "interface": {
+425:             "state": "NOT REPORTED",
+426:             "connection_mode": "UNKNOWN",
+427:             "usb": "NOT REPORTED",
+428:             "ble": "NOT REPORTED",
+429:             "rnode": "NOT REPORTED",
+430:             "last_activity": None,
+431:             "reachable": "UNKNOWN",
+432:             "live": False,
+433:             "cached": True,
+434:         },
+435:         "radio": settings.model_dump(),
+436:         "gnss": {"state": "BLOCKED", "precise_coordinates": None, "reason": "real fix pending Gate B"},
+437:         "authority": "Reticulum routes. BLACKWAVE authorizes. BLE pairing is not enrollment.",
+438:     }, live=False, cached=True)
+439: 
+440: 
+441: app = build_mobile_app()

@@ -39,12 +39,14 @@ import kotlinx.coroutines.runBlocking
 class Fr3kChatBubble(
     private val host: OverlayHost,
     private val density: Float = host.context.resources.displayMetrics.density,
+    private val session: com.mcpintelligence.fr3k.core.tools.SharedAgentSession = Fr3kApplication.get().agentSession,
 ) : Fr3kOverlay {
 
     override val name: String = "chat-bubble"
     override var isAttached: Boolean = false
         private set
 
+    private val sessionPanel = AgentSessionPanel(host.context, session)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val root: View
     private val params: WindowManager.LayoutParams
@@ -101,7 +103,7 @@ class Fr3kChatBubble(
         }
 
         header = TextView(ctx).apply {
-            text = "FR3K ▸ HERMES"
+            text = "CHAT"
             setTextColor(0xFF7d3cff.toInt())
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 9f)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
@@ -166,8 +168,6 @@ class Fr3kChatBubble(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             addView(header, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            addView(modelButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(ttsButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(dismiss, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
 
@@ -255,7 +255,7 @@ class Fr3kChatBubble(
                 300.dp(), ViewGroup.LayoutParams.WRAP_CONTENT
             )
             setPadding(6.dp(), 4.dp(), 6.dp(), 6.dp())
-            // Header row: title + model picker + TTS toggle + dismiss.
+            // Header row: minimal title + close (matches browser/terminal style).
             addView(headerRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // Transcript body.
             // Let the transcript absorb resize deltas. The input row and grip
@@ -265,8 +265,22 @@ class Fr3kChatBubble(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
             )
             addView(transcript, transcriptLp)
+            addView(sessionPanel)
             val sp = Space(ctx); sp.layoutParams = LinearLayout.LayoutParams(1, (2 * density).toInt())
             addView(sp)
+            // Slim toolbar: model picker (M) + TTS toggle + spacer (weight).
+            val toolbar = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, 0, 0, 0)
+                val spacer = View(ctx).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) }
+                addView(spacer)
+                addView(modelButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                val tbSp = View(ctx); tbSp.layoutParams = LinearLayout.LayoutParams(4.dp(), 1)
+                addView(tbSp)
+                addView(ttsButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            }
+            addView(toolbar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             // Input row: text field + send button.
             addView(inputRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             val sp2 = Space(ctx); sp2.layoutParams = LinearLayout.LayoutParams(1, (1 * density).toInt())
@@ -291,6 +305,12 @@ class Fr3kChatBubble(
         installResizeTouch()
     }
 
+    private val sessionObserver = scope.launch(Dispatchers.Main.immediate) {
+        session.lines.collect { lines ->
+            if (lines.isNotEmpty()) transcript.text = lines.joinToString("\n") { "${it.speaker}: ${it.text}" }
+        }
+    }
+
     override fun show() {
         if (isAttached) return
         try {
@@ -307,8 +327,8 @@ class Fr3kChatBubble(
             // seed once per process so reopens don't spam the user.
             if (!hasSeededWelcome) {
                 hasSeededWelcome = true
-                appendLine("fr3k: HUD online. termux / shizuku / lspatch / morphe detected from the integrations panel.")
-                appendLine("fr3k: tap the M key to pick a model, or long-press the orb for the radial menu.")
+                appendLine("fr3k: Shared agent chat. Tap M to configure OpenRouter and select a model.")
+                appendLine("fr3k: Browser and terminal actions appear here. Availability is checked when used.")
             }
         } catch (t: Throwable) {
             android.util.Log.e("FR3K_HUD", "chat bubble addView failed", t)
@@ -482,145 +502,19 @@ class Fr3kChatBubble(
      * Cycle the active model through the OpenCode Zen free-list. Each tap
      * moves to the next free model. Long-press opens a text-prompt picker.
      */
-    private fun cycleModel() {
-        val app = Fr3kApplication.get()
-        val provider = app.aiProviders.get("opencode-zen")
-            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
-        if (provider == null) {
-            appendLine("fr3k: opencode not registered")
-            return
-        }
-        val current = provider.selectedModel()
-        val free = provider.availableFreeModels()
-        if (free.isEmpty()) {
-            appendLine("fr3k: no free models cached; refresh")
-            return
-        }
-        val idx = free.indexOfFirst { it.id == current }
-        val next = free[(idx + 1).mod(free.size)]
-        provider.setModel(next.id)
-        header.text = "FR3K ▸ ${next.id}"
-        appendLine("fr3k: switched → ${next.id}")
-    }
+    private fun cycleModel() = showModelPicker()
 
     private fun showModelPicker() {
-        val app = Fr3kApplication.get()
-        val provider = app.aiProviders.get("opencode-zen")
-            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
-        if (provider == null) {
-            appendLine("fr3k: opencode not registered")
-            return
-        }
-        val models = provider.availableFreeModels()
-        if (models.isEmpty()) {
-            appendLine("fr3k: no free models cached — refreshing from provider")
-            // Kick off a background refresh so the next open of the
-            // picker has a full list. Don't block here.
-            scope.launch {
-                try {
-                    val r = provider.refreshFreeModels()
-                    val count = r.getOrNull()?.size ?: 0
-                    appendLine("fr3k: refresh got $count models")
-                } catch (t: Throwable) {
-                    appendLine("fr3k: refresh failed: ${t.message}")
-                }
-            }
-            return
-        }
-        // Build a popup menu listing every free model. Tapping one
-        // switches the provider to it and dismisses the popup.
-        val popup = android.widget.PopupMenu(host.context, input)
-        models.forEachIndexed { idx, m ->
-            val label = if (m.id == provider.selectedModel()) "✓ ${m.id}" else m.id
-            popup.menu.add(0, idx, idx, label)
-        }
-        // Add a refresh action at the bottom of the menu so the user
-        // can force a re-fetch of the free-models list without leaving
-        // the chat.
-        popup.menu.add(0, -1, models.size, "↻ refresh free models")
-        popup.setOnMenuItemClickListener { item ->
-            if (item.itemId == -1) {
-                appendLine("fr3k: refreshing free models…")
-                scope.launch {
-                    try {
-                        val r = provider.refreshFreeModels()
-                        val count = r.getOrNull()?.size ?: 0
-                        appendLine("fr3k: refresh got $count models")
-                    } catch (t: Throwable) {
-                        appendLine("fr3k: refresh failed: ${t.message}")
-                    }
-                }
-                return@setOnMenuItemClickListener true
-            }
-            val chosen = models[item.itemId]
-            provider.setModel(chosen.id)
-            header.text = "FR3K ▸ ${chosen.id}"
-            appendLine("fr3k: model → ${chosen.id}")
-            true
-        }
-        popup.setOnDismissListener {
-            // No state to restore — the input box was never touched.
-        }
-        popup.show()
+        host.context.startActivity(android.content.Intent(host.context, com.mcpintelligence.fr3k.ui.settings.SettingsActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     private fun onSend() {
         val prompt = input.text?.toString()?.trim().orEmpty()
         if (prompt.isEmpty()) return
-        appendLine("you: $prompt")
+        if (session.busy.value) return
         input.setText("")
-        val app = Fr3kApplication.get()
-        // Default provider: OpenCode Zen (free, no API key, big-pickle model).
-        // Fallback to Hermes if OpenCode isn't registered.
-        val opencode = app.aiProviders.get("opencode-zen")
-            as? com.mcpintelligence.fr3k.integrations.opencode.OpenCodeZenProvider
-        val hermes = app.aiProviders.get("hermes")
-            as? com.mcpintelligence.fr3k.integrations.hermes.HermesProvider
-        val (providerId, askCmd, providerRef) = when {
-            opencode != null -> Triple(
-                "opencode",
-                { com.mcpintelligence.fr3k.integrations.opencode.AskOpenCodeCommand(provider = { opencode }) },
-                opencode
-            )
-            hermes != null -> Triple(
-                "hermes",
-                { HermesAskCommand(provider = { hermes }) },
-                hermes
-            )
-            else -> {
-                appendLine("fr3k: no AI provider registered")
-                android.util.Log.e("FR3K_HUD", "onSend: no AI provider registered")
-                return
-            }
-        }
-        val modelId = if (opencode != null) opencode.selectedModel() else "hermes"
-        android.util.Log.i("FR3K_HUD", "onSend: provider=$providerId model=$modelId promptLen=${prompt.length}")
-        appendLine("fr3k: $providerId → $modelId …")
-        scope.launch {
-            try {
-                val cmd = askCmd()
-                val ctx = Fr3kContext(
-                    deviceId = app.identity.deviceId,
-                    consentLevel = ConsentLevel.NORMAL,
-                    foregroundPackage = app.packageName,
-                    enabledCapabilities = app.fr3kCore.currentCapabilities(),
-                )
-                val result = cmd.execute(ctx, mapOf("prompt" to prompt))
-                android.util.Log.i("FR3K_HUD", "onSend: result=$result")
-                val text = when (result) {
-                    is CommandResult.Ok -> result.message
-                    is CommandResult.Failed -> "failed: ${result.reason}"
-                    is CommandResult.Cancelled -> "cancelled: ${result.reason}"
-                    is CommandResult.NeedsConfirmation -> "needs: ${result.summary}"
-                }
-                appendLine("$providerId: $text")
-                // Speak the response if TTS is enabled.
-                TtsPreference.speakIfEnabled(host.context, text)
-            } catch (t: Throwable) {
-                android.util.Log.e("FR3K_HUD", "onSend crashed", t)
-                appendLine("fr3k: ${t.javaClass.simpleName}: ${t.message}")
-            }
-        }
+        session.submit(prompt)
     }
 
     private fun appendLine(line: String) {
@@ -642,6 +536,7 @@ class Fr3kChatBubble(
 
     fun shutdown() {
         hide()
+        sessionPanel.shutdown()
         scope.cancel()
     }
 }

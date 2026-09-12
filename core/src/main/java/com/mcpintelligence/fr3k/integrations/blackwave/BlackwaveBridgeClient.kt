@@ -60,7 +60,7 @@ class BlackwaveBridgeClient(
      * Fetch detailed status for a specific device by model_id.
      */
     suspend fun fetchDeviceStatus(deviceId: String): Result<DeviceStatusResponse> {
-        val response = get("${endpointProvider()}/mobile/v1/device/$deviceId")
+        val response = get("${endpointProvider()}/mobile/v1/devices/${java.net.URLEncoder.encode(deviceId, "UTF-8")}")
         return if (response.code in 200..299) {
             try {
                 Result.success(json.decodeFromString(response.body))
@@ -75,7 +75,7 @@ class BlackwaveBridgeClient(
     /** True if the endpoint resolves and returns a valid response. */
     fun isAvailable(): Boolean {
         return try {
-            val response = get("${endpointProvider()}/mobile/v1/ping")
+            val response = get("${endpointProvider()}/mobile/v1/health")
             response.code in 200..299
         } catch (_: Exception) {
             false
@@ -94,7 +94,7 @@ class BlackwaveBridgeClient(
             requestMethod = "GET"
             setRequestProperty("Accept", "application/json")
             credentialProvider()?.let { setRequestProperty("Authorization", "Bearer $it") }
-            setRequestProperty("X-Client-Id", clientIdProvider())
+            setRequestProperty("X-Blackwave-Client", clientIdProvider())
             // Disable redirect-following so we don't follow an HTTP→HTTPS
             // upgrade we can't verify (trust-on-first-use for LAN certs).
             instanceFollowRedirects = false
@@ -139,7 +139,7 @@ class BlackwaveBridgeClient(
 }
 
 /**
- * Response from /mobile/v1/device/{id}.
+ * Response from /mobile/v1/devices/{model_id}.
  */
 @Serializable
 data class DeviceStatusResponse(
@@ -149,6 +149,16 @@ data class DeviceStatusResponse(
     val hardware: List<String> = emptyList(),
     val battery: Map<String, String> = emptyMap(),
     val verification: Map<String, String> = emptyMap(),
+    val power: Map<String, JsonElement> = emptyMap(),
+    val validation: Map<String, JsonElement> = emptyMap(),
+    val observed_at: String? = null,
+    val observation_status: String = "unknown",
+    val live: Boolean = false,
+    val cached: Boolean = true,
+    val identity_evidence: String = "unknown",
+    val device_identity_verified: Boolean = false,
+    val capability_evidence: String = "none",
+    val catalog_capabilities: List<String> = emptyList(),
 )
 
 /**
@@ -160,6 +170,10 @@ data class FleetStatusResponse(
     val online: String = "0/0",
     val devices: List<FleetDeviceCard> = emptyList(),
     val stale: Boolean = false,
+    val observed_at: String? = null,
+    val observation_status: String = "unknown",
+    val live: Boolean = false,
+    val cached: Boolean = true,
 )
 
 /**
@@ -174,6 +188,9 @@ data class FleetDeviceCard(
     val enrollment: String = "",
     val device_class: String = "",
     val blackwave_authority: Boolean = false,
+    val device_id: String? = null,
+    val capabilities: List<String> = emptyList(),
+    val capability_evidence: String = "none",
 )
 
 /**

@@ -190,9 +190,6 @@ class ShizukuStateReducerTest {
     private fun readApplicationSource(): String =
         readFile("app/src/main/java/com/mcpintelligence/fr3k/Fr3kApplication.kt")
 
-    private fun readFile(relativePath: String): String {
-        val f = java.io.File("/home/parrot/repos/fr3k-hud/$relativePath")
-        if (!f.exists()) error("missing file: ${f.absolutePath}")
-        return f.readText()
-    }
+    private fun readFile(relativePath: String): String =
+        com.mcpintelligence.fr3k.testing.RepoFiles.read(relativePath)
 }
